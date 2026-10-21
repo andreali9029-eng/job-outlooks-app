@@ -733,19 +733,23 @@ export default function App() {
 
   return (
     <div className="app" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-      <header className="header">
+      <header className={`header ${!selected && tab === 'trends' ? 'header-mini' : ''}`}>
         <div className="lang-switch">
           <button className={lang === 'en' ? 'lang-btn active' : 'lang-btn'} onClick={() => setLang('en')}>EN</button>
           <span className="lang-divider">|</span>
           <button className={lang === 'fr' ? 'lang-btn active' : 'lang-btn'} onClick={() => setLang('fr')}>FR</button>
         </div>
-        <h1>Canada Job Outlooks</h1>
-        <p className="subtitle">{t.tagline}</p>
-        <div className="header-links">
-          <button className="link-btn" onClick={() => setModal('methodology')}>{t.methodology}</button>
-          <span>|</span>
-          <button className="link-btn" onClick={() => setModal('faq')}>{t.faqs}</button>
-        </div>
+        {!(tab === 'trends' && !selected) && (
+          <>
+            <h1>Canada Job Outlooks</h1>
+            <p className="subtitle">{t.tagline}</p>
+            <div className="header-links">
+              <button className="link-btn" onClick={() => setModal('methodology')}>{t.methodology}</button>
+              <span>|</span>
+              <button className="link-btn" onClick={() => setModal('faq')}>{t.faqs}</button>
+            </div>
+          </>
+        )}
       </header>
 
       <main className="main">
@@ -754,25 +758,27 @@ export default function App() {
           <button className="back-home-btn" onClick={goHome}>← {t.backHome}</button>
         )}
 
-        {/* Search */}
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder={t.searchPlaceholder}
-            value={query}
-            onChange={e => { setQuery(e.target.value); setShowDropdown(true) }}
-            onFocus={() => setShowDropdown(true)}
-          />
-          {showDropdown && filtered.length > 0 && (
-            <ul className="dropdown">
-              {filtered.map(o => (
-                <li key={o.code} onClick={() => loadOccupation(o)}>
-                  {o.title[lang] || o.title.en} <span className="noc">{o.code.replace('NOC_', '')}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        {/* Search (hidden on the dedicated Trends tab) */}
+        {!(tab === 'trends' && !selected) && (
+          <div className="search-box">
+            <input
+              type="text"
+              placeholder={t.searchPlaceholder}
+              value={query}
+              onChange={e => { setQuery(e.target.value); setShowDropdown(true) }}
+              onFocus={() => setShowDropdown(true)}
+            />
+            {showDropdown && filtered.length > 0 && (
+              <ul className="dropdown">
+                {filtered.map(o => (
+                  <li key={o.code} onClick={() => loadOccupation(o)}>
+                    {o.title[lang] || o.title.en} <span className="noc">{o.code.replace('NOC_', '')}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
 
         {/* Quick searches -> In-demand occupation cards */}
         {!selected && tab === 'home' && (

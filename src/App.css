@@ -25,6 +25,11 @@ body {
   position: relative;
 }
 
+/* On the dedicated Trends tab only the language switch stays */
+.header-mini {
+  padding: 22px 0 4px;
+}
+
 .lang-switch {
   position: absolute;
   top: 8px;
