@@ -1,0 +1,13 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+
+# raw data sources (re-downloadable), daily snapshots, logs, local auth files
+/data/
+
+# misc
+*.log
+.DS_Store
+Thumbs.db
