@@ -837,13 +837,12 @@ export default function App() {
                     key={code}
                     className={`trend-chip ${trendProvince === code ? 'active' : ''}`}
                     onClick={() => setTrendProvince(code)}
+                    title={code === 'CA' ? t.allCanada : (PROVINCE_NAMES[lang][code] || code)}
                   >
                     <span className="prov-badge" style={{ background: `linear-gradient(135deg, ${b.from}, ${b.to})` }}>
                       {b.sym}
                     </span>
-                    <span className="prov-name">
-                      {code === 'CA' ? t.allCanada : (PROVINCE_NAMES[lang][code] || code)}
-                    </span>
+                    <span className="prov-name">{code}</span>
                   </button>
                 )
               })}
@@ -1019,13 +1018,12 @@ export default function App() {
                           key={p}
                           className={`trend-chip ${activeProv === p ? 'active' : ''}`}
                           onClick={() => setJobsProv(p)}
+                          title={p === 'CA' ? t.allCanada : (PROVINCE_NAMES[lang][p] || p)}
                         >
                           <span className="prov-badge" style={{ background: `linear-gradient(135deg, ${b.from}, ${b.to})` }}>
                             {b.sym}
                           </span>
-                          <span className="prov-name">
-                            {p === 'CA' ? t.allCanada : (PROVINCE_NAMES[lang][p] || p)}
-                          </span>
+                          <span className="prov-name">{p}</span>
                         </button>
                       )
                     })}
