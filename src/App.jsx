@@ -1,6 +1,7 @@
 import React from 'react'
 import { CANADA_PATHS, CANADA_VIEWBOX } from './canadaPaths'
 import TrendChart from './TrendChart'
+import { badgeFor } from './provinceBadges'
 
 /* ---------- i18n ---------- */
 const I18N = {
@@ -39,6 +40,8 @@ const I18N = {
     viewJobs: 'View job postings',
     jobsHint: 'Open Job Bank to see live postings for this occupation in this province',
     trends: 'Labour Market Trends',
+    tabHome: 'Home',
+    tabTrends: 'Trends',
     trendsHint: 'Unemployment rate, top industries and hardest-hit occupations — updated monthly from Statistics Canada',
     unemploymentRate: 'Unemployment rate',
     trendIndustries: 'Top industries by employment',
@@ -93,6 +96,8 @@ const I18N = {
     viewJobs: 'Voir les offres d\'emploi',
     jobsHint: 'Ouvrir le Guichet-Emplois pour voir les offres en direct pour cette profession dans cette province',
     trends: 'Tendances du marché du travail',
+    tabHome: 'Accueil',
+    tabTrends: 'Tendances',
     trendsHint: 'Taux de chômage, principaux secteurs et professions les plus touchées — mis à jour mensuellement à partir de Statistique Canada',
     unemploymentRate: 'Taux de chômage',
     trendIndustries: 'Principaux secteurs d\'emploi',
@@ -316,6 +321,7 @@ function CanadaMap({ provinceRatings, provinceWages, onProvinceClick, selectedPr
 /* ---------- App ---------- */
 export default function App() {
   const [lang, setLang] = React.useState('en')
+  const [tab, setTab] = React.useState('home')
   const [occupations, setOccupations] = React.useState([])
   const [query, setQuery] = React.useState('')
   const [selected, setSelected] = React.useState(null)
@@ -473,20 +479,24 @@ export default function App() {
   /* Swipe-to-go-back (mobile): leftward swipe on the result page returns home */
   const touchStartRef = React.useRef(null)
   const handleTouchStart = (e) => {
-    if (!selected) return
+    if (!selected && tab === 'home') return
     const t = e.touches[0]
     touchStartRef.current = { x: t.clientX, y: t.clientY }
   }
   const handleTouchEnd = (e) => {
     const start = touchStartRef.current
     touchStartRef.current = null
-    if (!selected || !start) return
+    if (!start) return
     const t = e.changedTouches[0]
     const dx = t.clientX - start.x
     const dy = t.clientY - start.y
     // Leftward swipe, clearly horizontal, long enough to be intentional
     if (dx < -70 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      goHome()
+      if (selected) {
+        goHome()
+      } else if (tab === 'trends') {
+        setTab('home')
+      }
     }
   }
 
@@ -765,7 +775,7 @@ export default function App() {
         </div>
 
         {/* Quick searches -> In-demand occupation cards */}
-        {!selected && (
+        {!selected && tab === 'home' && (
           <section className="hot-section">
             <div className="hot-head">
               <h2 className="hot-title">{t.hotTitle}</h2>
@@ -804,8 +814,8 @@ export default function App() {
           </section>
         )}
 
-        {/* Labour Market Trends */}
-        {!selected && (
+        {/* Labour Market Trends (dedicated bottom tab) */}
+        {!selected && tab === 'trends' && (
           <section className="trends-section">
             <div className="trends-head">
               <h2 className="trends-title">{t.trends}</h2>
@@ -814,15 +824,23 @@ export default function App() {
 
             {/* Region picker */}
             <div className="trend-chips">
-              {['CA', ...Object.keys(PROVINCE_NAMES.en)].map(code => (
-                <button
-                  key={code}
-                  className={`trend-chip ${trendProvince === code ? 'active' : ''}`}
-                  onClick={() => setTrendProvince(code)}
-                >
-                  {code === 'CA' ? t.allCanada : (PROVINCE_NAMES[lang][code] || code)}
-                </button>
-              ))}
+              {['CA', ...Object.keys(PROVINCE_NAMES.en)].map(code => {
+                const b = badgeFor(code)
+                return (
+                  <button
+                    key={code}
+                    className={`trend-chip ${trendProvince === code ? 'active' : ''}`}
+                    onClick={() => setTrendProvince(code)}
+                  >
+                    <span className="prov-badge" style={{ background: `linear-gradient(135deg, ${b.from}, ${b.to})` }}>
+                      {b.sym}
+                    </span>
+                    <span className="prov-name">
+                      {code === 'CA' ? t.allCanada : (PROVINCE_NAMES[lang][code] || code)}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
 
             {!trends.unemp && <p className="loading">{t.loading}</p>}
@@ -988,15 +1006,23 @@ export default function App() {
                   <h3 className="section-title">{t.postingsTrend}</h3>
                   <p className="jobs-trend-hint">{t.postingsTrendHint}</p>
                   <div className="jobs-trend-chips">
-                    {byPoints.map(p => (
-                      <button
-                        key={p}
-                        className={`trend-chip ${activeProv === p ? 'active' : ''}`}
-                        onClick={() => setJobsProv(p)}
-                      >
-                        {p === 'CA' ? t.allCanada : (PROVINCE_NAMES[lang][p] || p)}
-                      </button>
-                    ))}
+                    {byPoints.map(p => {
+                      const b = badgeFor(p)
+                      return (
+                        <button
+                          key={p}
+                          className={`trend-chip ${activeProv === p ? 'active' : ''}`}
+                          onClick={() => setJobsProv(p)}
+                        >
+                          <span className="prov-badge" style={{ background: `linear-gradient(135deg, ${b.from}, ${b.to})` }}>
+                            {b.sym}
+                          </span>
+                          <span className="prov-name">
+                            {p === 'CA' ? t.allCanada : (PROVINCE_NAMES[lang][p] || p)}
+                          </span>
+                        </button>
+                      )
+                    })}
                   </div>
                   {dates.length < 2 ? (
                     <p className="jobs-trend-building">
@@ -1126,6 +1152,30 @@ export default function App() {
           </div>
         )}
       </main>
+
+      {/* Bottom tab bar (hidden while an occupation detail is open) */}
+      {!selected && (
+        <nav className="tabbar">
+          <button
+            className={`tabbar-btn ${tab === 'home' ? 'active' : ''}`}
+            onClick={() => setTab('home')}
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V21h5v-6h4v6h5V9.5" />
+            </svg>
+            <span>{t.tabHome}</span>
+          </button>
+          <button
+            className={`tabbar-btn ${tab === 'trends' ? 'active' : ''}`}
+            onClick={() => setTab('trends')}
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 20V10" /><path d="M10 20V4" /><path d="M16 20v-7" /><path d="M22 20H2" />
+            </svg>
+            <span>{t.tabTrends}</span>
+          </button>
+        </nav>
+      )}
 
       <footer className="footer">
         <p>{t.dataSource}</p>
