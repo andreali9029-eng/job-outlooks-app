@@ -44,6 +44,8 @@ const I18N = {
     tabTrends: 'Trends',
     trendsHint: 'Unemployment rate, top industries and hardest-hit occupations — updated monthly from Statistics Canada',
     unemploymentRate: 'Unemployment rate',
+    jobVacancyRate: 'Job vacancy rate',
+    jvacNote: 'Statistics Canada JVS — series discontinued after 2023; live postings on the Trends dashboard follow it since.',
     trendIndustries: 'Top industries by employment',
     topUnemploymentOcc: 'Occupations with the highest unemployment',
     allCanada: 'Canada',
@@ -60,6 +62,30 @@ const I18N = {
     postingsTrendHint: 'Daily snapshot of live postings on Job Bank for this occupation',
     buildingHistory: 'Daily history is being collected — one snapshot per day. The trend line appears once a few days of data are built up.',
     daysOfData: 'days of data',
+    tabExplore: 'Explore',
+    tabSaved: 'Saved',
+    exploreTitle: 'Browse by industry',
+    exploreHint: 'Find occupations through the 10 NOC industry groups',
+    exploreEmpty: 'No occupations in this group.',
+    backToGroups: 'All groups',
+    savedTitle: 'Saved occupations',
+    savedHint: 'Occupations you saved with ♥ — your career watchlist',
+    savedEmpty: 'Nothing saved yet. Open any occupation and tap ♥ to keep it here.',
+    removeSaved: 'Remove',
+    save: 'Save',
+    savedMark: 'Saved',
+    related: 'Related occupations',
+    relatedHint: 'Same NOC group — explore career paths',
+    careerSnapshot: 'Career snapshot',
+    latestJobs: 'Latest job postings',
+    latestJobsHint: 'Live postings from Job Bank, refreshed daily',
+    noJobsPreview: 'Job preview not yet available for this occupation.',
+    seeAllJobs: 'See all postings on Job Bank',
+    installApp: 'Install app',
+    snapGood: 'Strong demand expected — good time to prepare applications.',
+    snapModerate: 'Balanced market — focus on skills, certifications and networking.',
+    snapLimited: 'Limited openings — stand out with training and local experience.',
+    snapUndetermined: 'Limited regional data — compare provinces for the best signal.',
   },
   fr: {
     tagline: 'Explorez les perspectives d\'emploi partout au Canada',
@@ -100,6 +126,8 @@ const I18N = {
     tabTrends: 'Tendances',
     trendsHint: 'Taux de chômage, principaux secteurs et professions les plus touchées — mis à jour mensuellement à partir de Statistique Canada',
     unemploymentRate: 'Taux de chômage',
+    jobVacancyRate: 'Taux de postes vacants',
+    jvacNote: 'Statistique Canada (EJP) — série interrompue après 2023; les offres en direct du tableau de bord des tendances la poursuivent depuis.',
     trendIndustries: 'Principaux secteurs d\'emploi',
     topUnemploymentOcc: 'Professions les plus touchées par le chômage',
     allCanada: 'Canada',
@@ -116,6 +144,30 @@ const I18N = {
     postingsTrendHint: 'Instantané quotidien des offres en direct sur le Guichet-Emplois pour cette profession',
     buildingHistory: 'L\'historique quotidien est en cours de collecte — un instantané par jour. La courbe apparaîtra dès que quelques jours de données seront accumulés.',
     daysOfData: 'jours de données',
+    tabExplore: 'Explorer',
+    tabSaved: 'Favoris',
+    exploreTitle: 'Explorer par secteur',
+    exploreHint: 'Trouvez des professions dans les 10 grands groupes de la CNP',
+    exploreEmpty: 'Aucune profession dans ce groupe.',
+    backToGroups: 'Tous les groupes',
+    savedTitle: 'Professions enregistrées',
+    savedHint: 'Vos professions enregistrées avec ♥ — votre liste de suivi de carrière',
+    savedEmpty: 'Rien d\'enregistré pour l\'instant. Ouvrez une profession et appuyez sur ♥ pour la garder ici.',
+    removeSaved: 'Retirer',
+    save: 'Enregistrer',
+    savedMark: 'Enregistrée',
+    related: 'Professions connexes',
+    relatedHint: 'Même groupe de la CNP — explorez les parcours professionnels',
+    careerSnapshot: 'Aperçu de carrière',
+    latestJobs: 'Dernières offres d\'emploi',
+    latestJobsHint: 'Offres en direct du Guichet-Emplois, actualisées chaque jour',
+    noJobsPreview: 'Aperçu des offres non disponible pour cette profession.',
+    seeAllJobs: 'Voir toutes les offres sur le Guichet-Emplois',
+    installApp: 'Installer l\'application',
+    snapGood: 'Demande forte attendue — bon moment pour préparer vos candidatures.',
+    snapModerate: 'Marché équilibré — misez sur les compétences, certifications et réseautage.',
+    snapLimited: 'Peu de débouchés — distinguez-vous par la formation et l\'expérience locale.',
+    snapUndetermined: 'Données régionales limitées — comparez les provinces pour le meilleur signal.',
   },
 }
 
@@ -131,6 +183,19 @@ const PROVINCE_NAMES = {
     AB: 'Alberta', BC: 'Colombie-Britannique', YT: 'Yukon', NT: 'Territoires du Nord-Ouest', NU: 'Nunavut',
   },
 }
+
+const NOC_GROUPS = [
+  { id: '0', en: 'Legislative and senior management', fr: 'Dirigeants', color: '#334155' },
+  { id: '1', en: 'Business, finance and administration', fr: 'Affaires, finance et administration', color: '#1d4ed8' },
+  { id: '2', en: 'Natural and applied sciences', fr: 'Sciences naturelles et appliquées', color: '#0d9488' },
+  { id: '3', en: 'Health', fr: 'Santé', color: '#dc2626' },
+  { id: '4', en: 'Education, law and social, community and government services', fr: 'Enseignement, droit et services sociaux, communautaires et gouvernementaux', color: '#7c3aed' },
+  { id: '5', en: 'Art, culture, recreation and sport', fr: 'Arts, culture, sports et loisirs', color: '#c026d3' },
+  { id: '6', en: 'Sales and service', fr: 'Vente et services', color: '#d97706' },
+  { id: '7', en: 'Trades, transport and equipment operators', fr: 'Métiers, transport, machinerie et domaines apparentés', color: '#059669' },
+  { id: '8', en: 'Natural resources, agriculture and related production', fr: 'Ressources naturelles, agriculture et production connexe', color: '#65a30d' },
+  { id: '9', en: 'Manufacturing and utilities', fr: 'Fabrication et services d\'utilité publique', color: '#0891b2' },
+]
 
 const OUTLOOK_CONFIG = {
   'very good': { stars: 5, key: 'very good', color: '#16a34a', bg: '#dcfce7', order: 5 },
@@ -341,6 +406,23 @@ export default function App() {
   const [jobHistory, setJobHistory] = React.useState(null)
   const [jobsProv, setJobsProv] = React.useState(null)
   const [hotOcc, setHotOcc] = React.useState({})
+  const [favorites, setFavorites] = React.useState(() => {
+    try { return JSON.parse(localStorage.getItem('job-outlooks-favs') || '[]') } catch { return [] }
+  })
+  const [exploreGroup, setExploreGroup] = React.useState(null)
+  const [jobsPreview, setJobsPreview] = React.useState(null)
+  const [installEvt, setInstallEvt] = React.useState(null)
+
+  React.useEffect(() => {
+    localStorage.setItem('job-outlooks-favs', JSON.stringify(favorites))
+  }, [favorites])
+
+  /* PWA install prompt */
+  React.useEffect(() => {
+    const onBeforeInstall = (e) => { e.preventDefault(); setInstallEvt(e) }
+    window.addEventListener('beforeinstallprompt', onBeforeInstall)
+    return () => window.removeEventListener('beforeinstallprompt', onBeforeInstall)
+  }, [])
 
   const t = I18N[lang]
 
@@ -357,13 +439,22 @@ export default function App() {
       fetch('/data/trends/unemployment.json').then(r => r.json()),
       fetch('/data/trends/industry.json').then(r => r.json()),
       fetch('/data/trends/occ-unemployment.json').then(r => r.json()),
+      fetch('/data/trends/job-vacancy.json').then(r => r.json()).catch(() => null),
       fetch('/data/trends/jobcounts-latest.json').then(r => r.json()).catch(() => null),
       fetch('/data/trends/jobcounts-history.json').then(r => r.json()).catch(() => null),
-    ]).then(([u, i, o, j, h]) => {
-      setTrends({ unemp: u, industry: i, occ: o })
+    ]).then(([u, i, o, v, j, h]) => {
+      setTrends({ unemp: u, industry: i, occ: o, jvac: v })
       setJobCounts(j)
       setJobHistory(h)
     })
+      .catch(() => {})
+  }, [])
+
+  /* Live job previews (scraped from Job Bank, refreshed daily) */
+  React.useEffect(() => {
+    fetch('/data/jobs-preview.json')
+      .then(r => r.json())
+      .then(setJobsPreview)
       .catch(() => {})
   }, [])
 
@@ -494,7 +585,7 @@ export default function App() {
     if (dx < -70 && Math.abs(dx) > Math.abs(dy) * 1.5) {
       if (selected) {
         goHome()
-      } else if (tab === 'trends') {
+      } else if (tab !== 'home') {
         setTab('home')
       }
     }
@@ -639,6 +730,45 @@ export default function App() {
     setFilters(next)
   }
 
+  /* Favorites (saved occupations) */
+  const toggleFavorite = (code) => {
+    setFavorites(prev => prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code])
+  }
+
+  /* Related occupations: same 3-digit NOC group */
+  const relatedOccupations = React.useMemo(() => {
+    if (!selected) return []
+    const g = selected.code.replace('NOC_', '').slice(0, 3)
+    return occupations
+      .filter(o => {
+        const c = o.code.replace('NOC_', '')
+        return c !== selected.code.replace('NOC_', '') && c.slice(0, 3) === g
+      })
+      .slice(0, 6)
+  }, [selected, occupations])
+
+  /* Career snapshot: one-line takeaway from rating + postings + wage */
+  const careerSnapshot = React.useMemo(() => {
+    if (!selected || !occData) return null
+    const noc = selected.code.replace('NOC_', '')
+    // one rating per province (regions[0] is the province row; the rest are economic regions)
+    const ratings = []
+    for (const regs of Object.values(byProvince)) {
+      const o = regs[0]?.outlook
+      if (o) ratings.push(o)
+    }
+    const counts = {}
+    ratings.forEach(x => { counts[x] = (counts[x] || 0) + 1 })
+    let mode = null, modeN = 0
+    for (const [k, n] of Object.entries(counts)) {
+      if (n > modeN) { mode = k; modeN = n }
+    }
+    const cfg = OUTLOOK_CONFIG[mode] || OUTLOOK_CONFIG['undetermined']
+    const jobs = jobCounts?.counts?.[noc]?.CA ?? null
+    const wage = nationalWage?.median ?? null
+    return { cfg, jobs, wage, provGood: modeN, provTotal: ratings.length }
+  }, [selected, occData, jobCounts, nationalWage, byProvince])
+
   const handleMapClick = (provCode) => {
     setMapProvince(prev => prev === provCode ? null : provCode)
   }
@@ -671,6 +801,13 @@ export default function App() {
     if (!s || !s.values || !s.values.length) return null
     return { series: [{ name: trendGeoName, color: '#1d4ed8', values: s.values }], dates: s.dates }
   }, [trends.unemp, trendProvince, trendGeoName])
+
+  /* Job vacancy rate (Statistics Canada JVS, series discontinued after 2023) */
+  const vacancySeries = React.useMemo(() => {
+    const s = trends.jvac?.series?.[trendProvince]?.[lang]
+    if (!s || !s.values || !s.values.length) return null
+    return { series: [{ name: trendGeoName, color: '#0d9488', values: s.values }], dates: s.dates }
+  }, [trends.jvac, trendProvince, trendGeoName, lang])
 
   const topIndustries = React.useMemo(() => {
     const geo = trends.industry?.series?.[trendProvince]
@@ -733,13 +870,13 @@ export default function App() {
 
   return (
     <div className="app" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-      <header className={`header ${!selected && tab === 'trends' ? 'header-mini' : ''}`}>
+      <header className={`header ${!selected && tab !== 'home' ? 'header-mini' : ''}`}>
         <div className="lang-switch">
           <button className={lang === 'en' ? 'lang-btn active' : 'lang-btn'} onClick={() => setLang('en')}>EN</button>
           <span className="lang-divider">|</span>
           <button className={lang === 'fr' ? 'lang-btn active' : 'lang-btn'} onClick={() => setLang('fr')}>FR</button>
         </div>
-        {!(tab === 'trends' && !selected) && (
+        {!(!selected && tab !== 'home') && (
           <>
             <h1>Canada Job Outlooks</h1>
             <p className="subtitle">{t.tagline}</p>
@@ -758,8 +895,8 @@ export default function App() {
           <button className="back-home-btn" onClick={goHome}>← {t.backHome}</button>
         )}
 
-        {/* Search (hidden on the dedicated Trends tab) */}
-        {!(tab === 'trends' && !selected) && (
+        {/* Search (Home tab + occupation detail) */}
+        {(!selected && tab === 'home') || (selected && (
           <div className="search-box">
             <input
               type="text"
@@ -778,7 +915,7 @@ export default function App() {
               </ul>
             )}
           </div>
-        )}
+        ))}
 
         {/* Quick searches -> In-demand occupation cards */}
         {!selected && tab === 'home' && (
@@ -817,6 +954,96 @@ export default function App() {
                 )
               })}
             </div>
+          </section>
+        )}
+
+        {/* Explore by industry (NOC groups) */}
+        {!selected && tab === 'explore' && (
+          <section className="explore-section">
+            <div className="trends-head">
+              <h2 className="trends-title">{t.exploreTitle}</h2>
+              <p className="trends-hint">{t.exploreHint}</p>
+            </div>
+            {exploreGroup === null ? (
+              <div className="noc-groups">
+                {NOC_GROUPS.map(g => {
+                  const n = occupations.filter(o => o.code.replace('NOC_', '')[0] === g.id).length
+                  return (
+                    <button
+                      key={g.id}
+                      className="noc-group-card"
+                      style={{ borderTopColor: g.color }}
+                      onClick={() => setExploreGroup(g.id)}
+                    >
+                      <span className="noc-group-num" style={{ background: g.color }}>{g.id}</span>
+                      <span className="noc-group-name">{g.en}</span>
+                      <span className="noc-group-count">{n} {t.unitsLabel}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            ) : (
+              <>
+                <button className="back-groups-btn" onClick={() => setExploreGroup(null)}>
+                  ← {t.backToGroups}
+                </button>
+                {(() => {
+                  const g = NOC_GROUPS.find(x => x.id === exploreGroup)
+                  const list = occupations.filter(o => o.code.replace('NOC_', '')[0] === exploreGroup)
+                  return (
+                    <div className="explore-list">
+                      {list.length === 0 && <p className="no-results">{t.exploreEmpty}</p>}
+                      {list.map(o => (
+                        <button key={o.code} className="explore-occ" onClick={() => loadOccupation(o)}>
+                          <span className="explore-occ-name">{o.title[lang] || o.title.en}</span>
+                          <span className="noc">{o.code.replace('NOC_', '')}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )
+                })()}
+              </>
+            )}
+          </section>
+        )}
+
+        {/* Saved occupations */}
+        {!selected && tab === 'saved' && (
+          <section className="saved-section">
+            <div className="trends-head">
+              <h2 className="trends-title">{t.savedTitle}</h2>
+              <p className="trends-hint">{t.savedHint}</p>
+            </div>
+            {favorites.length === 0 ? (
+              <p className="saved-empty">{t.savedEmpty}</p>
+            ) : (
+              <div className="saved-list">
+                {favorites.map(code => {
+                  const occ = occupations.find(o => o.code === code)
+                  if (!occ) return null
+                  const noc = code.replace('NOC_', '')
+                  const jobs = jobCounts?.counts?.[noc]?.CA ?? null
+                  return (
+                    <div key={code} className="saved-card">
+                      <button className="saved-card-main" onClick={() => loadOccupation(occ)}>
+                        <span className="saved-card-title">{occ.title[lang] || occ.title.en}</span>
+                        <span className="saved-card-meta">
+                          <span className="noc">NOC {noc}</span>
+                          {jobs != null && <span className="hot-jobs">💼 {jobs.toLocaleString()} {t.todayJobs}</span>}
+                        </span>
+                      </button>
+                      <button
+                        className="saved-remove"
+                        onClick={() => toggleFavorite(code)}
+                        title={t.removeSaved}
+                      >
+                        ♥
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </section>
         )}
 
@@ -863,6 +1090,23 @@ export default function App() {
                     <TrendChart
                       series={unempSeries.series}
                       dates={unempSeries.dates}
+                      formatValue={v => `${v.toFixed(1)}%`}
+                      yLabel="%"
+                      emptyText={t.noTrendData}
+                    />
+                  </div>
+                )}
+
+                {vacancySeries && (
+                  <div className="trend-block">
+                    <h3 className="trend-block-title">
+                      <span className="trend-dot" style={{ background: '#0d9488' }}></span>
+                      {t.jobVacancyRate} — {trendGeoName}
+                    </h3>
+                    <p className="trend-block-note">{t.jvacNote}</p>
+                    <TrendChart
+                      series={vacancySeries.series}
+                      dates={vacancySeries.dates}
                       formatValue={v => `${v.toFixed(1)}%`}
                       yLabel="%"
                       emptyText={t.noTrendData}
@@ -959,12 +1203,46 @@ export default function App() {
               <div>
                 <h2>{selectedTitle}</h2>
                 <span className="noc-badge">NOC {selected.code.replace('NOC_', '')}</span>
-                {!compareList.some(c => c.code === selected.code) && compareList.length < 2 && (
-                  <button className="add-compare-btn" onClick={() => addToCompare(selected)}>+ {t.addToCompare}</button>
-                )}
+                <span className="header-actions">
+                  <button
+                    className={`fav-btn ${favorites.includes(selected.code) ? 'active' : ''}`}
+                    onClick={() => toggleFavorite(selected.code)}
+                    title={favorites.includes(selected.code) ? t.savedMark : t.save}
+                  >
+                    ♥ <span>{favorites.includes(selected.code) ? t.savedMark : t.save}</span>
+                  </button>
+                  {!compareList.some(c => c.code === selected.code) && compareList.length < 2 && (
+                    <button className="add-compare-btn" onClick={() => addToCompare(selected)}>+ {t.addToCompare}</button>
+                  )}
+                </span>
               </div>
               <span className="date">{t.updated} {occData.releaseDate}</span>
             </div>
+
+            {/* Career snapshot: one-line takeaway */}
+            {careerSnapshot && (
+              <div className="snapshot-card" style={{ borderLeftColor: careerSnapshot.cfg.color }}>
+                <span className="snapshot-label">{t.careerSnapshot}</span>
+                <div className="snapshot-line">
+                  <span className="snapshot-rating" style={{ color: careerSnapshot.cfg.color, background: careerSnapshot.cfg.bg }}>
+                    <Stars count={careerSnapshot.cfg.stars} /> {OUTLOOK_LABELS[lang][careerSnapshot.cfg.key]}
+                    <span className="snapshot-count"> ({careerSnapshot.provGood}/{careerSnapshot.provTotal} {t.unitsLabel})</span>
+                  </span>
+                  {careerSnapshot.jobs != null && (
+                    <span className="snapshot-jobs">💼 {careerSnapshot.jobs.toLocaleString()} {t.todayJobs}</span>
+                  )}
+                  {careerSnapshot.wage != null && (
+                    <span className="snapshot-wage">{formatWage(careerSnapshot.wage, nationalWage?.annual)}{nationalWage?.annual ? '/yr' : '/hr'}</span>
+                  )}
+                </div>
+                <p className="snapshot-advice">
+                  {careerSnapshot.cfg.key === 'good' || careerSnapshot.cfg.key === 'very good' ? t.snapGood
+                    : careerSnapshot.cfg.key === 'moderate' ? t.snapModerate
+                    : careerSnapshot.cfg.key === 'limited' || careerSnapshot.cfg.key === 'very limited' ? t.snapLimited
+                    : t.snapUndetermined}
+                </p>
+              </div>
+            )}
 
             {/* Summary cards */}
             {(nationalWage || bestPaidProvince) && (
@@ -1044,6 +1322,72 @@ export default function App() {
                 </div>
               )
             })()}
+
+            {/* Latest job postings (scraped daily from Job Bank) */}
+            {(() => {
+              const noc = selected.code.replace('NOC_', '')
+              const prev = jobsPreview?.occupations?.[noc]
+              const byProv = prev ? Object.keys(prev).filter(p => prev[p].length > 0) : []
+              if (!prev || byProv.length === 0) {
+                return (
+                  <div className="jobs-preview-block">
+                    <h3 className="section-title">{t.latestJobs}</h3>
+                    <p className="jobs-trend-hint">{t.latestJobsHint}</p>
+                    <p className="jobs-preview-none">{t.noJobsPreview}</p>
+                    <button className="jobs-btn" onClick={() => openJobs(jobsProv || 'CA')}>
+                      💼 {t.seeAllJobs}
+                    </button>
+                  </div>
+                )
+              }
+              const prov = jobsProv && byProv.includes(jobsProv) ? jobsProv : (byProv.includes('CA') ? 'CA' : byProv[0])
+              const jobs = prev[prov] || []
+              return (
+                <div className="jobs-preview-block">
+                  <h3 className="section-title">
+                    {t.latestJobs}
+                    <span className="preview-prov">
+                      <span className="prov-badge" style={{ background: `linear-gradient(135deg, ${badgeFor(prov).from}, ${badgeFor(prov).to})` }}>
+                        {badgeFor(prov).sym}
+                      </span>
+                      {prov === 'CA' ? t.allCanada : (PROVINCE_NAMES[lang][prov] || prov)}
+                    </span>
+                  </h3>
+                  <p className="jobs-trend-hint">{t.latestJobsHint}</p>
+                  <div className="jobs-preview-list">
+                    {jobs.slice(0, 5).map((j, i) => (
+                      <a key={i} className="job-preview" href={j.url} target="_blank" rel="noopener noreferrer">
+                        <span className="job-preview-title">{j.title}</span>
+                        <span className="job-preview-meta">
+                          {j.employer && <span>{j.employer}</span>}
+                          {j.location && <span>📍 {j.location}</span>}
+                          {j.wage && <span className="job-preview-wage">{j.wage}</span>}
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                  <button className="jobs-btn" onClick={() => openJobs(prov)}>
+                    💼 {t.seeAllJobs}
+                  </button>
+                </div>
+              )
+            })()}
+
+            {/* Related occupations */}
+            {relatedOccupations.length > 0 && (
+              <div className="related-block">
+                <h3 className="section-title">{t.related}</h3>
+                <p className="jobs-trend-hint">{t.relatedHint}</p>
+                <div className="related-list">
+                  {relatedOccupations.map(o => (
+                    <button key={o.code} className="related-chip" onClick={() => loadOccupation(o)}>
+                      <span className="related-name">{(o.title[lang] || o.title.en).split(',')[0]}</span>
+                      <span className="noc">{o.code.replace('NOC_', '')}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Map */}
             <div className="map-section">
@@ -1170,6 +1514,15 @@ export default function App() {
             <span>{t.tabHome}</span>
           </button>
           <button
+            className={`tabbar-btn ${tab === 'explore' ? 'active' : ''}`}
+            onClick={() => setTab('explore')}
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /><path d="M11 8v6" /><path d="M8 11h6" />
+            </svg>
+            <span>{t.tabExplore}</span>
+          </button>
+          <button
             className={`tabbar-btn ${tab === 'trends' ? 'active' : ''}`}
             onClick={() => setTab('trends')}
           >
@@ -1178,7 +1531,35 @@ export default function App() {
             </svg>
             <span>{t.tabTrends}</span>
           </button>
+          <button
+            className={`tabbar-btn ${tab === 'saved' ? 'active' : ''}`}
+            onClick={() => setTab('saved')}
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 21C7 16.5 3 13.2 3 9.1 3 6.3 5.2 4 8 4c1.6 0 3.1.8 4 2 .9-1.2 2.4-2 4-2 2.8 0 5 2.3 5 5.1 0 4.1-4 7.4-9 11.9Z" />
+            </svg>
+            <span>{t.tabSaved}{favorites.length > 0 ? ` (${favorites.length})` : ''}</span>
+          </button>
         </nav>
+      )}
+
+      {/* PWA install banner */}
+      {installEvt && !selected && (
+        <div className="install-banner">
+          <span>📱</span>
+          <span className="install-text">{t.installApp}</span>
+          <button
+            className="install-btn"
+            onClick={async () => {
+              installEvt.prompt()
+              const choice = await installEvt.userChoice
+              if (choice.outcome === 'accepted') setInstallEvt(null)
+            }}
+          >
+            {t.installApp}
+          </button>
+          <button className="install-close" onClick={() => setInstallEvt(null)}>×</button>
+        </div>
       )}
 
       <footer className="footer">

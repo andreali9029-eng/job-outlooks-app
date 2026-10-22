@@ -8,6 +8,9 @@ Write-Output "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] scraping job counts...
 $code = $LASTEXITCODE
 if ($code -ne 0) { Write-Output "scrape failed with exit $code"; exit $code }
 
+Write-Output "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] scraping live job previews (curated occupations)..."
+& $py -X utf8 "$dir\scripts\scrape_jobs_preview.py" --limit 5
+
 Write-Output "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] refreshing front-end data..."
 & $py -X utf8 "$dir\scripts\build_jobcount_latest.py"
 & $py -X utf8 "$dir\scripts\build_jobcount_history.py"

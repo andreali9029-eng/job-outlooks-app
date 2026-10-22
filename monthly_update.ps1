@@ -6,4 +6,5 @@ $py = if ($env:PYTHON_BIN) { $env:PYTHON_BIN } else { "python" }
 Set-Location $dir
 Write-Output "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] monthly update start"
 & $py -X utf8 "$dir\scripts\update_statcan.py"
+& $py -X utf8 "$dir\scripts\build_job_vacancy.py"
 Write-Output "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] monthly update done"

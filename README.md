@@ -7,9 +7,14 @@ Search any of 500+ occupations (NOC 2021) to see 5-star outlook ratings, wages, 
 ## Features
 
 - 🔎 **Occupation search** — 500+ NOC 2021 occupations, bilingual titles, 5-star outlook ratings (Very Good → Very Limited)
-- 🗺️ **Canada outlook map** — per-province/territory outlook with median wages (real Statistics Canada Lambert projection)
-- 📈 **Labour market trends** — national & provincial unemployment curves (15y), top-industry employment (10y), highest-unemployment occupations (Statistics Canada LFS)
+- 🗺️ **Canada outlook map** — per-province/territory outlook with median wages (real Statistics Canada Lambert projection); **economic-region** detail on province expand
+- 📈 **Labour market trends** — national & provincial unemployment curves (15y), **job vacancy rate** (Statistics Canada JVS), top-industry employment (10y), highest-unemployment occupations
 - 💼 **Daily job postings** — live Job Bank posting counts per occupation & province, refreshed daily by an automated task; "postings over time" charts as history accumulates
+- 📋 **Latest job previews** — real Job Bank postings (title, employer, location, wage) embedded in occupation detail, refreshed daily
+- ❤️ **Saved occupations** — tap ♥ to build a personal career watchlist (stored locally)
+- 🧭 **Browse by industry** — explore occupations through the 10 NOC groups
+- 🔗 **Related occupations** — same NOC group, one tap to switch
+- 📝 **Career snapshot** — one-line takeaway combining outlook, live postings and wage
 - ⚖️ **Compare** — side-by-side outlook & wages for 2 occupations across 13 provinces
 - 💰 **Wages** — median / hourly / annual salary data, best-paying-province summary
 - 🌐 **Fully bilingual** EN/FR, **PWA** (installable, offline-capable), mobile-responsive with swipe navigation
@@ -38,6 +43,8 @@ npm run preview    # preview the production build
 | Unemployment rate | Statistics Canada table **14100287** (LFS) | Monthly |
 | Industry employment | Statistics Canada table **14100201** | Monthly |
 | Occupation unemployment | Statistics Canada table **14100416** | Annual |
+| Job vacancy rate | Statistics Canada table **14100326** (JVS) | Monthly pipeline (series ended 2023) |
+| Live postings & previews | Job Bank (jobbank.gc.ca) | Daily |
 | Live posting counts | Job Bank job search | **Daily snapshot** (scheduled task) |
 
 ## Automation (Windows Task Scheduler)
