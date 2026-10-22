@@ -735,16 +735,25 @@ export default function App() {
     setFavorites(prev => prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code])
   }
 
-  /* Related occupations: same 3-digit NOC group */
+  /* Related occupations: same 4-digit NOC family first (e.g. 2123 = software &
+     web developers), falling back to the 3-digit major-minor group when the
+     family has no other members in our 516-occupation dataset. */
   const relatedOccupations = React.useMemo(() => {
     if (!selected) return []
-    const g = selected.code.replace('NOC_', '').slice(0, 3)
-    return occupations
-      .filter(o => {
-        const c = o.code.replace('NOC_', '')
-        return c !== selected.code.replace('NOC_', '') && c.slice(0, 3) === g
+    const c = selected.code.replace('NOC_', '')
+    const g4 = c.slice(0, 4)
+    let list = occupations.filter(o => {
+      const oc = o.code.replace('NOC_', '')
+      return oc !== c && oc.slice(0, 4) === g4
+    })
+    if (list.length === 0) {
+      const g3 = c.slice(0, 3)
+      list = occupations.filter(o => {
+        const oc = o.code.replace('NOC_', '')
+        return oc !== c && oc.slice(0, 3) === g3
       })
-      .slice(0, 6)
+    }
+    return list.slice(0, 6)
   }, [selected, occupations])
 
   /* Career snapshot: one-line takeaway from rating + postings + wage */
