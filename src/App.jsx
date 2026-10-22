@@ -1,7 +1,8 @@
 import React from 'react'
 import { CANADA_PATHS, CANADA_VIEWBOX } from './canadaPaths'
 import TrendChart from './TrendChart'
-import { badgeFor } from './provinceBadges'
+import { badgeFor, PROVINCE_BADGES } from './provinceBadges'
+import { calcNetPay } from './netPay'
 
 /* ---------- i18n ---------- */
 const I18N = {
@@ -74,6 +75,16 @@ const I18N = {
     removeSaved: 'Remove',
     save: 'Save',
     savedMark: 'Saved',
+    netCalcTitle: 'Net pay calculator',
+    netCalcHint: 'Estimate take-home pay from the national median wage — 2026 CRA rates',
+    netProvince: 'Province',
+    netHours: 'Hours/week',
+    netUnion: 'Union dues %',
+    netGross: 'Gross',
+    netHourly: 'Net hourly',
+    netBiweekly: 'Net per 2 weeks',
+    netNote: 'Estimate includes federal & provincial income tax, CPP and EI (QC: QPP/QPIP). ON adds surtax & health premium. For guidance only — not financial advice.',
+    netNoWage: 'Wage data not available',
     related: 'Related occupations',
     relatedHint: 'Same NOC group — explore career paths',
     careerSnapshot: 'Career snapshot',
@@ -156,6 +167,16 @@ const I18N = {
     removeSaved: 'Retirer',
     save: 'Enregistrer',
     savedMark: 'Enregistrée',
+    netCalcTitle: 'Calcul du salaire net',
+    netCalcHint: 'Estimez le salaire net à partir du salaire médian national — taux de l\'ARC 2026',
+    netProvince: 'Province',
+    netHours: 'Heures/sem.',
+    netUnion: 'Cotisations syndicales %',
+    netGross: 'Brut',
+    netHourly: 'Net horaire',
+    netBiweekly: 'Net aux 2 semaines',
+    netNote: 'Estimation incluant impôt fédéral et provincial, RPC et AE (QC : RRQ/RQAP). ON ajoute la surtaxe et la prime santé. À titre indicatif — pas un conseil financier.',
+    netNoWage: 'Données salariales non disponibles',
     related: 'Professions connexes',
     relatedHint: 'Même groupe de la CNP — explorez les parcours professionnels',
     careerSnapshot: 'Aperçu de carrière',
@@ -412,10 +433,31 @@ export default function App() {
   const [exploreGroup, setExploreGroup] = React.useState(null)
   const [jobsPreview, setJobsPreview] = React.useState(null)
   const [installEvt, setInstallEvt] = React.useState(null)
+  /* Net-pay calculator state (Saved tab) */
+  const [savedWages, setSavedWages] = React.useState({})
+  const [netProv, setNetProv] = React.useState('ON')
+  const [netHours, setNetHours] = React.useState('37.5')
+  const [netUnion, setNetUnion] = React.useState('0')
 
   React.useEffect(() => {
     localStorage.setItem('job-outlooks-favs', JSON.stringify(favorites))
   }, [favorites])
+
+  /* Load national median wage for each saved occupation (for net-pay) */
+  React.useEffect(() => {
+    if (tab !== 'saved' || favorites.length === 0) return
+    let alive = true
+    Promise.all(favorites.map(code =>
+      fetch(`/data/occ/${code}.json`)
+        .then(r => r.json())
+        .then(j => {
+          const w = (j.wages || []).find(x => x.province === 'CA')
+          return [code, w ? w.median : null]
+        })
+        .catch(() => [code, null])
+    )).then(entries => { if (alive) setSavedWages(Object.fromEntries(entries)) })
+    return () => { alive = false }
+  }, [favorites, tab])
 
   /* PWA install prompt */
   React.useEffect(() => {
@@ -1027,11 +1069,46 @@ export default function App() {
               <p className="saved-empty">{t.savedEmpty}</p>
             ) : (
               <div className="saved-list">
+                {/* Net pay calculator controls */}
+                <div className="netcalc-panel">
+                  <div className="netcalc-head">
+                    <span className="netcalc-title">💰 {t.netCalcTitle}</span>
+                    <span className="netcalc-hint">{t.netCalcHint}</span>
+                  </div>
+                  <div className="netcalc-controls">
+                    <label className="netcalc-field">
+                      <span>{t.netProvince}</span>
+                      <select value={netProv} onChange={e => setNetProv(e.target.value)}>
+                        {Object.keys(PROVINCE_BADGES)
+                          .filter(c => c !== 'CA')
+                          .map(c => (
+                            <option key={c} value={c}>{c} — {PROVINCE_NAMES[lang][c]}</option>
+                          ))}
+                      </select>
+                    </label>
+                    <label className="netcalc-field">
+                      <span>{t.netHours}</span>
+                      <input type="number" min="1" max="80" step="0.5" value={netHours}
+                        onChange={e => setNetHours(e.target.value)} />
+                    </label>
+                    <label className="netcalc-field">
+                      <span>{t.netUnion} (%)</span>
+                      <input type="number" min="0" max="20" step="0.5" value={netUnion}
+                        onChange={e => setNetUnion(e.target.value)} />
+                    </label>
+                  </div>
+                  <p className="netcalc-note">{t.netNote}</p>
+                </div>
+
                 {favorites.map(code => {
                   const occ = occupations.find(o => o.code === code)
                   if (!occ) return null
                   const noc = code.replace('NOC_', '')
                   const jobs = jobCounts?.counts?.[noc]?.CA ?? null
+                  const wage = savedWages[code] ?? null
+                  const pay = wage != null && Number(netHours) > 0
+                    ? calcNetPay({ hourlyWage: wage, hoursPerWeek: Number(netHours), province: netProv, unionPct: Number(netUnion) || 0 })
+                    : null
                   return (
                     <div key={code} className="saved-card">
                       <button className="saved-card-main" onClick={() => loadOccupation(occ)}>
@@ -1040,6 +1117,23 @@ export default function App() {
                           <span className="noc">NOC {noc}</span>
                           {jobs != null && <span className="hot-jobs">💼 {jobs.toLocaleString()} {t.todayJobs}</span>}
                         </span>
+                        {pay && (
+                          <span className="saved-card-pay">
+                            <span className="pay-col">
+                              <em>{t.netGross}</em>
+                              <strong>${wage.toFixed(2)}/hr</strong>
+                            </span>
+                            <span className="pay-col">
+                              <em>{t.netHourly}</em>
+                              <strong>${pay.hourlyNet.toFixed(2)}/hr</strong>
+                            </span>
+                            <span className="pay-col">
+                              <em>{t.netBiweekly}</em>
+                              <strong>${pay.biweeklyNet.toFixed(2)}</strong>
+                            </span>
+                          </span>
+                        )}
+                        {wage == null && <span className="saved-card-pay netcalc-missing">{t.netNoWage}</span>}
                       </button>
                       <button
                         className="saved-remove"
