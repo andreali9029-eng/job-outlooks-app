@@ -85,6 +85,11 @@ const I18N = {
     netBiweekly: 'Net per 2 weeks',
     netNote: 'Estimate includes federal & provincial income tax, CPP and EI (QC: QPP/QPIP). ON adds surtax & health premium. For guidance only — not financial advice.',
     netNoWage: 'Wage data not available',
+    saveRegion: 'Save this region',
+    regionFavs: 'Region favourites',
+    regionFavsHint: 'Occupation + province pairs you saved with ♥',
+    regionFavEmpty: 'No region favourites yet. On any occupation, tap ♥ on a province card to track that region.',
+    previewEmpty: (p) => `No postings found for ${p} for this occupation yet. Check back tomorrow — new postings are collected daily.`,
     related: 'Related occupations',
     relatedHint: 'Same NOC group — explore career paths',
     careerSnapshot: 'Career snapshot',
@@ -177,6 +182,11 @@ const I18N = {
     netBiweekly: 'Net aux 2 semaines',
     netNote: 'Estimation incluant impôt fédéral et provincial, RPC et AE (QC : RRQ/RQAP). ON ajoute la surtaxe et la prime santé. À titre indicatif — pas un conseil financier.',
     netNoWage: 'Données salariales non disponibles',
+    saveRegion: 'Enregistrer cette région',
+    regionFavs: 'Favoris régionaux',
+    regionFavsHint: 'Paires profession + province enregistrées avec ♥',
+    regionFavEmpty: 'Aucun favori régional pour l\'instant. Sur une profession, appuyez sur ♥ d\'une carte de province pour suivre cette région.',
+    previewEmpty: (p) => `Aucune offre trouvée pour ${p} pour cette profession pour l'instant. Revenez demain — de nouvelles offres sont ajoutées chaque jour.`,
     related: 'Professions connexes',
     relatedHint: 'Même groupe de la CNP — explorez les parcours professionnels',
     careerSnapshot: 'Aperçu de carrière',
@@ -430,6 +440,9 @@ export default function App() {
   const [favorites, setFavorites] = React.useState(() => {
     try { return JSON.parse(localStorage.getItem('job-outlooks-favs') || '[]') } catch { return [] }
   })
+  const [regionFavs, setRegionFavs] = React.useState(() => {
+    try { return JSON.parse(localStorage.getItem('job-outlooks-region-favs') || '[]') } catch { return [] }
+  })
   const [exploreGroup, setExploreGroup] = React.useState(null)
   const [jobsPreview, setJobsPreview] = React.useState(null)
   const [installEvt, setInstallEvt] = React.useState(null)
@@ -443,21 +456,40 @@ export default function App() {
     localStorage.setItem('job-outlooks-favs', JSON.stringify(favorites))
   }, [favorites])
 
-  /* Load national median wage for each saved occupation (for net-pay) */
   React.useEffect(() => {
-    if (tab !== 'saved' || favorites.length === 0) return
+    localStorage.setItem('job-outlooks-region-favs', JSON.stringify(regionFavs))
+  }, [regionFavs])
+
+  const toggleRegionFav = (code, prov) => {
+    setRegionFavs(prev => {
+      const key = `${code}::${prov}`
+      return prev.some(r => `${r.code}::${r.prov}` === key)
+        ? prev.filter(r => `${r.code}::${r.prov}` !== key)
+        : [...prev, { code, prov }]
+    })
+  }
+  const isRegionFav = (code, prov) => regionFavs.some(r => r.code === code && r.prov === prov)
+
+  /* Load national + provincial median wages for saved occupations (net-pay) */
+  React.useEffect(() => {
+    if (tab !== 'saved') return
+    const codes = [...new Set([...favorites, ...regionFavs.map(r => r.code)])]
+    if (codes.length === 0) return
     let alive = true
-    Promise.all(favorites.map(code =>
+    Promise.all(codes.map(code =>
       fetch(`/data/occ/${code}.json`)
         .then(r => r.json())
         .then(j => {
-          const w = (j.wages || []).find(x => x.province === 'CA')
-          return [code, w ? w.median : null]
+          const byProv = {}
+          for (const w of (j.wages || [])) {
+            if (w.median != null && byProv[w.province] == null) byProv[w.province] = w.median
+          }
+          return [code, byProv]
         })
-        .catch(() => [code, null])
+        .catch(() => [code, {}])
     )).then(entries => { if (alive) setSavedWages(Object.fromEntries(entries)) })
     return () => { alive = false }
-  }, [favorites, tab])
+  }, [favorites, regionFavs, tab])
 
   /* PWA install prompt */
   React.useEffect(() => {
@@ -1065,47 +1097,49 @@ export default function App() {
               <h2 className="trends-title">{t.savedTitle}</h2>
               <p className="trends-hint">{t.savedHint}</p>
             </div>
-            {favorites.length === 0 ? (
+            {favorites.length === 0 && regionFavs.length === 0 ? (
               <p className="saved-empty">{t.savedEmpty}</p>
             ) : (
               <div className="saved-list">
                 {/* Net pay calculator controls */}
-                <div className="netcalc-panel">
-                  <div className="netcalc-head">
-                    <span className="netcalc-title">💰 {t.netCalcTitle}</span>
-                    <span className="netcalc-hint">{t.netCalcHint}</span>
+                {favorites.length > 0 && (
+                  <div className="netcalc-panel">
+                    <div className="netcalc-head">
+                      <span className="netcalc-title">💰 {t.netCalcTitle}</span>
+                      <span className="netcalc-hint">{t.netCalcHint}</span>
+                    </div>
+                    <div className="netcalc-controls">
+                      <label className="netcalc-field">
+                        <span>{t.netProvince}</span>
+                        <select value={netProv} onChange={e => setNetProv(e.target.value)}>
+                          {Object.keys(PROVINCE_BADGES)
+                            .filter(c => c !== 'CA')
+                            .map(c => (
+                              <option key={c} value={c}>{c} — {PROVINCE_NAMES[lang][c]}</option>
+                            ))}
+                        </select>
+                      </label>
+                      <label className="netcalc-field">
+                        <span>{t.netHours}</span>
+                        <input type="number" min="1" max="80" step="0.5" value={netHours}
+                          onChange={e => setNetHours(e.target.value)} />
+                      </label>
+                      <label className="netcalc-field">
+                        <span>{t.netUnion} (%)</span>
+                        <input type="number" min="0" max="20" step="0.5" value={netUnion}
+                          onChange={e => setNetUnion(e.target.value)} />
+                      </label>
+                    </div>
+                    <p className="netcalc-note">{t.netNote}</p>
                   </div>
-                  <div className="netcalc-controls">
-                    <label className="netcalc-field">
-                      <span>{t.netProvince}</span>
-                      <select value={netProv} onChange={e => setNetProv(e.target.value)}>
-                        {Object.keys(PROVINCE_BADGES)
-                          .filter(c => c !== 'CA')
-                          .map(c => (
-                            <option key={c} value={c}>{c} — {PROVINCE_NAMES[lang][c]}</option>
-                          ))}
-                      </select>
-                    </label>
-                    <label className="netcalc-field">
-                      <span>{t.netHours}</span>
-                      <input type="number" min="1" max="80" step="0.5" value={netHours}
-                        onChange={e => setNetHours(e.target.value)} />
-                    </label>
-                    <label className="netcalc-field">
-                      <span>{t.netUnion} (%)</span>
-                      <input type="number" min="0" max="20" step="0.5" value={netUnion}
-                        onChange={e => setNetUnion(e.target.value)} />
-                    </label>
-                  </div>
-                  <p className="netcalc-note">{t.netNote}</p>
-                </div>
+                )}
 
                 {favorites.map(code => {
                   const occ = occupations.find(o => o.code === code)
                   if (!occ) return null
                   const noc = code.replace('NOC_', '')
                   const jobs = jobCounts?.counts?.[noc]?.CA ?? null
-                  const wage = savedWages[code] ?? null
+                  const wage = savedWages[code]?.CA ?? null
                   const pay = wage != null && Number(netHours) > 0
                     ? calcNetPay({ hourlyWage: wage, hoursPerWeek: Number(netHours), province: netProv, unionPct: Number(netUnion) || 0 })
                     : null
@@ -1145,6 +1179,69 @@ export default function App() {
                     </div>
                   )
                 })}
+
+                {/* Region favourites (occupation + province) */}
+                {regionFavs.length > 0 && (
+                  <div className="region-favs-block">
+                    <div className="region-favs-head">
+                      <span className="region-favs-title">📍 {t.regionFavs}</span>
+                      <span className="region-favs-hint">{t.regionFavsHint}</span>
+                    </div>
+                    {regionFavs.map(({ code, prov }) => {
+                      const occ = occupations.find(o => o.code === code)
+                      if (!occ) return null
+                      const noc = code.replace('NOC_', '')
+                      const cfg = OUTLOOK_CONFIG[provinceRatings[prov]] || OUTLOOK_CONFIG['undetermined']
+                      const b = badgeFor(prov)
+                      const provWage = (savedWages[code] && savedWages[code][prov] != null)
+                        ? savedWages[code][prov]
+                        : (provinceWages[prov]?.median ?? null)
+                      const pay = provWage != null && Number(netHours) > 0
+                        ? calcNetPay({ hourlyWage: provWage, hoursPerWeek: Number(netHours), province: prov, unionPct: Number(netUnion) || 0 })
+                        : null
+                      return (
+                        <div key={`${code}::${prov}`} className="saved-card region-fav-card">
+                          <button className="saved-card-main" onClick={() => { loadOccupation(occ); setJobsProv(prov) }}>
+                            <span className="saved-card-title">
+                              <span className="prov-badge" style={{ background: `linear-gradient(135deg, ${b.from}, ${b.to})` }}>{b.sym}</span>
+                              {occ.title[lang] || occ.title.en}
+                              <span className="region-fav-prov" style={{ color: cfg.color }}>{PROVINCE_NAMES[lang][prov] || prov}</span>
+                            </span>
+                            <span className="saved-card-meta">
+                              <span className="noc">NOC {noc}</span>
+                              <span className="hot-jobs" style={{ color: cfg.color }}>{OUTLOOK_LABELS[lang][cfg.key]}</span>
+                              {jobCounts?.counts?.[noc]?.[prov] != null &&
+                                <span className="hot-jobs">💼 {jobCounts.counts[noc][prov]} {t.todayJobs}</span>}
+                            </span>
+                            {pay && (
+                              <span className="saved-card-pay">
+                                <span className="pay-col">
+                                  <em>{t.netGross}</em>
+                                  <strong>${provWage.toFixed(2)}/hr</strong>
+                                </span>
+                                <span className="pay-col">
+                                  <em>{t.netHourly}</em>
+                                  <strong>${pay.hourlyNet.toFixed(2)}/hr</strong>
+                                </span>
+                                <span className="pay-col">
+                                  <em>{t.netBiweekly}</em>
+                                  <strong>${pay.biweeklyNet.toFixed(2)}</strong>
+                                </span>
+                              </span>
+                            )}
+                          </button>
+                          <button
+                            className="saved-remove"
+                            onClick={() => toggleRegionFav(code, prov)}
+                            title={t.removeSaved}
+                          >
+                            ♥
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </section>
@@ -1444,8 +1541,30 @@ export default function App() {
                   </div>
                 )
               }
-              const prov = jobsProv && byProv.includes(jobsProv) ? jobsProv : (byProv.includes('CA') ? 'CA' : byProv[0])
-              const jobs = prev[prov] || []
+              const pickedProv = jobsProv || 'CA'
+              const hasPicked = byProv.includes(pickedProv)
+              const prov = hasPicked ? pickedProv : (byProv.includes('CA') ? 'CA' : byProv[0])
+              const jobs = prov ? (prev[prov] || []) : []
+              if (!hasPicked) {
+                return (
+                  <div className="jobs-preview-block">
+                    <h3 className="section-title">
+                      {t.latestJobs}
+                      <span className="preview-prov">
+                        <span className="prov-badge" style={{ background: `linear-gradient(135deg, ${badgeFor(pickedProv).from}, ${badgeFor(pickedProv).to})` }}>
+                          {badgeFor(pickedProv).sym}
+                        </span>
+                        {pickedProv === 'CA' ? t.allCanada : (PROVINCE_NAMES[lang][pickedProv] || pickedProv)}
+                      </span>
+                    </h3>
+                    <p className="jobs-trend-hint">{t.latestJobsHint}</p>
+                    <p className="jobs-preview-none">{t.previewEmpty(PROVINCE_NAMES[lang][pickedProv] || pickedProv)}</p>
+                    <button className="jobs-btn" onClick={() => openJobs(pickedProv)}>
+                      💼 {t.seeAllJobs}
+                    </button>
+                  </div>
+                )
+              }
               return (
                 <div className="jobs-preview-block">
                   <h3 className="section-title">
@@ -1560,6 +1679,13 @@ export default function App() {
                         <span>{OUTLOOK_LABELS[lang][cfg.key]}</span>
                         <span className="expand-icon">{isExpanded ? '−' : '+'}</span>
                       </div>
+                      <button
+                        className={`region-fav-btn ${isRegionFav(selected.code, provCode) ? 'active' : ''}`}
+                        title={t.saveRegion}
+                        onClick={(e) => { e.stopPropagation(); toggleRegionFav(selected.code, provCode) }}
+                      >
+                        ♥
+                      </button>
                     </div>
 
                     {isExpanded && regions[0]?.trends && (
