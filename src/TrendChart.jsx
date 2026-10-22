@@ -9,8 +9,9 @@ import React from 'react'
  *  formatValue : (v) => string
  *  yLabel  : short axis label (bilingual)
  *  emptyText : shown when no data
+ *  integerTicks : force whole-number y-axis ticks (for counts — never show decimals)
  */
-export default function TrendChart({ series, dates, height = 190, formatValue = (v) => v.toFixed(1), yLabel = '', emptyText = '—' }) {
+export default function TrendChart({ series, dates, height = 190, formatValue = (v) => v.toFixed(1), yLabel = '', emptyText = '—', integerTicks = false }) {
   const [hover, setHover] = React.useState(null)
   const W = 640
   const H = height
@@ -34,11 +35,22 @@ export default function TrendChart({ series, dates, height = 190, formatValue = 
   const span = (max - min) || 1
   const yMin = min - span * 0.18
   const yMax = max + span * 0.18
-  const x = (i) => pad.left + (n === 1 ? iw / 2 : (i / (n - 1)) * iw)
-  const y = (v) => pad.top + ih - ((v - yMin) / (yMax - yMin)) * ih
 
   const ticks = 4
-  const yTicks = Array.from({ length: ticks + 1 }, (_, i) => yMin + ((yMax - yMin) * i) / ticks)
+  // Whole-number ticks for counts (job postings) — never show decimals on counts
+  let yMin2 = yMin, yMax2 = yMax, yTicks
+  if (integerTicks) {
+    const lo = Math.floor(yMin)
+    const step = Math.max(1, Math.ceil((yMax - lo) / ticks))
+    yMin2 = lo
+    yMax2 = lo + step * ticks
+    yTicks = Array.from({ length: ticks + 1 }, (_, i) => yMin2 + step * i)
+  } else {
+    yTicks = Array.from({ length: ticks + 1 }, (_, i) => yMin2 + ((yMax2 - yMin2) * i) / ticks)
+  }
+
+  const x = (i) => pad.left + (n === 1 ? iw / 2 : (i / (n - 1)) * iw)
+  const y = (v) => pad.top + ih - ((v - yMin2) / (yMax2 - yMin2)) * ih
   const xStep = Math.max(1, Math.ceil(n / 7))
   const xTicks = dates.map((d, i) => ({ i, label: d })).filter((_, i) => i % xStep === 0 || i === n - 1)
 

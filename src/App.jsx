@@ -1326,6 +1326,7 @@ export default function App() {
                       formatValue={v => String(v)}
                       yLabel={t.todayJobs}
                       emptyText={t.noData}
+                      integerTicks
                     />
                   )}
                 </div>
