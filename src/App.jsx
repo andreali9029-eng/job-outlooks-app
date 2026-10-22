@@ -896,7 +896,7 @@ export default function App() {
         )}
 
         {/* Search (Home tab + occupation detail) */}
-        {(!selected && tab === 'home') || (selected && (
+        {(!selected && tab === 'home') || selected ? (
           <div className="search-box">
             <input
               type="text"
@@ -915,7 +915,7 @@ export default function App() {
               </ul>
             )}
           </div>
-        ))}
+        ) : null}
 
         {/* Quick searches -> In-demand occupation cards */}
         {!selected && tab === 'home' && (
