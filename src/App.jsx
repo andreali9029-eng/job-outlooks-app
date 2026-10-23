@@ -76,10 +76,13 @@ const I18N = {
     save: 'Save',
     savedMark: 'Saved',
     netCalcTitle: 'Net pay calculator',
-    netCalcHint: 'Estimate take-home pay from the selected province\'s median wage — 2026 CRA rates',
+    netCalcHint: 'Estimate take-home pay from real median wages (province or economic region) — 2026 CRA rates',
     netProvince: 'Province',
     netHours: 'Hours/week',
     netUnion: 'Union dues %',
+    netRegion: 'Economic region',
+    netRegionAll: 'Whole province',
+    netRegionNote: 'Gross uses the economic region\'s median wage (real Job Bank data).',
     netGross: 'Gross',
     netHourly: 'Net hourly',
     netBiweekly: 'Net per 2 weeks',
@@ -173,10 +176,13 @@ const I18N = {
     save: 'Enregistrer',
     savedMark: 'Enregistrée',
     netCalcTitle: 'Calcul du salaire net',
-    netCalcHint: 'Estimez le salaire net à partir du salaire médian de la province sélectionnée — taux de l\'ARC 2026',
+    netCalcHint: 'Estimez le salaire net à partir des salaires médians réels (province ou région économique) — taux de l\'ARC 2026',
     netProvince: 'Province',
     netHours: 'Heures/sem.',
     netUnion: 'Cotisations syndicales %',
+    netRegion: 'Région économique',
+    netRegionAll: 'Toute la province',
+    netRegionNote: 'Le brut utilise le salaire médian de la région économique (données réelles du Guichet-Emplois).',
     netGross: 'Brut',
     netHourly: 'Net horaire',
     netBiweekly: 'Net aux 2 semaines',
@@ -448,7 +454,9 @@ export default function App() {
   const [installEvt, setInstallEvt] = React.useState(null)
   /* Net-pay calculator state (Saved tab) */
   const [savedWages, setSavedWages] = React.useState({})
+  const [savedRegions, setSavedRegions] = React.useState({})
   const [netProv, setNetProv] = React.useState('ON')
+  const [netRegion, setNetRegion] = React.useState('')
   const [netHours, setNetHours] = React.useState('37.5')
   const [netUnion, setNetUnion] = React.useState('0')
 
@@ -481,13 +489,34 @@ export default function App() {
         .then(r => r.json())
         .then(j => {
           const byProv = {}
+          const provRegions = {}
           for (const w of (j.wages || [])) {
+            /* Province row: first row per province (median of the province) */
             if (w.median != null && byProv[w.province] == null) byProv[w.province] = w.median
+            /* Economic-region rows: regionName differs from the province name */
+            if (w.median != null && w.regionName && w.regionName !== PROVINCE_NAMES.en[w.province]) {
+              if (!provRegions[w.province]) provRegions[w.province] = []
+              if (!provRegions[w.province].some(r => r.code === w.regionCode)) {
+                provRegions[w.province].push({ code: w.regionCode, name: w.regionName, median: w.median })
+              }
+            }
           }
-          return [code, byProv]
+          for (const prov of Object.keys(provRegions)) {
+            provRegions[prov].sort((a, b) => a.name.localeCompare(b.name))
+          }
+          return [code, { byProv, provRegions }]
         })
-        .catch(() => [code, {}])
-    )).then(entries => { if (alive) setSavedWages(Object.fromEntries(entries)) })
+        .catch(() => [code, { byProv: {}, provRegions: {} }])
+    )).then(entries => {
+      if (!alive) return
+      const wages = {}, regions = {}
+      for (const [code, { byProv, provRegions }] of entries) {
+        wages[code] = byProv
+        regions[code] = provRegions
+      }
+      setSavedWages(wages)
+      setSavedRegions(regions)
+    })
     return () => { alive = false }
   }, [favorites, regionFavs, tab])
 
@@ -1111,12 +1140,23 @@ export default function App() {
                     <div className="netcalc-controls">
                       <label className="netcalc-field">
                         <span>{t.netProvince}</span>
-                        <select value={netProv} onChange={e => setNetProv(e.target.value)}>
+                        <select value={netProv} onChange={e => { setNetProv(e.target.value); setNetRegion('') }}>
                           {Object.keys(PROVINCE_BADGES)
                             .filter(c => c !== 'CA')
                             .map(c => (
                               <option key={c} value={c}>{c} — {PROVINCE_NAMES[lang][c]}</option>
                             ))}
+                        </select>
+                      </label>
+                      <label className="netcalc-field">
+                        <span>{t.netRegion}</span>
+                        <select value={netRegion} onChange={e => setNetRegion(e.target.value)}>
+                          <option value="">{t.netRegionAll}</option>
+                          {(savedRegions[favorites[0]]?.[netProv] || []).map(r => (
+                            <option key={r.code} value={r.code}>
+                              {r.name} — ${r.median.toFixed(2)}/hr
+                            </option>
+                          ))}
                         </select>
                       </label>
                       <label className="netcalc-field">
@@ -1130,7 +1170,7 @@ export default function App() {
                           onChange={e => setNetUnion(e.target.value)} />
                       </label>
                     </div>
-                    <p className="netcalc-note">{t.netNote}</p>
+                    <p className="netcalc-note">{t.netNote}{netRegion && <span className="netcalc-est"> {t.netRegionNote}</span>}</p>
                   </div>
                 )}
 
@@ -1140,7 +1180,11 @@ export default function App() {
                   const noc = code.replace('NOC_', '')
                   const jobs = jobCounts?.counts?.[noc]?.CA ?? null
                   const provWage = savedWages[code]?.[netProv] ?? null
-                  const wage = provWage != null ? provWage : (savedWages[code]?.CA ?? null)
+                  const regionRow = netRegion
+                    ? (savedRegions[code]?.[netProv] || []).find(r => r.code === netRegion)
+                    : null
+                  const grossWage = regionRow?.median ?? provWage ?? savedWages[code]?.CA ?? null
+                  const wage = grossWage
                   const pay = wage != null && Number(netHours) > 0
                     ? calcNetPay({ hourlyWage: wage, hoursPerWeek: Number(netHours), province: netProv, unionPct: Number(netUnion) || 0 })
                     : null
@@ -1150,12 +1194,13 @@ export default function App() {
                         <span className="saved-card-title">{occ.title[lang] || occ.title.en}</span>
                         <span className="saved-card-meta">
                           <span className="noc">NOC {noc}</span>
+                          {regionRow && <span className="hot-jobs region-tag">📍 {regionRow.name}</span>}
                           {jobs != null && <span className="hot-jobs">💼 {jobs.toLocaleString()} {t.todayJobs}</span>}
                         </span>
                         {pay && (
                           <span className="saved-card-pay">
                             <span className="pay-col">
-                              <em>{t.netGross}{provWage != null &&
+                              <em>{t.netGross}{wage != null &&
                                 <span className="pay-prov-badge" style={{ background: `linear-gradient(135deg, ${badgeFor(netProv).from}, ${badgeFor(netProv).to})` }}>{badgeFor(netProv).sym}</span>}
                               </em>
                               <strong>${wage.toFixed(2)}/hr</strong>
