@@ -1668,11 +1668,6 @@ export default function App() {
                             )}
                           </span>
                         )}
-                        {jobCounts?.counts?.[selected.code.replace('NOC_', '')]?.[provCode] != null && (
-                          <span className="jobs-today-badge">
-                            💼 {jobCounts.counts[selected.code.replace('NOC_', '')][provCode]} {t.todayJobs}
-                          </span>
-                        )}
                       </div>
                       <div className="province-rating" style={{ color: cfg.color, background: cfg.bg }}>
                         <Stars count={cfg.stars} />
