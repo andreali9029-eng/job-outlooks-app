@@ -1020,7 +1020,7 @@ export default function App() {
                     <span className="hot-card-meta">
                       {hot?.rating && (
                         <span className="hot-stars" style={{ color: cfg.color, background: cfg.bg }}
-                          title={hot.provGood ? `${hot.provGood}/${hot.provTotal} ${lang === 'en' ? 'provinces' : 'provinces'}` : ''}>
+                          title={hot.provGood ? `${hot.provGood}/${hot.provTotal} provinces` : ''}>
                           <Stars count={cfg.stars} /> {OUTLOOK_LABELS[lang][cfg.key]}
                         </span>
                       )}
@@ -1481,7 +1481,7 @@ export default function App() {
               // default province = CA if present, else the one with most data points
               const byPoints = provs.slice().sort((a, b) => h.series[b].dates.length - h.series[a].dates.length)
               const defaultProv = provs.includes('CA') ? 'CA' : byPoints[0]
-              const activeProv = jobsProv || defaultProv
+              const activeProv = h.series[jobsProv] ? jobsProv : defaultProv
               const s = h.series[activeProv]
               const dates = s.dates
               const series = [{

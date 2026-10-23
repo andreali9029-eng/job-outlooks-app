@@ -56,6 +56,15 @@ export default defineConfig({
               expiration: { maxEntries: 200, maxAgeSeconds: 30 * 24 * 3600 },
               networkTimeoutSeconds: 5
             }
+          },
+          {
+            // Trend / jobcounts / job preview data - stale while revalidate (updated daily)
+            urlPattern: ({ url }) => url.pathname.includes('/data/trends/') || url.pathname.includes('/data/jobs-preview.json'),
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'trend-data',
+              expiration: { maxEntries: 60, maxAgeSeconds: 30 * 24 * 3600 }
+            }
           }
         ]
       }

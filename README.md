@@ -12,6 +12,8 @@ Search any of 500+ occupations (NOC 2021) to see 5-star outlook ratings, wages, 
 - 💼 **Daily job postings** — live Job Bank posting counts per occupation & province, refreshed daily by an automated task; "postings over time" charts as history accumulates
 - 📋 **Latest job previews** — real Job Bank postings (title, employer, location, wage) embedded in occupation detail, refreshed daily
 - ❤️ **Saved occupations** — tap ♥ to build a personal career watchlist (stored locally)
+- 📍 **Region favourites** — save occupation + province pairs (badge, outlook, postings, provincial net pay)
+- 💰 **Net-pay calculator** — per-province take-home pay (federal + provincial income tax, CPP/EI, ON surtax & health premium, QC QPP/QPIP, optional union dues; 2026 CRA rates)
 - 🧭 **Browse by industry** — explore occupations through the 10 NOC groups
 - 🔗 **Related occupations** — same NOC group, one tap to switch
 - 📝 **Career snapshot** — one-line takeaway combining outlook, live postings and wage
