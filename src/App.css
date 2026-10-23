@@ -1717,6 +1717,156 @@ body {
   color: #0891b2;
 }
 
+/* Career match calculator */
+.match-entry-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  text-align: left;
+  border: 1.5px dashed #6366f1;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #eef2ff, #faf5ff);
+  cursor: pointer;
+}
+
+.match-entry-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: #4338ca;
+}
+
+.match-entry-hint {
+  font-size: 12px;
+  color: #6d28d9;
+  opacity: 0.8;
+  line-height: 1.45;
+}
+
+.match-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px;
+  margin: 4px 0 14px;
+}
+
+.match-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.match-run-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: #6366f1;
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.match-run-btn:active {
+  opacity: 0.85;
+}
+
+.match-loading,
+.match-empty {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #64748b;
+  text-align: center;
+}
+
+.match-results-hint {
+  margin: 12px 0 6px;
+  font-size: 11.5px;
+  color: #64748b;
+  text-align: center;
+}
+
+.match-results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.match-occ-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.match-occ-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.match-occ-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.35;
+}
+
+.match-score-pill {
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.match-occ-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.match-wage {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #059669;
+}
+
+.match-bar-wrap {
+  height: 6px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.match-bar {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.match-subs {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #64748b;
+}
+
 .saved-card-pay {
   display: flex;
   gap: 18px;

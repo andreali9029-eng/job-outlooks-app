@@ -69,6 +69,29 @@ const I18N = {
     exploreHint: 'Find occupations through the 10 NOC industry groups',
     exploreEmpty: 'No occupations in this group.',
     backToGroups: 'All groups',
+    matchTitle: 'Career Match',
+    matchHint: 'Answer 3 quick questions — get ranked career matches from real Job Bank market data',
+    matchCta: '🎯 Career match',
+    matchCtaHint: 'Prospect, salary and live demand — see which occupations fit you best',
+    matchWage: 'Expected hourly wage (optional)',
+    matchWagePh: 'e.g. 30',
+    matchProv: 'Preferred province (optional)',
+    matchProvAll: 'Any province (national)',
+    matchMode: 'Match priority',
+    matchModeBalanced: 'Balanced',
+    matchModeProspect: 'Prospect first',
+    matchModeSalary: 'Salary first',
+    matchRun: 'Find my matches',
+    matchRunAgain: 'Adjust & re-match',
+    matchLoading: 'Loading market data...',
+    matchResults: 'Top matches',
+    matchResultsHint: 'Sorted by match score (0–100) from real market data',
+    matchScore: 'Match',
+    matchProspectLbl: 'Outlook',
+    matchWageLbl: 'Salary',
+    matchSupplyLbl: 'Live demand',
+    matchNoResult: 'No matches — adjust your criteria and try again.',
+    matchWageReq: 'Your wage expectation',
     savedTitle: 'Saved occupations',
     savedHint: 'Occupations you saved with ♥ — your career watchlist',
     savedEmpty: 'Nothing saved yet. Open any occupation and tap ♥ to keep it here.',
@@ -169,6 +192,29 @@ const I18N = {
     exploreHint: 'Trouvez des professions dans les 10 grands groupes de la CNP',
     exploreEmpty: 'Aucune profession dans ce groupe.',
     backToGroups: 'Tous les groupes',
+    matchTitle: 'Match de carrière',
+    matchHint: 'Répondez à 3 questions rapides — obtenez des carrières classées à partir des données réelles du marché (Guichet-Emplois)',
+    matchCta: '🎯 Match de carrière',
+    matchCtaHint: 'Perspectives, salaire et demande en direct — trouvez les professions qui vous conviennent',
+    matchWage: 'Salaire horaire attendu (optionnel)',
+    matchWagePh: 'ex. 30',
+    matchProv: 'Province préférée (optionnelle)',
+    matchProvAll: 'Toute province (national)',
+    matchMode: 'Priorité du match',
+    matchModeBalanced: 'Équilibré',
+    matchModeProspect: 'Perspectives d’abord',
+    matchModeSalary: 'Salaire d’abord',
+    matchRun: 'Trouver mes matches',
+    matchRunAgain: 'Ajuster & re-matcher',
+    matchLoading: 'Chargement des données...',
+    matchResults: 'Meilleurs matches',
+    matchResultsHint: 'Triés par score de match (0–100) à partir des données réelles du marché',
+    matchScore: 'Match',
+    matchProspectLbl: 'Perspectives',
+    matchWageLbl: 'Salaire',
+    matchSupplyLbl: 'Demande en direct',
+    matchNoResult: 'Aucun match — ajustez vos critères et réessayez.',
+    matchWageReq: 'Votre salaire attendu',
     savedTitle: 'Professions enregistrées',
     savedHint: 'Vos professions enregistrées avec ♥ — votre liste de suivi de carrière',
     savedEmpty: 'Rien d\'enregistré pour l\'instant. Ouvrez une profession et appuyez sur ♥ pour la garder ici.',
@@ -450,6 +496,10 @@ export default function App() {
     try { return JSON.parse(localStorage.getItem('job-outlooks-region-favs') || '[]') } catch { return [] }
   })
   const [exploreGroup, setExploreGroup] = React.useState(null)
+  /* Career match calculator */
+  const [matchIndex, setMatchIndex] = React.useState(null)
+  const [matchForm, setMatchForm] = React.useState({ wage: '', prov: '', mode: 'balanced' })
+  const [matchResults, setMatchResults] = React.useState(null)
   const [jobsPreview, setJobsPreview] = React.useState(null)
   const [installEvt, setInstallEvt] = React.useState(null)
   /* Net-pay calculator state (Saved tab) */
@@ -980,6 +1030,52 @@ export default function App() {
 
   const selectedTitle = selected?.title?.[lang] || selected?.title?.en || selected?.title?.fr || ''
 
+  /* ---- Career match calculator ---- */
+  const loadMatchIndex = () => {
+    if (matchIndex) return Promise.resolve(matchIndex)
+    return fetch('/data/match-index.json')
+      .then(r => r.json())
+      .then(j => { setMatchIndex(j); return j })
+  }
+
+  const runMatch = async () => {
+    const idx = await loadMatchIndex()
+    if (!idx) return
+    const wageReq = parseFloat(matchForm.wage)
+    const prov = matchForm.prov || 'CA'
+    const weights = matchForm.mode === 'prospect'
+      ? { outlook: 0.5, wage: 0.25, supply: 0.25 }
+      : matchForm.mode === 'salary'
+        ? { outlook: 0.25, wage: 0.5, supply: 0.25 }
+        : { outlook: 0.35, wage: 0.35, supply: 0.3 }
+
+    /* Max live demand of the day (for supply normalization) */
+    const supplyVals = idx.occs.map(o => o.jobs?.[prov] ?? o.jobs?.CA ?? null).filter(v => v != null && v > 0)
+    const maxSupply = supplyVals.length ? Math.max(...supplyVals) : 0
+
+    const scored = idx.occs.map(o => {
+      const outc = o.outlook?.[prov] ?? o.outlook?.CA ?? null
+      const outlookPts = outc != null ? (outc / 4) * 100 : 35 /* neutral */
+      const w = o.wage?.[prov] ?? o.wage?.CA ?? null
+      const wagePts = (w == null) ? 50
+        : (wageReq == null || !(wageReq > 0)) ? 100
+        : Math.min(1, w / wageReq) * 100
+      const sup = o.jobs?.[prov] ?? o.jobs?.CA ?? null
+      const supplyPts = (sup == null) ? 50
+        : (maxSupply <= 0) ? 50
+        : Math.min(1, Math.log10(sup + 1) / Math.log10(maxSupply + 1)) * 100
+      const score = outlookPts * weights.outlook + wagePts * weights.wage + supplyPts * weights.supply
+      return { occ: o, score: Math.round(score), outlookPts: Math.round(outlookPts), wagePts: Math.round(wagePts), supplyPts: Math.round(supplyPts) }
+    })
+    scored.sort((a, b) => b.score - a.score)
+    setMatchResults(scored.slice(0, 30))
+  }
+
+  const openMatchResult = (r) => {
+    const occ = occupations.find(o => o.code === r.occ.code)
+    if (occ) loadOccupation(occ)
+  }
+
   return (
     <div className="app" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <header className={`header ${!selected && tab !== 'home' ? 'header-mini' : ''}`}>
@@ -1076,45 +1172,129 @@ export default function App() {
               <h2 className="trends-title">{t.exploreTitle}</h2>
               <p className="trends-hint">{t.exploreHint}</p>
             </div>
-            {exploreGroup === null ? (
-              <div className="noc-groups">
-                {NOC_GROUPS.map(g => {
-                  const n = occupations.filter(o => o.code.replace('NOC_', '')[0] === g.id).length
-                  return (
-                    <button
-                      key={g.id}
-                      className="noc-group-card"
-                      style={{ borderTopColor: g.color }}
-                      onClick={() => setExploreGroup(g.id)}
-                    >
-                      <span className="noc-group-num" style={{ background: g.color }}>{g.id}</span>
-                      <span className="noc-group-name">{g.en}</span>
-                      <span className="noc-group-count">{n} {t.unitsLabel}</span>
-                    </button>
-                  )
-                })}
+            {!matchResults && (
+              <button className="match-entry-card" onClick={() => { loadMatchIndex(); setMatchResults([]) }}>
+                <span className="match-entry-title">{t.matchCta}</span>
+                <span className="match-entry-hint">{t.matchCtaHint}</span>
+              </button>
+            )}
+            {matchResults !== null ? (
+              <div className="match-view">
+                <button className="back-groups-btn" onClick={() => { setMatchResults(null); setMatchForm({ wage: '', prov: '', mode: 'balanced' }) }}>
+                  ← {t.exploreTitle}
+                </button>
+                <div className="match-card">
+                  <div className="netcalc-head">
+                    <span className="netcalc-title">🎯 {t.matchTitle}</span>
+                    <span className="netcalc-hint">{t.matchHint}</span>
+                  </div>
+                  <div className="match-fields">
+                    <label className="netcalc-field">
+                      <span>{t.matchWage}</span>
+                      <input type="number" min="0" max="200" step="0.5" placeholder={t.matchWagePh}
+                        value={matchForm.wage} onChange={e => setMatchForm({ ...matchForm, wage: e.target.value })} />
+                    </label>
+                    <label className="netcalc-field">
+                      <span>{t.matchProv}</span>
+                      <select value={matchForm.prov} onChange={e => setMatchForm({ ...matchForm, prov: e.target.value })}>
+                        <option value="">{t.matchProvAll}</option>
+                        {Object.keys(PROVINCE_BADGES).filter(c => c !== 'CA').map(c => (
+                          <option key={c} value={c}>{c} — {PROVINCE_NAMES[lang][c]}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="netcalc-field">
+                      <span>{t.matchMode}</span>
+                      <select value={matchForm.mode} onChange={e => setMatchForm({ ...matchForm, mode: e.target.value })}>
+                        <option value="balanced">{t.matchModeBalanced}</option>
+                        <option value="prospect">{t.matchModeProspect}</option>
+                        <option value="salary">{t.matchModeSalary}</option>
+                      </select>
+                    </label>
+                  </div>
+                  <button className="match-run-btn" onClick={runMatch}>
+                    {matchResults && matchResults.length ? t.matchRunAgain : t.matchRun}
+                  </button>
+                  {!matchIndex && <p className="match-loading">{t.matchLoading}</p>}
+                  {matchIndex && matchResults.length === 0 && <p className="match-empty">{t.matchNoResult}</p>}
+                  {matchResults.length > 0 && (
+                    <>
+                      <p className="match-results-hint">{t.matchResultsHint}</p>
+                      <div className="match-results">
+                        {matchResults.map(r => {
+                          const g = NOC_GROUPS.find(x => x.id === r.occ.group)
+                          return (
+                            <button key={r.occ.code} className="match-occ-card" onClick={() => openMatchResult(r)}>
+                              <span className="match-occ-top">
+                                <span className="match-occ-name">{r.occ.title[lang] || r.occ.title.en}</span>
+                                <span className="match-score-pill" style={{ background: r.score >= 75 ? '#16a34a' : r.score >= 55 ? '#d97706' : '#64748b' }}>
+                                  {r.score}%
+                                </span>
+                              </span>
+                              <span className="match-occ-meta">
+                                <span className="noc">NOC {r.occ.noc5}</span>
+                                {r.occ.hot && <span className="hot-jobs">🔥 {t.hotTitle}</span>}
+                                {r.occ.wage?.[matchForm.prov || 'CA'] != null && (
+                                  <span className="match-wage">${r.occ.wage[matchForm.prov || 'CA'].toFixed(2)}/hr</span>
+                                )}
+                              </span>
+                              <span className="match-bar-wrap">
+                                <span className="match-bar" style={{ width: `${r.score}%`, background: g?.color || '#2563eb' }} />
+                              </span>
+                              <span className="match-subs">
+                                <span>{t.matchProspectLbl} {r.outlookPts}</span>
+                                <span>{t.matchWageLbl} {r.wagePts}</span>
+                                <span>{t.matchSupplyLbl} {r.supplyPts}</span>
+                              </span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             ) : (
-              <>
-                <button className="back-groups-btn" onClick={() => setExploreGroup(null)}>
-                  ← {t.backToGroups}
-                </button>
-                {(() => {
-                  const g = NOC_GROUPS.find(x => x.id === exploreGroup)
-                  const list = occupations.filter(o => o.code.replace('NOC_', '')[0] === exploreGroup)
-                  return (
-                    <div className="explore-list">
-                      {list.length === 0 && <p className="no-results">{t.exploreEmpty}</p>}
-                      {list.map(o => (
-                        <button key={o.code} className="explore-occ" onClick={() => loadOccupation(o)}>
-                          <span className="explore-occ-name">{o.title[lang] || o.title.en}</span>
-                          <span className="noc">{o.code.replace('NOC_', '')}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )
-                })()}
-              </>
+              exploreGroup === null ? (
+                <div className="noc-groups">
+                  {NOC_GROUPS.map(g => {
+                    const n = occupations.filter(o => o.code.replace('NOC_', '')[0] === g.id).length
+                    return (
+                      <button
+                        key={g.id}
+                        className="noc-group-card"
+                        style={{ borderTopColor: g.color }}
+                        onClick={() => setExploreGroup(g.id)}
+                      >
+                        <span className="noc-group-num" style={{ background: g.color }}>{g.id}</span>
+                        <span className="noc-group-name">{g.en}</span>
+                        <span className="noc-group-count">{n} {t.unitsLabel}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : (
+                <>
+                  <button className="back-groups-btn" onClick={() => setExploreGroup(null)}>
+                    ← {t.backToGroups}
+                  </button>
+                  {(() => {
+                    const g = NOC_GROUPS.find(x => x.id === exploreGroup)
+                    const list = occupations.filter(o => o.code.replace('NOC_', '')[0] === exploreGroup)
+                    return (
+                      <div className="explore-list">
+                        {list.length === 0 && <p className="no-results">{t.exploreEmpty}</p>}
+                        {list.map(o => (
+                          <button key={o.code} className="explore-occ" onClick={() => loadOccupation(o)}>
+                            <span className="explore-occ-name">{o.title[lang] || o.title.en}</span>
+                            <span className="noc">{o.code.replace('NOC_', '')}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )
+                  })()}
+                </>
+              )
             )}
           </section>
         )}
