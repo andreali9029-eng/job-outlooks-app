@@ -1775,6 +1775,20 @@ body {
   color: #f43f5e;
 }
 
+.pay-prov-badge {
+  display: inline-block;
+  width: 20px;
+  height: 14px;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 14px;
+  text-align: center;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
 .region-favs-block {
   margin-top: 14px;
   padding-top: 14px;

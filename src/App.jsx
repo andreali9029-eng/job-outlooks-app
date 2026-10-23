@@ -76,7 +76,7 @@ const I18N = {
     save: 'Save',
     savedMark: 'Saved',
     netCalcTitle: 'Net pay calculator',
-    netCalcHint: 'Estimate take-home pay from the national median wage — 2026 CRA rates',
+    netCalcHint: 'Estimate take-home pay from the selected province\'s median wage — 2026 CRA rates',
     netProvince: 'Province',
     netHours: 'Hours/week',
     netUnion: 'Union dues %',
@@ -173,7 +173,7 @@ const I18N = {
     save: 'Enregistrer',
     savedMark: 'Enregistrée',
     netCalcTitle: 'Calcul du salaire net',
-    netCalcHint: 'Estimez le salaire net à partir du salaire médian national — taux de l\'ARC 2026',
+    netCalcHint: 'Estimez le salaire net à partir du salaire médian de la province sélectionnée — taux de l\'ARC 2026',
     netProvince: 'Province',
     netHours: 'Heures/sem.',
     netUnion: 'Cotisations syndicales %',
@@ -1139,7 +1139,8 @@ export default function App() {
                   if (!occ) return null
                   const noc = code.replace('NOC_', '')
                   const jobs = jobCounts?.counts?.[noc]?.CA ?? null
-                  const wage = savedWages[code]?.CA ?? null
+                  const provWage = savedWages[code]?.[netProv] ?? null
+                  const wage = provWage != null ? provWage : (savedWages[code]?.CA ?? null)
                   const pay = wage != null && Number(netHours) > 0
                     ? calcNetPay({ hourlyWage: wage, hoursPerWeek: Number(netHours), province: netProv, unionPct: Number(netUnion) || 0 })
                     : null
@@ -1154,7 +1155,9 @@ export default function App() {
                         {pay && (
                           <span className="saved-card-pay">
                             <span className="pay-col">
-                              <em>{t.netGross}</em>
+                              <em>{t.netGross}{provWage != null &&
+                                <span className="pay-prov-badge" style={{ background: `linear-gradient(135deg, ${badgeFor(netProv).from}, ${badgeFor(netProv).to})` }}>{badgeFor(netProv).sym}</span>}
+                              </em>
                               <strong>${wage.toFixed(2)}/hr</strong>
                             </span>
                             <span className="pay-col">
