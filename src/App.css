@@ -1707,16 +1707,6 @@ body {
   line-height: 1.45;
 }
 
-.netcalc-est {
-  color: #b45309;
-  opacity: 1;
-}
-
-.region-tag {
-  font-weight: 600;
-  color: #0891b2;
-}
-
 .saved-card-pay {
   display: flex;
   gap: 18px;
