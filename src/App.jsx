@@ -3,6 +3,7 @@ import { CANADA_PATHS, CANADA_VIEWBOX } from './canadaPaths'
 import TrendChart from './TrendChart'
 import { badgeFor, PROVINCE_BADGES } from './provinceBadges'
 import { calcNetPay } from './netPay'
+import { fetchPostings, fetchPostingDetail, scorePosting, keywordsOf } from './jobMatch'
 
 /* ---------- i18n ---------- */
 const I18N = {
@@ -92,6 +93,31 @@ const I18N = {
     matchSupplyLbl: 'Live demand',
     matchNoResult: 'No matches — adjust your criteria and try again.',
     matchWageReq: 'Your wage expectation',
+    jmModeOcc: 'Occupation match',
+    jmModeJob: 'Job posting match',
+    jmTitle: 'Job Posting Match',
+    jmHint: 'Live postings from Job Bank right now, scored against your profile',
+    jmQuery: 'Skills / keywords (e.g. computer science, data, python)',
+    jmQueryPh: 'e.g. data analyst python',
+    jmCity: 'City (optional)',
+    jmCityPh: 'e.g. Ottawa',
+    jmWage: 'Minimum hourly wage (optional)',
+    jmSearch: 'Match live postings',
+    jmSearching: 'Searching live Job Bank postings...',
+    jmResults: 'Top postings',
+    jmResultsHint: 'Real postings from Job Bank right now — scores from title, wage, freshness and location',
+    jmScoreLbl: 'Match',
+    jmTitleLbl: 'Title',
+    jmWageLbl: 'Wage',
+    jmFreshLbl: 'Fresh',
+    jmLocLbl: 'Location',
+    jmEmpty: 'No postings found for these criteria.',
+    jmErr: 'Could not reach Job Bank. Try again or check your connection.',
+    jmOpenJB: 'Open in Job Bank',
+    jmDetail: 'View requirements',
+    jmHideDetail: 'Hide details',
+    jmDescMatch: 'Description keyword match',
+    jmPosted: 'Posted',
     savedTitle: 'Saved occupations',
     savedHint: 'Occupations you saved with ♥ — your career watchlist',
     savedEmpty: 'Nothing saved yet. Open any occupation and tap ♥ to keep it here.',
@@ -215,6 +241,31 @@ const I18N = {
     matchSupplyLbl: 'Demande en direct',
     matchNoResult: 'Aucun match — ajustez vos critères et réessayez.',
     matchWageReq: 'Votre salaire attendu',
+    jmModeOcc: 'Match de professions',
+    jmModeJob: 'Match d\'offres d\'emploi',
+    jmTitle: 'Match d\'offres d\'emploi',
+    jmHint: 'Offres réelles du Guichet-Emplois en ce moment, notées selon votre profil',
+    jmQuery: 'Compétences / mots-clés (ex. informatique, données, python)',
+    jmQueryPh: 'ex. analyste de données python',
+    jmCity: 'Ville (optionnelle)',
+    jmCityPh: 'ex. Ottawa',
+    jmWage: 'Salaire horaire minimum (optionnel)',
+    jmSearch: 'Trouver les offres',
+    jmSearching: 'Recherche d\'offres en direct sur Guichet-Emplois...',
+    jmResults: 'Meilleures offres',
+    jmResultsHint: 'Offres réelles du Guichet-Emplois — score basé sur titre, salaire, fraîcheur et lieu',
+    jmScoreLbl: 'Match',
+    jmTitleLbl: 'Titre',
+    jmWageLbl: 'Salaire',
+    jmFreshLbl: 'Récent',
+    jmLocLbl: 'Lieu',
+    jmEmpty: 'Aucune offre trouvée pour ces critères.',
+    jmErr: 'Impossible de joindre le Guichet-Emplois. Réessayez ou vérifiez la connexion.',
+    jmOpenJB: 'Ouvrir sur Guichet-Emplois',
+    jmDetail: 'Voir les exigences',
+    jmHideDetail: 'Masquer les détails',
+    jmDescMatch: 'Correspondance mots-clés du description',
+    jmPosted: 'Publié',
     savedTitle: 'Professions enregistrées',
     savedHint: 'Vos professions enregistrées avec ♥ — votre liste de suivi de carrière',
     savedEmpty: 'Rien d\'enregistré pour l\'instant. Ouvrez une profession et appuyez sur ♥ pour la garder ici.',
@@ -500,6 +551,13 @@ export default function App() {
   const [matchIndex, setMatchIndex] = React.useState(null)
   const [matchForm, setMatchForm] = React.useState({ wage: '', prov: '', mode: 'balanced' })
   const [matchResults, setMatchResults] = React.useState(null)
+  /* Job posting match (live Job Bank postings) */
+  const [jmMode, setJmMode] = React.useState('occ')            /* 'occ' | 'job' */
+  const [jmForm, setJmForm] = React.useState({ query: '', prov: '', city: '', wage: '' })
+  const [jmLoading, setJmLoading] = React.useState(false)
+  const [jmResults, setJmResults] = React.useState(null)        /* {scored:[], err:''} */
+  const [jmOpenId, setJmOpenId] = React.useState(null)          /* expanded posting id */
+  const [jmDetails, setJmDetails] = React.useState({})           /* id -> {description, matchPct} */
   const [jobsPreview, setJobsPreview] = React.useState(null)
   const [installEvt, setInstallEvt] = React.useState(null)
   /* Net-pay calculator state (Saved tab) */
@@ -1076,6 +1134,51 @@ export default function App() {
     if (occ) loadOccupation(occ)
   }
 
+  /* ---- Job posting match (live Job Bank) ---- */
+  const runJobMatch = async () => {
+    const profile = {
+      query: jmForm.query,
+      prov: jmForm.prov,
+      location: jmForm.city,
+      wage: jmForm.wage ? parseFloat(jmForm.wage) : null,
+    }
+    if (!profile.query || !profile.query.trim()) return
+    setJmLoading(true)
+    setJmResults(null)
+    setJmOpenId(null)
+    setJmDetails({})
+    try {
+      const jobs = await fetchPostings(profile)
+      const kws = keywordsOf(profile.query)
+      const scored = jobs
+        .map(j => ({ job: j, ...scorePosting(j, profile) }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 25)
+      setJmResults({ scored, kws, query: profile.query, wage: profile.wage, city: profile.location, prov: profile.prov, updatedAt: Date.now() })
+    } catch (e) {
+      setJmResults({ scored: [], kws: [], query: profile.query, err: String(e && e.message || e) })
+    } finally {
+      setJmLoading(false)
+    }
+  }
+
+  const toggleJmDetail = async (id, job) => {
+    if (jmOpenId === id) { setJmOpenId(null); return }
+    setJmOpenId(id)
+    if (jmDetails[id]) return
+    try {
+      const detail = await fetchPostingDetail(job.url)
+      const kws = keywordsOf(jmForm.query)
+      const desc = detail.description || ''
+      let hits = 0
+      for (const kw of kws) if (desc.toLowerCase().includes(kw)) hits++
+      const matchPct = kws.length ? Math.round((hits / kws.length) * 100) : 0
+      setJmDetails(prev => ({ ...prev, [id]: { description: desc, matchPct } }))
+    } catch (e) {
+      setJmDetails(prev => ({ ...prev, [id]: { description: '', matchPct: null, err: true } }))
+    }
+  }
+
   return (
     <div className="app" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <header className={`header ${!selected && tab !== 'home' ? 'header-mini' : ''}`}>
@@ -1180,10 +1283,118 @@ export default function App() {
             )}
             {matchResults !== null ? (
               <div className="match-view">
-                <button className="back-groups-btn" onClick={() => { setMatchResults(null); setMatchForm({ wage: '', prov: '', mode: 'balanced' }) }}>
+                <button className="back-groups-btn" onClick={() => { setMatchResults(null); setMatchForm({ wage: '', prov: '', mode: 'balanced' }); setJmMode('occ'); setJmResults(null); setJmOpenId(null) }}>
                   ← {t.exploreTitle}
                 </button>
-                <div className="match-card">
+                <div className="jm-mode-switch">
+                  <button className={`jm-mode-btn ${jmMode === 'occ' ? 'active' : ''}`} onClick={() => setJmMode('occ')}>
+                    🎯 {t.jmModeOcc}
+                  </button>
+                  <button className={`jm-mode-btn ${jmMode === 'job' ? 'active' : ''}`} onClick={() => setJmMode('job')}>
+                    💼 {t.jmModeJob}
+                  </button>
+                </div>
+                {jmMode === 'job' ? (
+                  <div className="match-card">
+                    <div className="netcalc-head">
+                      <span className="netcalc-title">💼 {t.jmTitle}</span>
+                      <span className="netcalc-hint">{t.jmHint}</span>
+                    </div>
+                    <div className="match-fields">
+                      <label className="netcalc-field">
+                        <span>{t.jmQuery}</span>
+                        <input type="text" placeholder={t.jmQueryPh}
+                          value={jmForm.query} onChange={e => setJmForm({ ...jmForm, query: e.target.value })} />
+                      </label>
+                      <label className="netcalc-field">
+                        <span>{t.matchProv}</span>
+                        <select value={jmForm.prov} onChange={e => setJmForm({ ...jmForm, prov: e.target.value })}>
+                          <option value="">{t.matchProvAll}</option>
+                          {Object.keys(PROVINCE_BADGES).filter(c => c !== 'CA').map(c => (
+                            <option key={c} value={c}>{c} — {PROVINCE_NAMES[lang][c]}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="netcalc-field">
+                        <span>{t.jmCity}</span>
+                        <input type="text" placeholder={t.jmCityPh}
+                          value={jmForm.city} onChange={e => setJmForm({ ...jmForm, city: e.target.value })} />
+                      </label>
+                      <label className="netcalc-field">
+                        <span>{t.jmWage}</span>
+                        <input type="number" min="0" max="200" step="0.5" placeholder={t.matchWagePh}
+                          value={jmForm.wage} onChange={e => setJmForm({ ...jmForm, wage: e.target.value })} />
+                      </label>
+                    </div>
+                    <button className="match-run-btn" onClick={runJobMatch} disabled={jmLoading}>
+                      {jmLoading ? t.jmSearching : t.jmSearch}
+                    </button>
+                    {jmResults && jmResults.err && <p className="match-empty">{t.jmErr}</p>}
+                    {jmResults && !jmResults.err && jmResults.scored.length === 0 && <p className="match-empty">{t.jmEmpty}</p>}
+                    {jmResults && !jmResults.err && jmResults.scored.length > 0 && (
+                      <>
+                        <p className="match-results-hint">
+                          {t.jmResultsHint} · {jmResults.scored.length} {t.todayJobs}
+                        </p>
+                        <div className="match-results">
+                          {jmResults.scored.map(s => (
+                            <div key={s.job.id} className="jm-card">
+                              <button className="jm-card-main" onClick={() => toggleJmDetail(s.job.id, s.job)}>
+                                <span className="jm-card-top">
+                                  <span className="jm-card-title">{s.job.title}</span>
+                                  <span className="match-score-pill" style={{ background: s.score >= 75 ? '#16a34a' : s.score >= 55 ? '#d97706' : '#64748b' }}>
+                                    {s.score}%
+                                  </span>
+                                </span>
+                                <span className="jm-card-meta">
+                                  {s.job.employer && <span className="jm-employer">{s.job.employer}</span>}
+                                  {s.job.location && <span className="jm-location">📍 {s.job.location}</span>}
+                                  {s.job.wage && <span className="jm-wage">💰 {s.job.wage}</span>}
+                                  {s.job.date && <span className="jm-date">🗓 {s.job.date}</span>}
+                                </span>
+                                <span className="jm-bar-wrap">
+                                  <span className="match-bar" style={{ width: `${s.score}%`, background: '#0891b2' }} />
+                                </span>
+                                <span className="match-subs">
+                                  <span>{t.jmTitleLbl} {s.titleScore}</span>
+                                  <span>{t.jmWageLbl} {s.wageScore}</span>
+                                  <span>{t.jmFreshLbl} {s.freshScore}</span>
+                                  <span>{t.jmLocLbl} {s.locScore}</span>
+                                </span>
+                              </button>
+                              {jmOpenId === s.job.id && (
+                                <div className="jm-detail">
+                                  {!jmDetails[s.job.id] && <p className="jm-loading">{t.loading}</p>}
+                                  {jmDetails[s.job.id] && jmDetails[s.job.id].err && (
+                                    <p className="jm-loading">{t.jmErr}</p>
+                                  )}
+                                  {jmDetails[s.job.id] && !jmDetails[s.job.id].err && (
+                                    <>
+                                      {jmDetails[s.job.id].description && (
+                                        <p className="jm-desc">
+                                          {jmDetails[s.job.id].description.slice(0, 600)}
+                                        </p>
+                                      )}
+                                      {jmDetails[s.job.id].matchPct != null && (
+                                        <p className="jm-desc-match">
+                                          {t.jmDescMatch}: <strong>{jmDetails[s.job.id].matchPct}%</strong>
+                                        </p>
+                                      )}
+                                    </>
+                                  )}
+                                  <a className="jm-open" href={s.job.url} target="_blank" rel="noreferrer">
+                                    ↗ {t.jmOpenJB}
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <div className="match-card">
                   <div className="netcalc-head">
                     <span className="netcalc-title">🎯 {t.matchTitle}</span>
                     <span className="netcalc-hint">{t.matchHint}</span>
@@ -1253,6 +1464,7 @@ export default function App() {
                     </>
                   )}
                 </div>
+                )}
               </div>
             ) : (
               exploreGroup === null ? (

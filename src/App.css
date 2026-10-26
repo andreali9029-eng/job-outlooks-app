@@ -1867,6 +1867,126 @@ body {
   color: #64748b;
 }
 
+/* Job posting match */
+.jm-mode-switch {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 12px;
+}
+
+.jm-mode-btn {
+  flex: 1;
+  padding: 10px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+}
+
+.jm-mode-btn.active {
+  border-color: #0891b2;
+  background: #ecfeff;
+  color: #155e75;
+}
+
+.jm-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.jm-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.jm-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.jm-card-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.35;
+}
+
+.jm-card-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  font-size: 11.5px;
+  color: #475569;
+}
+
+.jm-employer {
+  font-weight: 600;
+  color: #334155;
+}
+
+.jm-wage {
+  font-weight: 700;
+  color: #059669;
+}
+
+.jm-bar-wrap {
+  height: 5px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.jm-detail {
+  padding: 0 14px 12px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.jm-loading {
+  margin: 10px 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.jm-desc {
+  margin: 10px 0 6px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #334155;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.jm-desc-match {
+  margin: 6px 0;
+  font-size: 12.5px;
+  color: #0f766e;
+}
+
+.jm-open {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
 .saved-card-pay {
   display: flex;
   gap: 18px;

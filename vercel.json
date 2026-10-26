@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/jb/(.*)", "destination": "https://www.jobbank.gc.ca/$1" }
+  ]
+}

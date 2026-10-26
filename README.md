@@ -16,6 +16,7 @@ Search any of 500+ occupations (NOC 2021) to see 5-star outlook ratings, wages, 
 - 💰 **Net-pay calculator** — per-province take-home pay (federal + provincial income tax, CPP/EI, ON surtax & health premium, QC QPP/QPIP, optional union dues; 2026 CRA rates)
 - 🧭 **Browse by industry** — explore occupations through the 10 NOC groups
 - 🎯 **Career Match** — answer 3 questions (expected wage, preferred province, priority) and get 516 occupations ranked by a real-data match score (prospect 35% + salary 35% + live demand 30%)
+- 💼 **Job Posting Match** — type your skills/keywords, city and wage; live Job Bank postings are fetched in real time and scored (title 40% + wage 25% + freshness 15% + location 20%); tap any posting to see full requirements + description keyword-match % + link to open in Job Bank
 - 🔗 **Related occupations** — same NOC group, one tap to switch
 - 📝 **Career snapshot** — one-line takeaway combining outlook, live postings and wage
 - ⚖️ **Compare** — side-by-side outlook & wages for 2 occupations across 13 provinces
@@ -49,6 +50,19 @@ npm run preview    # preview the production build
 | Job vacancy rate | Statistics Canada table **14100326** (JVS) | Monthly pipeline (series ended 2023) |
 | Live postings & previews | Job Bank (jobbank.gc.ca) | Daily |
 | Live posting counts | Job Bank job search | **Daily snapshot** (scheduled task) |
+| Job Posting Match (live search) | Job Bank job search (via `/jb` proxy) | **Real time** (on demand) |
+
+## Deployment
+
+Job Bank blocks cross-origin browser requests, so the live Job Posting Match needs a
+small same-origin proxy. The dev server proxies `/jb/*` → `jobbank.gc.ca` automatically
+(see `vite.config.js`). For production:
+
+- **Vercel (recommended, free):** the included `vercel.json` serves the static build and
+  rewrites `/jb/*` to `jobbank.gc.ca` with `changeOrigin` — works out of the box:
+  `npm run build && vercel deploy --prod`
+- **GitHub Pages:** static-only hosting cannot proxy to Job Bank — Job Posting Match
+  would fail there. Use Vercel/Netlify/Cloudflare instead.
 
 ## Automation (Windows Task Scheduler)
 

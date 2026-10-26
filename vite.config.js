@@ -69,5 +69,16 @@ export default defineConfig({
         ]
       }
     })
-  ]
+  ],
+  server: {
+    proxy: {
+      // Job Bank blocks cross-origin browser requests; dev server proxies
+      // /jb/* to jobbank.gc.ca so the Job Match feature can query live postings.
+      '/jb': {
+        target: 'https://www.jobbank.gc.ca',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/jb/, '')
+      }
+    }
+  }
 })
