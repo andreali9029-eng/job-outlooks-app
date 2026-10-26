@@ -118,6 +118,7 @@ const I18N = {
     jmHideDetail: 'Hide details',
     jmDescMatch: 'Description keyword match',
     jmPosted: 'Posted',
+    jmDemoNote: 'Live postings need the /jb proxy — available in the full deployment (Vercel) or on your computer via npm run dev.',
     savedTitle: 'Saved occupations',
     savedHint: 'Occupations you saved with ♥ — your career watchlist',
     savedEmpty: 'Nothing saved yet. Open any occupation and tap ♥ to keep it here.',
@@ -266,6 +267,7 @@ const I18N = {
     jmHideDetail: 'Masquer les détails',
     jmDescMatch: 'Correspondance mots-clés du description',
     jmPosted: 'Publié',
+    jmDemoNote: 'Les offres en direct nécessitent le proxy /jb — disponibles dans le déploiement complet (Vercel) ou sur votre ordinateur via npm run dev.',
     savedTitle: 'Professions enregistrées',
     savedHint: 'Vos professions enregistrées avec ♥ — votre liste de suivi de carrière',
     savedEmpty: 'Rien d\'enregistré pour l\'instant. Ouvrez une profession et appuyez sur ♥ pour la garder ici.',
@@ -636,6 +638,12 @@ export default function App() {
   }, [])
 
   const t = I18N[lang]
+  /* Static hosting (GitHub Pages / Vercel static) has no /jb proxy on non-local origins:
+     Job Posting Match is disabled there. Local dev (localhost) keeps it live. */
+  const isStaticDemo = typeof window !== 'undefined' && (
+    window.location.hostname !== 'localhost' &&
+    window.location.hostname !== '127.0.0.1'
+  )
 
   React.useEffect(() => {
     fetch('/data/occupations.json')
@@ -1136,6 +1144,10 @@ export default function App() {
 
   /* ---- Job posting match (live Job Bank) ---- */
   const runJobMatch = async () => {
+    if (isStaticDemo) {
+      setJmResults({ scored: [], kws: [], query: jmForm.query, err: true })
+      return
+    }
     const profile = {
       query: jmForm.query,
       prov: jmForm.prov,
@@ -1300,6 +1312,9 @@ export default function App() {
                       <span className="netcalc-title">💼 {t.jmTitle}</span>
                       <span className="netcalc-hint">{t.jmHint}</span>
                     </div>
+                    {isStaticDemo && (
+                      <p className="jm-demo-note">⚠️ {t.jmDemoNote}</p>
+                    )}
                     <div className="match-fields">
                       <label className="netcalc-field">
                         <span>{t.jmQuery}</span>
@@ -1326,7 +1341,7 @@ export default function App() {
                           value={jmForm.wage} onChange={e => setJmForm({ ...jmForm, wage: e.target.value })} />
                       </label>
                     </div>
-                    <button className="match-run-btn" onClick={runJobMatch} disabled={jmLoading}>
+                    <button className="match-run-btn" onClick={runJobMatch} disabled={jmLoading || isStaticDemo}>
                       {jmLoading ? t.jmSearching : t.jmSearch}
                     </button>
                     {jmResults && jmResults.err && <p className="match-empty">{t.jmErr}</p>}
