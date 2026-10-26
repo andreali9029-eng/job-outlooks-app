@@ -151,6 +151,7 @@ const I18N = {
     noJobsPreview: 'Job preview not yet available for this occupation.',
     seeAllJobs: 'See all postings on Job Bank',
     installApp: 'Install app',
+    installIOS: 'In Safari, tap Share  then "Add to Home Screen" to install this app.',
     snapGood: 'Strong demand expected — good time to prepare applications.',
     snapModerate: 'Balanced market — focus on skills, certifications and networking.',
     snapLimited: 'Limited openings — stand out with training and local experience.',
@@ -300,6 +301,7 @@ const I18N = {
     noJobsPreview: 'Aperçu des offres non disponible pour cette profession.',
     seeAllJobs: 'Voir toutes les offres sur le Guichet-Emplois',
     installApp: 'Installer l\'application',
+    installIOS: 'Dans Safari, touchez Partager, puis « Ajouter à l\'écran d\'accueil » pour installer cette application.',
     snapGood: 'Demande forte attendue — bon moment pour préparer vos candidatures.',
     snapModerate: 'Marché équilibré — misez sur les compétences, certifications et réseautage.',
     snapLimited: 'Peu de débouchés — distinguez-vous par la formation et l\'expérience locale.',
@@ -636,6 +638,18 @@ export default function App() {
     window.addEventListener('beforeinstallprompt', onBeforeInstall)
     return () => window.removeEventListener('beforeinstallprompt', onBeforeInstall)
   }, [])
+
+  /* iOS Safari has no beforeinstallprompt: detect standalone mode and show a guide banner instead. */
+  const isIosNotInstalled = React.useMemo(() => {
+    if (typeof window === 'undefined') return false
+    const ua = navigator.userAgent || ''
+    const ios = /iPad|iPhone|iPod/.test(ua) && !window.MSStream
+    if (!ios) return false
+    const standalone = window.navigator.standalone ||
+      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+    return !standalone
+  }, [])
+  const showInstallBanner = (installEvt || isIosNotInstalled) && !selected
 
   const t = I18N[lang]
   /* Static hosting (GitHub Pages / Vercel static) has no /jb proxy on non-local origins:
@@ -2226,21 +2240,25 @@ export default function App() {
       )}
 
       {/* PWA install banner */}
-      {installEvt && !selected && (
+      {showInstallBanner && (
         <div className="install-banner">
           <span>📱</span>
-          <span className="install-text">{t.installApp}</span>
-          <button
-            className="install-btn"
-            onClick={async () => {
-              installEvt.prompt()
-              const choice = await installEvt.userChoice
-              if (choice.outcome === 'accepted') setInstallEvt(null)
-            }}
-          >
-            {t.installApp}
-          </button>
-          <button className="install-close" onClick={() => setInstallEvt(null)}>×</button>
+          <span className="install-text">{isIosNotInstalled ? t.installIOS : t.installApp}</span>
+          {!isIosNotInstalled && (
+            <button
+              className="install-btn"
+              onClick={async () => {
+                installEvt.prompt()
+                const choice = await installEvt.userChoice
+                if (choice.outcome === 'accepted') setInstallEvt(null)
+              }}
+            >
+              {t.installApp}
+            </button>
+          )}
+          {!isIosNotInstalled && (
+            <button className="install-close" onClick={() => setInstallEvt(null)}>×</button>
+          )}
         </div>
       )}
 
