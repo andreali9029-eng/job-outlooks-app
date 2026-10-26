@@ -595,7 +595,7 @@ export default function App() {
     if (codes.length === 0) return
     let alive = true
     Promise.all(codes.map(code =>
-      fetch(`/data/occ/${code}.json`)
+      fetch(`data/occ/${code}.json`)
         .then(r => r.json())
         .then(j => {
           const byProv = {}
@@ -646,7 +646,7 @@ export default function App() {
   )
 
   React.useEffect(() => {
-    fetch('/data/occupations.json')
+    fetch('data/occupations.json')
       .then(r => r.json())
       .then(setOccupations)
       .catch(() => {})
@@ -655,12 +655,12 @@ export default function App() {
   /* Labour-market trends (StatCan pipeline output) */
   React.useEffect(() => {
     Promise.all([
-      fetch('/data/trends/unemployment.json').then(r => r.json()),
-      fetch('/data/trends/industry.json').then(r => r.json()),
-      fetch('/data/trends/occ-unemployment.json').then(r => r.json()),
-      fetch('/data/trends/job-vacancy.json').then(r => r.json()).catch(() => null),
-      fetch('/data/trends/jobcounts-latest.json').then(r => r.json()).catch(() => null),
-      fetch('/data/trends/jobcounts-history.json').then(r => r.json()).catch(() => null),
+      fetch('data/trends/unemployment.json').then(r => r.json()),
+      fetch('data/trends/industry.json').then(r => r.json()),
+      fetch('data/trends/occ-unemployment.json').then(r => r.json()),
+      fetch('data/trends/job-vacancy.json').then(r => r.json()).catch(() => null),
+      fetch('data/trends/jobcounts-latest.json').then(r => r.json()).catch(() => null),
+      fetch('data/trends/jobcounts-history.json').then(r => r.json()).catch(() => null),
     ]).then(([u, i, o, v, j, h]) => {
       setTrends({ unemp: u, industry: i, occ: o, jvac: v })
       setJobCounts(j)
@@ -671,7 +671,7 @@ export default function App() {
 
   /* Live job previews (scraped from Job Bank, refreshed daily) */
   React.useEffect(() => {
-    fetch('/data/jobs-preview.json')
+    fetch('data/jobs-preview.json')
       .then(r => r.json())
       .then(setJobsPreview)
       .catch(() => {})
@@ -682,7 +682,7 @@ export default function App() {
   React.useEffect(() => {
     let alive = true
     Promise.all(QUICK_NOCS.map(code =>
-      fetch(`/data/occ/NOC_${code}.json`).then(r => r.json()).catch(() => null)
+      fetch(`data/occ/NOC_${code}.json`).then(r => r.json()).catch(() => null)
     )).then(list => {
       if (!alive) return
       const m = {}
@@ -735,7 +735,7 @@ export default function App() {
       }
     }
     try {
-      const res = await fetch(`/data/occ/${occ.code}.json`)
+      const res = await fetch(`data/occ/${occ.code}.json`)
       const data = await res.json()
       setOccData(data)
     } catch (e) {
@@ -854,7 +854,7 @@ export default function App() {
     const next = [...compareList, occ]
     setCompareList(next)
     if (!compareData[occ.code]) {
-      fetch(`/data/occ/${occ.code}.json`)
+      fetch(`data/occ/${occ.code}.json`)
         .then(r => r.json())
         .then(data => setCompareData(prev => ({ ...prev, [occ.code]: data })))
         .catch(() => {})
@@ -1099,7 +1099,7 @@ export default function App() {
   /* ---- Career match calculator ---- */
   const loadMatchIndex = () => {
     if (matchIndex) return Promise.resolve(matchIndex)
-    return fetch('/data/match-index.json')
+    return fetch('data/match-index.json')
       .then(r => r.json())
       .then(j => { setMatchIndex(j); return j })
   }
