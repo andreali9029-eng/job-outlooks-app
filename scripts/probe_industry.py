@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# Author: andreali9029-eng
+# Copyright (c) 2026 andreali9029-eng
+
 """Probe NAICS values in 14100201 (both languages) and Type of employee."""
 import zipfile, os
 import pandas as pd

@@ -1,4 +1,7 @@
-"""Generate PWA icons for the app."""
+"""
+# Author: andreali9029-eng
+# Copyright (c) 2026 andreali9029-eng
+Generate PWA icons for the app."""
 from PIL import Image, ImageDraw, ImageFont
 import math
 

@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# Author: andreali9029-eng
+# Copyright (c) 2026 andreali9029-eng
+
 """
 Daily Job Bank job-count collector.
 For each occupation x province it GETs the Job Bank search page (the same URL

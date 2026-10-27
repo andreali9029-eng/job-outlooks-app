@@ -1,7 +1,13 @@
-/* Canada provinces & territories map paths
-   Source: @svg-maps/canada.lambert-projection (MIT) — Statistics Canada boundaries,
-   Lambert projection. viewBox: 4 4 1075 911
-*/
+/**
+ * @file canadaPaths.js
+ * @description SVG path data for a Lambert-projection map of Canada.
+ *   Source: @svg-maps/canada.lambert-projection (MIT) — Statistics Canada
+ *   boundaries, Lambert projection. viewBox: 4 4 1075 911.
+ *   CANADA_PATHS: [{ code: 'YT'|'NT'|..., d: '<path d=...>' }]
+ * @author andreali9029-eng
+ * @copyright © 2026 andreali9029-eng
+ * @version 1.0.0
+ */
 export const CANADA_VIEWBOX = '4 4 1075 911'
 
 export const CANADA_PATHS = [

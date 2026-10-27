@@ -1,7 +1,15 @@
+/**
+ * @file TrendChart.jsx
+ * @description Lightweight dependency-free SVG line chart for labour-market trends
+ *   (unemployment rate, industry employment, vacancy counts, job posting counts).
+ * @author andreali9029-eng
+ * @copyright © 2026 andreali9029-eng
+ * @version 1.0.0
+ */
 import React from 'react'
 
 /**
- * Lightweight dependency-free SVG line chart for labour-market trends.
+ * Trend line chart.
  * props:
  *  series  : [{ name, color, values: (number|null)[] }]
  *  dates   : string[] (e.g. '2026-09')  — must be same length as each series' values

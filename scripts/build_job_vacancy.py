@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# Author: andreali9029-eng
+# Copyright (c) 2026 andreali9029-eng
+
 """Build trends/job-vacancy.json from StatCan table 14-10-0326 (JVW).
 
 Extracts the monthly "Job vacancy rate" (Total, all industries) for Canada and

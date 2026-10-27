@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# Author: andreali9029-eng
+# Copyright (c) 2026 andreali9029-eng
+
 """Find where '211' appears in Job Bank HTML."""
 import re, urllib.request, http.cookiejar
 

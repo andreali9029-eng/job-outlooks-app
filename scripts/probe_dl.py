@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# Author: andreali9029-eng
+# Copyright (c) 2026 andreali9029-eng
+
 """Test downloading one StatCan zip with different headers, inspect the payload."""
 import http.cookiejar, urllib.request, os
 

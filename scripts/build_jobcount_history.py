@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# Author: andreali9029-eng
+# Copyright (c) 2026 andreali9029-eng
+
 """
 Merge all daily Job Bank snapshots (data/jobcounts/*.jsonl) into one
 front-end file public/data/trends/jobcounts-history.json:

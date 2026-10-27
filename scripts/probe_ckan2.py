@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# Author: andreali9029-eng
+# Copyright (c) 2026 andreali9029-eng
+
 """List all resources of the 3-Year Employment Outlooks package with URLs."""
 import json, re, urllib.request, urllib.parse
 

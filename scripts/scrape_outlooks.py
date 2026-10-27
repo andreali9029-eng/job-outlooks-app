@@ -1,5 +1,9 @@
 """
 Scraper for Job Bank Employment Outlooks data.
+
+Author: andreali9029-eng
+Copyright (c) 2026 andreali9029-eng
+
 Run this script to fetch the latest data from Job Bank website.
 
 Usage:

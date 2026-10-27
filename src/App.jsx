@@ -1,3 +1,14 @@
+/**
+ * @file App.jsx
+ * @description Canada Job Outlooks — main application component.
+ *   Explore employment prospects across Canada: occupation search & ratings,
+ *   provincial wages map, labour-market trends, favourites, net-pay calculator,
+ *   occupation matching and live Job Bank job-posting matching.
+ *   Fully bilingual (EN/FR) and installable as a PWA.
+ * @author andreali9029-eng
+ * @copyright © 2026 andreali9029-eng
+ * @version 1.0.0
+ */
 import React from 'react'
 import { CANADA_PATHS, CANADA_VIEWBOX } from './canadaPaths'
 import TrendChart from './TrendChart'
@@ -5,7 +16,9 @@ import { badgeFor, PROVINCE_BADGES } from './provinceBadges'
 import { calcNetPay } from './netPay'
 import { fetchPostings, fetchPostingDetail, scorePosting, keywordsOf } from './jobMatch'
 
-/* ---------- i18n ---------- */
+/* ---------- i18n ----------
+ * All user-facing strings, EN (index 0) and FR (index 1).
+ * The active language is picked by the `lang` state in <App>. */
 const I18N = {
   en: {
     tagline: 'Explore employment prospects across Canada',
@@ -309,6 +322,9 @@ const I18N = {
   },
 }
 
+/* ---------- Province metadata ----------
+ * Bilingual full names for the 10 provinces + 3 territories,
+ * keyed by their standard two-letter code. */
 const PROVINCE_NAMES = {
   en: {
     NL: 'Newfoundland and Labrador', PE: 'Prince Edward Island', NS: 'Nova Scotia',
@@ -322,6 +338,9 @@ const PROVINCE_NAMES = {
   },
 }
 
+/* ---------- NOC major groups ----------
+ * The 10 top-level 2021 NOC (National Occupational Classification) categories
+ * used by the "Browse by industry" explorer. `id` is the first digit. */
 const NOC_GROUPS = [
   { id: '0', en: 'Legislative and senior management', fr: 'Dirigeants', color: '#334155' },
   { id: '1', en: 'Business, finance and administration', fr: 'Affaires, finance et administration', color: '#1d4ed8' },
@@ -335,6 +354,9 @@ const NOC_GROUPS = [
   { id: '9', en: 'Manufacturing and utilities', fr: 'Fabrication et services d\'utilité publique', color: '#0891b2' },
 ]
 
+/* ---------- Outlook rating config ----------
+ * Visual config (star count, colours) and sort order for each Job Bank
+ * 3-year employment outlook rating. */
 const OUTLOOK_CONFIG = {
   'very good': { stars: 5, key: 'very good', color: '#16a34a', bg: '#dcfce7', order: 5 },
   'good': { stars: 4, key: 'good', color: '#4ade80', bg: '#f0fdf4', order: 4 },
@@ -344,6 +366,7 @@ const OUTLOOK_CONFIG = {
   'undetermined': { stars: 0, key: 'undetermined', color: '#6b7280', bg: '#f3f4f6', order: 0 },
 }
 
+/* ---------- Outlook labels (EN/FR) ---------- */
 const OUTLOOK_LABELS = {
   en: {
     'very good': 'Very Good', 'good': 'Good', 'moderate': 'Moderate',
@@ -420,6 +443,11 @@ const FAQS = {
 }
 
 /* ---------- helpers ---------- */
+
+/**
+ * Renders a 5-star rating for an occupation outlook.
+ * @param {{ count: number }} props - number of filled stars (0-5).
+ */
 function Stars({ count }) {
   return (
     <span className="stars">
@@ -430,6 +458,11 @@ function Stars({ count }) {
   )
 }
 
+/**
+ * Generic modal overlay with a title bar and close button.
+ * @param {{ title: string, children: React.ReactNode|string, onClose: () => void }} props
+ *   - children as string is injected as trusted HTML (used for methodology/FAQ markdown).
+ */
 function Modal({ title, children, onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -448,12 +481,29 @@ function Modal({ title, children, onClose }) {
   )
 }
 
+/**
+ * Format a wage value for display.
+ * @param {number|undefined|null} val - wage amount.
+ * @param {boolean} isAnnual - true → yearly salary ($64,000), false → hourly ($32.00).
+ * @returns {string} formatted wage or 'N/A'.
+ */
 function formatWage(val, isAnnual) {
   if (!val) return 'N/A'
   if (isAnnual) return `$${Math.round(val).toLocaleString()}`
   return `$${val.toFixed(2)}`
 }
 
+/**
+ * Interactive SVG map of Canada.
+ * Each province/territory is coloured by the selected occupation's outlook
+ * rating (or wage level) and is clickable.
+ * @param {Object} props
+ * @param {Object} props.provinceRatings - province code → outlook rating.
+ * @param {Object} props.provinceWages - province code → median wage.
+ * @param {(code: string) => void} props.onProvinceClick - province selection handler.
+ * @param {string|null} props.selectedProvince - currently highlighted province.
+ * @param {'en'|'fr'} props.lang - UI language for tooltips.
+ */
 function CanadaMap({ provinceRatings, provinceWages, onProvinceClick, selectedProvince, lang }) {
   const [hover, setHover] = React.useState(null)
   const getColor = (code) => {
@@ -522,6 +572,12 @@ function CanadaMap({ provinceRatings, provinceWages, onProvinceClick, selectedPr
 }
 
 /* ---------- App ---------- */
+/**
+ * Root application component.
+ * Owns global state (language, active tab, occupation list, favourites,
+ * comparison set, labour-market trend data) and renders the 4-tab shell:
+ * Home / Explore / Trends / Saved, with the detail views on top.
+ */
 export default function App() {
   const [lang, setLang] = React.useState('en')
   const [tab, setTab] = React.useState('home')
@@ -728,6 +784,14 @@ export default function App() {
       }).slice(0, 10)
     : []
 
+  /* ---------- Core data loading ---------- */
+
+  /**
+   * Load an occupation's full regional data (wages/outlooks by province and
+   * economic region) and open its detail view.
+   * @param {Object} occ - occupation from the index ({ code, title, ... }).
+   * @param {{ skipSave?: boolean }} [opts]
+   */
   const loadOccupation = async (occ, opts = {}) => {
     const { updateHistory = true } = opts
     setSelected(occ)
@@ -758,6 +822,7 @@ export default function App() {
     setLoading(false)
   }
 
+  /** Reset the search query and clear any selected occupation (back to home). */
   const resetHome = () => {
     setSelected(null)
     setOccData(null)
@@ -770,6 +835,7 @@ export default function App() {
     window.scrollTo({ top: 0 })
   }
 
+  /** Return to the home tab (used by nav, swipes and the home button). */
   const goHome = () => {
     // If a result is recorded in history, let the browser go back (triggers
     // popstate -> resetHome). Otherwise reset state directly so we never
@@ -801,6 +867,9 @@ export default function App() {
   }, [occupations])
 
   /* Swipe-to-go-back (mobile): leftward swipe on the result page returns home */
+  /* ---------- Touch navigation ----------
+   * Horizontal swipes navigate back/forward within the app (left = back,
+   * right = forward). Only triggered on significant horizontal drags. */
   const touchStartRef = React.useRef(null)
   const handleTouchStart = (e) => {
     if (!selected && tab === 'home') return
@@ -824,6 +893,12 @@ export default function App() {
     }
   }
 
+  /**
+   * Open the selected province's latest Job Bank postings for this occupation
+   * in a half-screen sheet (full window is opened by an external link when the
+   * embedded view is unavailable).
+   * @param {string} provCode - province/territory code (ON, QC, ...).
+   */
   const openJobs = (provCode) => {
     if (!occData) return
     const base = lang === 'en'
@@ -862,6 +937,7 @@ export default function App() {
     }
   }
 
+  /** Add an occupation to the 2-way comparison (loads its data on demand). */
   const addToCompare = async (occ) => {
     if (compareList.length >= 2) return
     if (compareList.some(c => c.code === occ.code)) return
@@ -875,6 +951,7 @@ export default function App() {
     }
   }
 
+  /** Remove an occupation from the comparison set. */
   const removeFromCompare = (code) => {
     setCompareList(prev => prev.filter(c => c.code !== code))
   }
@@ -928,6 +1005,7 @@ export default function App() {
     return best
   }, [provinceWages])
 
+  /** Toggle a province filter on the home explorer (multi-select allowed). */
   const toggleProvince = (provCode) => {
     const next = new Set(expandedProvinces)
     if (next.has(provCode)) next.delete(provCode)
@@ -935,6 +1013,7 @@ export default function App() {
     setExpandedProvinces(next)
   }
 
+  /** Toggle the economic-region selector for the net-pay calculator. */
   const toggleRegion = (key) => {
     const next = new Set(expandedRegions)
     if (next.has(key)) next.delete(key)
@@ -942,6 +1021,7 @@ export default function App() {
     setExpandedRegions(next)
   }
 
+  /** Expand every province block on the home explorer. */
   const expandAll = () => {
     setExpandedProvinces(new Set(Object.keys(byProvince)))
     const regs = new Set()
@@ -951,11 +1031,13 @@ export default function App() {
     setExpandedRegions(regs)
   }
 
+  /** Collapse every province block on the home explorer. */
   const collapseAll = () => {
     setExpandedProvinces(new Set())
     setExpandedRegions(new Set())
   }
 
+  /** Toggle an outlook-rating filter chip (e.g. show only "Good" + "Very Good"). */
   const toggleFilter = (label) => {
     const next = new Set(filters)
     if (next.has(label)) next.delete(label)
@@ -964,6 +1046,7 @@ export default function App() {
   }
 
   /* Favorites (saved occupations) */
+  /** Toggle an occupation in the favourites list (persisted in localStorage). */
   const toggleFavorite = (code) => {
     setFavorites(prev => prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code])
   }
@@ -1015,6 +1098,7 @@ export default function App() {
     setMapProvince(prev => prev === provCode ? null : provCode)
   }
 
+  /** Filter occupations by selected provinces and outlook ratings. */
   const filteredProvinces = React.useMemo(() => {
     let entries = Object.entries(byProvince)
     if (filters.size > 0) {
@@ -1086,6 +1170,7 @@ export default function App() {
     }
   }, [trends.industry, trendProvince, lang])
 
+  /** Total live postings for an occupation across all provinces. */
   const totalJobsFor = (code) => {
     const c = jobCounts?.counts?.[code]
     if (!c) return null
@@ -1118,6 +1203,13 @@ export default function App() {
       .then(j => { setMatchIndex(j); return j })
   }
 
+  /* ---------- Career match (occupation mode) ---------- */
+
+  /**
+   * Run the occupation match: score every occupation in the match index
+   * against the user's profile (expected wage, preferred province, priority)
+   * and rank them high → low.
+   */
   const runMatch = async () => {
     const idx = await loadMatchIndex()
     if (!idx) return
@@ -1157,6 +1249,11 @@ export default function App() {
   }
 
   /* ---- Job posting match (live Job Bank) ---- */
+  /**
+   * Run the job-posting match (live Job Bank postings via the /jb proxy).
+   * Each keyword is searched separately and merged; results are scored by
+   * title/wage/freshness/location. Disabled on static hosting (no proxy).
+   */
   const runJobMatch = async () => {
     if (isStaticDemo) {
       setJmResults({ scored: [], kws: [], query: jmForm.query, err: true })
@@ -1188,6 +1285,12 @@ export default function App() {
     }
   }
 
+  /**
+   * Toggle a job-posting result's expanded detail (fetches the full posting
+   * description from Job Bank and computes the description keyword match).
+   * @param {string} id - posting id.
+   * @param {Object} job - posting object from the match results.
+   */
   const toggleJmDetail = async (id, job) => {
     if (jmOpenId === id) { setJmOpenId(null); return }
     setJmOpenId(id)
@@ -2299,6 +2402,13 @@ export default function App() {
   )
 }
 
+/**
+ * Side-by-side comparison table of two occupations (outlook + wages per province).
+ * @param {Object} props
+ * @param {Object} props.occA / props.occB - the two occupations being compared.
+ * @param {Object} props.dataA / props.dataB - their loaded regional data.
+ * @param {'en'|'fr'} props.lang - UI language.
+ */
 function CompareTable({ occA, occB, dataA, dataB, lang }) {
   const t = I18N[lang]
   const provCodes = Object.keys(PROVINCE_NAMES[lang])

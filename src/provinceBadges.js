@@ -1,6 +1,14 @@
-// Province/territory badge definitions: representative gradient colours
-// (inspired by each region's flag palette) + a symbol for the chip marker.
-// CA uses the maple leaf; others use their standard 2-letter abbreviation.
+/**
+ * @file provinceBadges.js
+ * @description Province/territory badge definitions: representative gradient
+ *   colours (inspired by each region's flag palette) + a symbol for the chip
+ *   marker. CA uses the maple leaf; others use their 2-letter abbreviation.
+ * @author andreali9029-eng
+ * @copyright © 2026 andreali9029-eng
+ * @version 1.0.0
+ */
+
+/** Badge config per province/territory code (CA included). */
 export const PROVINCE_BADGES = {
   CA: { sym: '🍁', from: '#d52b1e', to: '#ef7a5b' },
   NL: { sym: 'NL', from: '#4b6fa5', to: '#8fb3dd' },
@@ -18,6 +26,12 @@ export const PROVINCE_BADGES = {
   NU: { sym: 'NU', from: '#f4b41a', to: '#1a5c96' },
 }
 
+/**
+ * Get the badge config for a province/territory code.
+ * @param {string} code - standard 2-letter code (CA, ON, QC, ...).
+ * @param {string} [fallback='CA'] - code to use when the requested one is unknown.
+ * @returns {{ sym: string, from: string, to: string }}
+ */
 export function badgeFor(code, fallback = 'CA') {
   return PROVINCE_BADGES[code] || PROVINCE_BADGES[fallback]
 }

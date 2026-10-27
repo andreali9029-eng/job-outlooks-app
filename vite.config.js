@@ -1,3 +1,15 @@
+/**
+ * @file vite.config.js
+ * @description Vite build configuration for the Canada Job Outlooks PWA.
+ *   - base: configurable via BASE_PATH env (needed for sub-path hosting,
+ *     e.g. GitHub Pages under /job-outlooks-app/)
+ *   - VitePWA: installable PWA (manifest + workbox service worker with
+ *     runtime caching for occupation/trend data)
+ *   - server.proxy: dev proxy /jb/* → jobbank.gc.ca (Job Bank blocks CORS)
+ * @author andreali9029-eng
+ * @copyright © 2026 andreali9029-eng
+ * @version 1.0.0
+ */
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'

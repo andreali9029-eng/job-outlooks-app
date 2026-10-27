@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# Author: andreali9029-eng
+# Copyright (c) 2026 andreali9029-eng
+
 """Inspect open.canada.ca CKAN for the outlook resources naming."""
 import json, re, urllib.request, urllib.parse
 

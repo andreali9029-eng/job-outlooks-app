@@ -1,3 +1,15 @@
+/**
+ * @file jobMatch.js
+ * @description Job Bank live-posting matching module.
+ *   Fetches & parses real-time Job Bank job-search pages through the /jb proxy
+ *   (required because Job Bank blocks cross-origin browser requests), then
+ *   scores each posting against the user's profile (title / wage / freshness /
+ *   location). Pure functions — no React dependency.
+ * @author andreali9029-eng
+ * @copyright © 2026 andreali9029-eng
+ * @version 1.0.0
+ */
+
 /* Job Match: fetch & parse live Job Bank postings (via the /jb dev proxy)
    and score each posting against the user's profile.
    Pure functions — no React dependency. */

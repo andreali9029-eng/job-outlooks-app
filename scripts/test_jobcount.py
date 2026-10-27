@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# Author: andreali9029-eng
+# Copyright (c) 2026 andreali9029-eng
+
 """Test Job Bank job-count extraction with urllib (stdlib only)."""
 import re, urllib.request, http.cookiejar
 

@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# Author: andreali9029-eng
+# Copyright (c) 2026 andreali9029-eng
+
 """Try to locate StatCan table zips via open.canada.ca CKAN mirrors."""
 import json, re, urllib.request, urllib.parse
 
