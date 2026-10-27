@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# Author: andreali9029-eng
-# Copyright (c) 2026 andreali9029-eng
+# Author: Xiaopeng Li
+# Copyright (c) 2026 Xiaopeng Li
 
 """Show full URLs of the 2025-2027 XLSX resources (en/fr) and find wages dataset."""
 import json, re, urllib.request, urllib.parse

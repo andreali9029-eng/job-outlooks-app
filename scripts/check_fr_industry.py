@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# Author: andreali9029-eng
-# Copyright (c) 2026 andreali9029-eng
+# Author: Xiaopeng Li
+# Copyright (c) 2026 Xiaopeng Li
 
 """Check FR employee-type values and sample rows in 14100201."""
 import zipfile, os

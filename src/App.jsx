@@ -5,8 +5,8 @@
  *   provincial wages map, labour-market trends, favourites, net-pay calculator,
  *   occupation matching and live Job Bank job-posting matching.
  *   Fully bilingual (EN/FR) and installable as a PWA.
- * @author andreali9029-eng
- * @copyright © 2026 andreali9029-eng
+ * @author Xiaopeng Li
+ * @copyright © 2026 Xiaopeng Li
  * @version 1.0.0
  */
 import React from 'react'

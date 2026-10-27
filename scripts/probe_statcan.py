@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# Author: andreali9029-eng
-# Copyright (c) 2026 andreali9029-eng
+# Author: Xiaopeng Li
+# Copyright (c) 2026 Xiaopeng Li
 
 """Download StatCan LFS tables and inspect their structure."""
 import urllib.request, zipfile, io, os

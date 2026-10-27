@@ -5,8 +5,8 @@
  *   (required because Job Bank blocks cross-origin browser requests), then
  *   scores each posting against the user's profile (title / wage / freshness /
  *   location). Pure functions — no React dependency.
- * @author andreali9029-eng
- * @copyright © 2026 andreali9029-eng
+ * @author Xiaopeng Li
+ * @copyright © 2026 Xiaopeng Li
  * @version 1.0.0
  */
 

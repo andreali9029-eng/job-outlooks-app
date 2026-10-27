@@ -4,8 +4,8 @@
  *   Source: @svg-maps/canada.lambert-projection (MIT) — Statistics Canada
  *   boundaries, Lambert projection. viewBox: 4 4 1075 911.
  *   CANADA_PATHS: [{ code: 'YT'|'NT'|..., d: '<path d=...>' }]
- * @author andreali9029-eng
- * @copyright © 2026 andreali9029-eng
+ * @author Xiaopeng Li
+ * @copyright © 2026 Xiaopeng Li
  * @version 1.0.0
  */
 export const CANADA_VIEWBOX = '4 4 1075 911'

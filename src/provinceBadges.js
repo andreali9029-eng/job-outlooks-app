@@ -3,8 +3,8 @@
  * @description Province/territory badge definitions: representative gradient
  *   colours (inspired by each region's flag palette) + a symbol for the chip
  *   marker. CA uses the maple leaf; others use their 2-letter abbreviation.
- * @author andreali9029-eng
- * @copyright © 2026 andreali9029-eng
+ * @author Xiaopeng Li
+ * @copyright © 2026 Xiaopeng Li
  * @version 1.0.0
  */
 

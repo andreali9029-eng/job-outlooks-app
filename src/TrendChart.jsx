@@ -2,8 +2,8 @@
  * @file TrendChart.jsx
  * @description Lightweight dependency-free SVG line chart for labour-market trends
  *   (unemployment rate, industry employment, vacancy counts, job posting counts).
- * @author andreali9029-eng
- * @copyright © 2026 andreali9029-eng
+ * @author Xiaopeng Li
+ * @copyright © 2026 Xiaopeng Li
  * @version 1.0.0
  */
 import React from 'react'

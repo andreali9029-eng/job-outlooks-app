@@ -1,8 +1,8 @@
 """
 Process Job Bank Wages CSV into clean JSON for the frontend.
 
-Author: andreali9029-eng
-Copyright (c) 2026 andreali9029-eng
+Author: Xiaopeng Li
+Copyright (c) 2026 Xiaopeng Li
 
 Outputs: public/data/wages.json (keyed by NOC code)
 """

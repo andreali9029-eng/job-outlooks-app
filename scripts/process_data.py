@@ -1,8 +1,8 @@
 """
 Process Job Bank Employment Outlooks (EN+FR) and Wages into per-occupation JSON files.
 
-Author: andreali9029-eng
-Copyright (c) 2026 andreali9029-eng
+Author: Xiaopeng Li
+Copyright (c) 2026 Xiaopeng Li
 
 Outputs:
   - public/data/occupations.json           (list of {code, title:{en,fr}} for search)

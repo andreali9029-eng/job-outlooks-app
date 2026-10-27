@@ -6,8 +6,8 @@
  *   - VitePWA: installable PWA (manifest + workbox service worker with
  *     runtime caching for occupation/trend data)
  *   - server.proxy: dev proxy /jb/* → jobbank.gc.ca (Job Bank blocks CORS)
- * @author andreali9029-eng
- * @copyright © 2026 andreali9029-eng
+ * @author Xiaopeng Li
+ * @copyright © 2026 Xiaopeng Li
  * @version 1.0.0
  */
 import { defineConfig } from 'vite'

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# Author: andreali9029-eng
-# Copyright (c) 2026 andreali9029-eng
+# Author: Xiaopeng Li
+# Copyright (c) 2026 Xiaopeng Li
 
 """Probe remaining StatCan tables with separator auto-detection."""
 import urllib.request, zipfile, os, io

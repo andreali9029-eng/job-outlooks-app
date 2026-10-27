@@ -1,8 +1,8 @@
 /**
  * @file main.jsx
  * @description Application entry point — mounts the <App /> component into #root.
- * @author andreali9029-eng
- * @copyright © 2026 andreali9029-eng
+ * @author Xiaopeng Li
+ * @copyright © 2026 Xiaopeng Li
  * @version 1.0.0
  */
 import React from 'react'

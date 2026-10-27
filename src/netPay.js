@@ -5,8 +5,8 @@
  *   (K already embeds the basic personal amount credit).
  *   Quebec is approximated: KPMG 2026 brackets + QPP≈CPP + QPIP; EI at QC rate.
  *   Ontario adds surtax and health premium. Union dues are an optional %.
- * @author andreali9029-eng
- * @copyright © 2026 andreali9029-eng
+ * @author Xiaopeng Li
+ * @copyright © 2026 Xiaopeng Li
  * @version 1.0.0
  */
 import TAX from './data/tax-2026.json'

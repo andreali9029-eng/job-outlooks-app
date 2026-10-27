@@ -1,6 +1,6 @@
 """
-# Author: andreali9029-eng
-# Copyright (c) 2026 andreali9029-eng
+# Author: Xiaopeng Li
+# Copyright (c) 2026 Xiaopeng Li
 Generate PWA icons for the app."""
 from PIL import Image, ImageDraw, ImageFont
 import math
