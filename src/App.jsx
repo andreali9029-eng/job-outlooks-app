@@ -45,6 +45,7 @@ const I18N = {
     clearProvinceFilter: 'Clear province filter',
     dataSource: 'Data source: Government of Canada, Job Bank · 3-Year Employment Outlooks (2025-2027) · Wages (2025)',
     unitsLabel: 'provinces/territories',
+    occupationsLabel: 'occupations',
     bestPay: 'Best paid province',
     nationalMedian: 'National median',
     sectorMix: 'Where they work',
@@ -195,6 +196,7 @@ const I18N = {
     clearProvinceFilter: 'Effacer le filtre de province',
     dataSource: 'Source des données : Gouvernement du Canada, Guichet-Emplois · Perspectives d\'emploi sur 3 ans (2025-2027) · Salaires (2025)',
     unitsLabel: 'provinces/territoires',
+    occupationsLabel: 'professions',
     bestPay: 'Province la mieux rémunérée',
     nationalMedian: 'Médiane nationale',
     sectorMix: 'Secteurs d\'emploi',
@@ -1611,8 +1613,8 @@ export default function App() {
                         onClick={() => setExploreGroup(g.id)}
                       >
                         <span className="noc-group-num" style={{ background: g.color }}>{g.id}</span>
-                        <span className="noc-group-name">{g.en}</span>
-                        <span className="noc-group-count">{n} {t.unitsLabel}</span>
+                        <span className="noc-group-name">{lang === 'fr' ? g.fr : g.en}</span>
+                        <span className="noc-group-count">{n} {t.occupationsLabel}</span>
                       </button>
                     )
                   })}
