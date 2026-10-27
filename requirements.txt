@@ -1,0 +1,5 @@
+# Python dependencies for the Canada Job Outlooks data pipeline (scripts/*.py)
+# Install with:  python -m pip install -r requirements.txt
+pandas
+requests
+Pillow
