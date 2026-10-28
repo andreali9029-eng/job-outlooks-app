@@ -1,0 +1,52 @@
+# Monthly Statistics Canada + Job Bank outlook data update (cloud-run)
+# Replaces the old local "JobBank StatCan Auto" scheduled task:
+#   1. Downloads/refreshes StatCan LFS tables (unemployment, industry,
+#      occupation rates) + re-checks Job Bank 3-year outlook/wages releases
+#   2. Rebuilds all front-end trend JSONs + job-vacancy data
+#   3. Commits + pushes changes to master (push then triggers deploy.yml)
+# Skips quietly when Statistics Canada has not published a new release.
+name: Monthly StatCan update
+
+on:
+  schedule:
+    # 1st day of every month, 12:00 UTC (east 07:00-08:00) — StatCan LFS
+    # monthly releases land ~5 business days after month end, so the 1st
+    # covers the previous month's data.
+    - cron: '0 12 1 * *'
+  workflow_dispatch: # manual "run now" from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Run StatCan monthly update + vacancy build
+        run: |
+          python scripts/update_statcan.py
+          python scripts/build_job_vacancy.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "data: monthly StatCan + Job Bank outlook update"
+            git push
+            echo "Monthly data updated and pushed."
+          else
+            echo "No changes this month (StatCan did not publish a new release)."
+          fi
