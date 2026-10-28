@@ -33,10 +33,23 @@ jobs:
       - name: Install Python dependencies
         run: python -m pip install -r requirements.txt
 
-      - name: Run StatCan monthly update + vacancy build
+      - name: Run StatCan monthly update
         run: |
           python scripts/update_statcan.py
-          python scripts/build_job_vacancy.py
+
+      - name: Download JVW vacancy table (14-10-0326, required by build_job_vacancy)
+        run: |
+          mkdir -p data
+          curl -fsSL -o data/14100326-eng.zip "https://www150.statcan.gc.ca/n1/tbl/csv/14100326-eng.zip" || echo "eng download failed"
+          curl -fsSL -o data/14100326-fra.zip "https://www150.statcan.gc.ca/n1/tbl/csv/14100326-fra.zip" || echo "fra download failed"
+
+      - name: Build job-vacancy data (skip if JVW zips unavailable)
+        run: |
+          if [ -s data/14100326-eng.zip ] && [ -s data/14100326-fra.zip ]; then
+            python scripts/build_job_vacancy.py || echo "job-vacancy build failed — keeping existing data"
+          else
+            echo "JVW zips not available this run — keeping existing job-vacancy.json"
+          fi
 
       - name: Commit and push changes
         run: |
