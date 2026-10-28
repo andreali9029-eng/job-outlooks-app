@@ -4,8 +4,12 @@ node_modules/
 # build output
 dist/
 
-# raw data sources (re-downloadable), daily snapshots, logs, local auth files
-/data/
+# raw data sources (re-downloadable), logs, local auth files
+# NOTE: data/jobcounts/*.jsonl (daily Job Bank snapshots) IS committed so
+# GitHub Actions and the cloud build keep the full posting-count history.
+/data/*
+!/data/jobcounts/
+!/data/jobcounts/*.jsonl
 
 # misc
 *.log

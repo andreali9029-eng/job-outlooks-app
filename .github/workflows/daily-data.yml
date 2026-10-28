@@ -1,0 +1,54 @@
+# Daily Job Bank data refresh (runs in the cloud — no local PC needed)
+# 1. Scrapes live job counts (14 occupations x 14 regions) + job previews
+# 2. Rebuilds the front-end trend JSONs
+# 3. Commits + pushes any changes to master
+#    (the push then triggers deploy.yml, which rebuilds and ships GitHub Pages)
+name: Daily Job Bank data
+
+on:
+  schedule:
+    # 12:00 UTC = 08:00 Eastern (EDT) / 07:00 (EST) — Job Bank updates overnight
+    - cron: '0 12 * * *'
+  workflow_dispatch: # allows manual "run now" from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  scrape-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Scrape daily job counts (curated occupations x provinces)
+        run: python scripts/scrape_jobcount.py
+
+      - name: Scrape live job previews
+        run: python scripts/scrape_jobs_preview.py --limit 5
+
+      - name: Build front-end trend JSONs
+        run: |
+          python scripts/build_jobcount_latest.py
+          python scripts/build_jobcount_history.py
+
+      - name: Commit and push data changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "data: daily Job Bank job-count snapshot ($(date +%Y-%m-%d))"
+            git push
+            echo "Data updated and pushed."
+          else
+            echo "No data changes today."
+          fi
