@@ -40,8 +40,9 @@ jobs:
       - name: Download JVW vacancy table (14-10-0326, required by build_job_vacancy)
         run: |
           mkdir -p data
-          curl -fsSL -o data/14100326-eng.zip "https://www150.statcan.gc.ca/n1/tbl/csv/14100326-eng.zip" || echo "eng download failed"
-          curl -fsSL -o data/14100326-fra.zip "https://www150.statcan.gc.ca/n1/tbl/csv/14100326-fra.zip" || echo "fra download failed"
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+          curl -fsSL -A "$UA" -e "https://www150.statcan.gc.ca/" -o data/14100326-eng.zip "https://www150.statcan.gc.ca/n1/tbl/csv/14100326-eng.zip" || echo "eng download failed"
+          curl -fsSL -A "$UA" -e "https://www150.statcan.gc.ca/" -o data/14100326-fra.zip "https://www150.statcan.gc.ca/n1/tbl/csv/14100326-fra.zip" || echo "fra download failed"
 
       - name: Build job-vacancy data (skip if JVW zips unavailable)
         run: |
