@@ -1406,6 +1406,57 @@ export default function App() {
               <h2 className="trends-title">{t.exploreTitle}</h2>
               <p className="trends-hint">{t.exploreHint}</p>
             </div>
+            {exploreGroup === null ? (
+                <div className="noc-groups">
+                  {NOC_GROUPS.map(g => {
+                    const n = occupations.filter(o => o.code.replace('NOC_', '')[0] === g.id).length
+                    return (
+                      <button
+                        key={g.id}
+                        className="noc-group-card"
+                        style={{ borderTopColor: g.color }}
+                        onClick={() => setExploreGroup(g.id)}
+                      >
+                        <span className="noc-group-num" style={{ background: g.color }}>{g.id}</span>
+                        <span className="noc-group-name">{lang === 'fr' ? g.fr : g.en}</span>
+                        <span className="noc-group-count">{n} {t.occupationsLabel}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : (
+                <>
+                  <button className="back-groups-btn" onClick={() => setExploreGroup(null)}>
+                    ← {t.backToGroups}
+                  </button>
+                  {(() => {
+                    const g = NOC_GROUPS.find(x => x.id === exploreGroup)
+                    const list = occupations.filter(o => o.code.replace('NOC_', '')[0] === exploreGroup)
+                    return (
+                      <div className="explore-list">
+                        {list.length === 0 && <p className="no-results">{t.exploreEmpty}</p>}
+                        {list.map(o => (
+                          <button key={o.code} className="explore-occ" onClick={() => loadOccupation(o)}>
+                            <span className="explore-occ-name">{o.title[lang] || o.title.en}</span>
+                            <span className="noc">{o.code.replace('NOC_', '')}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )
+                  })()}
+                </>
+              )
+            }
+          </section>
+        )}
+
+        {/* Saved occupations */}
+        {!selected && tab === 'saved' && (
+          <section className="saved-section">
+            <div className="trends-head">
+              <h2 className="trends-title">{t.savedTitle}</h2>
+              <p className="trends-hint">{t.savedHint}</p>
+            </div>
             {!matchResults && (
               <button className="match-entry-card" onClick={() => { loadMatchIndex(); setMatchResults([]) }}>
                 <span className="match-entry-title">{t.matchCta}</span>
@@ -1415,7 +1466,7 @@ export default function App() {
             {matchResults !== null ? (
               <div className="match-view">
                 <button className="back-groups-btn" onClick={() => { setMatchResults(null); setMatchForm({ wage: '', prov: '', mode: 'balanced' }); setJmMode('occ'); setJmResults(null); setJmOpenId(null) }}>
-                  ← {t.exploreTitle}
+                  ← {t.savedTitle}
                 </button>
                 <div className="jm-mode-switch">
                   <button className={`jm-mode-btn ${jmMode === 'occ' ? 'active' : ''}`} onClick={() => setJmMode('occ')}>
@@ -1601,58 +1652,7 @@ export default function App() {
                 )}
               </div>
             ) : (
-              exploreGroup === null ? (
-                <div className="noc-groups">
-                  {NOC_GROUPS.map(g => {
-                    const n = occupations.filter(o => o.code.replace('NOC_', '')[0] === g.id).length
-                    return (
-                      <button
-                        key={g.id}
-                        className="noc-group-card"
-                        style={{ borderTopColor: g.color }}
-                        onClick={() => setExploreGroup(g.id)}
-                      >
-                        <span className="noc-group-num" style={{ background: g.color }}>{g.id}</span>
-                        <span className="noc-group-name">{lang === 'fr' ? g.fr : g.en}</span>
-                        <span className="noc-group-count">{n} {t.occupationsLabel}</span>
-                      </button>
-                    )
-                  })}
-                </div>
-              ) : (
-                <>
-                  <button className="back-groups-btn" onClick={() => setExploreGroup(null)}>
-                    ← {t.backToGroups}
-                  </button>
-                  {(() => {
-                    const g = NOC_GROUPS.find(x => x.id === exploreGroup)
-                    const list = occupations.filter(o => o.code.replace('NOC_', '')[0] === exploreGroup)
-                    return (
-                      <div className="explore-list">
-                        {list.length === 0 && <p className="no-results">{t.exploreEmpty}</p>}
-                        {list.map(o => (
-                          <button key={o.code} className="explore-occ" onClick={() => loadOccupation(o)}>
-                            <span className="explore-occ-name">{o.title[lang] || o.title.en}</span>
-                            <span className="noc">{o.code.replace('NOC_', '')}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )
-                  })()}
-                </>
-              )
-            )}
-          </section>
-        )}
-
-        {/* Saved occupations */}
-        {!selected && tab === 'saved' && (
-          <section className="saved-section">
-            <div className="trends-head">
-              <h2 className="trends-title">{t.savedTitle}</h2>
-              <p className="trends-hint">{t.savedHint}</p>
-            </div>
-            {favorites.length === 0 && regionFavs.length === 0 ? (
+            favorites.length === 0 && regionFavs.length === 0 ? (
               <p className="saved-empty">{t.savedEmpty}</p>
             ) : (
               <div className="saved-list">
@@ -1819,6 +1819,7 @@ export default function App() {
                   </div>
                 )}
               </div>
+            )
             )}
           </section>
         )}
