@@ -121,6 +121,11 @@ export default function HomeDeck({ lang, onChange }) {
   const centerRef = React.useRef(0)
   const dragRaf = React.useRef(null)
   const drag = React.useRef({ on: false, x0: 0, t0: 0, units: 0, lastWhole: 0, moved: false })
+  /* A drag that actually moved must swallow the synthetic click that follows
+     pointerup (browsers still fire click after a mouse drag). Without this the
+     tap handler jumps back to the card the finger LEFT — the deck looks like
+     it "does nothing" on desktop/in-app browsers. */
+  const suppressClick = React.useRef(false)
   const actxRef = React.useRef(null)
   const clickAudioRef = React.useRef(null)
 
@@ -213,7 +218,9 @@ export default function HomeDeck({ lang, onChange }) {
     const cards = deckRef.current ? deckRef.current.querySelectorAll('.icard') : null
     if (cards) {
       for (let i = 0; i < cards.length; i++) {
-        applyDragPose(cards[i], loopOff(i) + d.units)
+        const off = loopOff(i) + d.units
+        if (Math.abs(off) > 2) continue      /* hidden cards keep their static pose */
+        applyDragPose(cards[i], off)
       }
     }
     dragRaf.current = requestAnimationFrame(renderDrag)
@@ -248,12 +255,13 @@ export default function HomeDeck({ lang, onChange }) {
       const incoming = whole > 0 ? (centerRef.current - 1 + N) % N : (centerRef.current + 1) % N
       popCard(incoming)
       /* mechanical kick: the whole deck jerks sideways like a ratchet pawl —
-         a power feedback visible on every device (sound/vibration may be off) */
+         5px so the power feedback is clearly visible on every device
+         (sound/vibration may be absent) */
       const deckEl = deckRef.current
       if (deckEl && deckEl.animate) {
         try {
           deckEl.animate(
-            [{ transform: 'translateX(2.6px)' }, { transform: 'translateX(0)' }],
+            [{ transform: 'translateX(5px)' }, { transform: 'translateX(0)' }],
             { duration: 90, easing: 'ease-out' }
           )
         } catch (e) { /* decorative only */ }
@@ -261,6 +269,13 @@ export default function HomeDeck({ lang, onChange }) {
     }
     d.units = units
     if (!dragRaf.current) dragRaf.current = requestAnimationFrame(renderDrag)
+  }
+
+  /** Tap on a card jumps to it — but a finished drag must not be followed by
+      the browser's synthetic click (which would undo the step). */
+  const handleCardClick = (i) => {
+    if (suppressClick.current) return
+    jumpTo(i)
   }
 
   const endDrag = () => {
@@ -276,6 +291,10 @@ export default function HomeDeck({ lang, onChange }) {
     else if (step === 0 && (d.units * CARD_W < -SWIPE || v < -VEL)) step = 1
     else if (step === 0 && (d.units * CARD_W > SWIPE || v > VEL)) step = -1
     step = Math.max(-MAX_STEP, Math.min(MAX_STEP, step))
+    if (d.moved) {
+      suppressClick.current = true
+      setTimeout(() => { suppressClick.current = false }, 350)
+    }
     setSettling(true)
     if (step === 0) {
       setDragX(0)                                 /* elastic snap back */
@@ -351,7 +370,7 @@ export default function HomeDeck({ lang, onChange }) {
               key={it.key}
               className={`icard bg-${it.key}`}
               style={{ ...cardStyle(contOff, settling), backgroundImage: `url(${img(it.photo)})` }}
-              onClick={() => jumpTo(i)}
+              onClick={() => handleCardClick(i)}
               role="button"
               tabIndex={-1}
               aria-label={`NOC ${i} ${fr ? it.nameFr : it.nameEn}`}
