@@ -134,6 +134,20 @@ export default function HomeDeck({ lang, onChange }) {
     }
   }
 
+  /**
+   * Visual ratchet: flash the gold ring on the card that is about to land in
+   * the centre. Works on EVERY device — iPhones have no vibration API and the
+   * mute switch kills Web-Audio ticks, so this pulse is the guaranteed
+   * "click" feeling while dragging.
+   */
+  const popCard = (idx) => {
+    if (!deckRef.current) return
+    const cards = deckRef.current.querySelectorAll('.icard')
+    if (!cards || !cards[idx]) return
+    const el = cards[idx]
+    el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse')
+  }
+
   /* Circular offset: -5..+4 around the centre; beyond ±2 hidden but in loop. */
   const loopOff = (i) => {
     const o = (i - center + N) % N
@@ -157,12 +171,17 @@ export default function HomeDeck({ lang, onChange }) {
     const dx = e.clientX - d.x0
     if (Math.abs(dx) > 6) d.moved = true
     const units = dx / CARD_W
-    /* ratchet: a click + buzz each time another card slides through centre */
+    /* ratchet: a click + buzz + gold flash each time another card slides
+       through centre — sound & vibration may be absent on some phones, so the
+       visual flash is the guaranteed feedback */
     const whole = Math.round(units)
     if (d.moved && Math.abs(units) > .06 && whole !== d.lastWhole) {
       d.lastWhole = whole
       haptic(8)
       tick()
+      /* left-drag (whole<0) advances: right card slides in; right-drag goes back */
+      const incoming = whole > 0 ? (center - 1 + N) % N : (center + 1) % N
+      popCard(incoming)
     }
     d.units = units
     /* rAF-throttled setState so 60Hz pointermove never drowns the UI thread */
