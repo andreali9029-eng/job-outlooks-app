@@ -1340,8 +1340,8 @@ export default function App() {
           <button className="back-home-btn" onClick={goHome}>← {t.backHome}</button>
         )}
 
-        {/* Search (Home tab + occupation detail) */}
-        {(!selected && tab === 'home') || selected ? (
+        {/* Search (occupation detail only — the Explore tab hosts the browsing search) */}
+        {selected ? (
           <div className="search-box">
             <input
               type="text"
@@ -1370,49 +1370,69 @@ export default function App() {
           </section>
         )}
 
-        {/* Quick searches -> In-demand occupation cards */}
-        {!selected && tab === 'home' && (
-          <section className="hot-section">
-            <div className="hot-head">
-              <h2 className="hot-title">{t.hotTitle}</h2>
-              <p className="hot-hint">{t.hotHint}</p>
-            </div>
-            <div className="hot-cards">
-              {QUICK_NOCS.map(code => {
-                const occ = occupations.find(o => o.code === `NOC_${code}`)
-                if (!occ) return null
-                const hot = hotOcc[code]
-                const cfg = OUTLOOK_CONFIG[hot?.rating] || OUTLOOK_CONFIG['undetermined']
-                const jobs = totalJobsFor(code)
-                return (
-                  <button key={code} className="hot-card" onClick={() => loadOccupation(occ)}>
-                    <span className="hot-card-title">{(occ.title[lang] || occ.title.en).split(',')[0]}</span>
-                    <span className="hot-card-meta">
-                      {hot?.rating && (
-                        <span className="hot-stars" style={{ color: cfg.color, background: cfg.bg }}
-                          title={hot.provGood ? `${hot.provGood}/${hot.provTotal} provinces` : ''}>
-                          <Stars count={cfg.stars} /> {OUTLOOK_LABELS[lang][cfg.key]}
-                        </span>
-                      )}
-                      {jobs != null && (
-                        <span className="hot-jobs">💼 {jobs.toLocaleString()} {t.todayJobs}</span>
-                      )}
-                      {hot?.wage?.median && (
-                        <span className="hot-wage">
-                          {formatWage(hot.wage.median, hot.wage.annual)}{hot.wage.annual ? '/yr' : '/hr'}
-                        </span>
-                      )}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          </section>
-        )}
+        {/* Hot occupations moved to the Explore tab */}
 
         {/* Explore by industry (NOC groups) */}
         {!selected && tab === 'explore' && (
           <section className="explore-section">
+            {/* Search — moved here from the Home tab */}
+            <div className="search-box">
+              <input
+                type="text"
+                placeholder={t.searchPlaceholder}
+                value={query}
+                onChange={e => { setQuery(e.target.value); setShowDropdown(true) }}
+                onFocus={() => setShowDropdown(true)}
+              />
+              {showDropdown && filtered.length > 0 && (
+                <ul className="dropdown">
+                  {filtered.map(o => (
+                    <li key={o.code} onClick={() => loadOccupation(o)}>
+                      {o.title[lang] || o.title.en} <span className="noc">{o.code.replace('NOC_', '')}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Hot occupations — moved here from the Home tab */}
+            <section className="hot-section">
+              <div className="hot-head">
+                <h2 className="hot-title">{t.hotTitle}</h2>
+                <p className="hot-hint">{t.hotHint}</p>
+              </div>
+              <div className="hot-cards">
+                {QUICK_NOCS.map(code => {
+                  const occ = occupations.find(o => o.code === `NOC_${code}`)
+                  if (!occ) return null
+                  const hot = hotOcc[code]
+                  const cfg = OUTLOOK_CONFIG[hot?.rating] || OUTLOOK_CONFIG['undetermined']
+                  const jobs = totalJobsFor(code)
+                  return (
+                    <button key={code} className="hot-card" onClick={() => loadOccupation(occ)}>
+                      <span className="hot-card-title">{(occ.title[lang] || occ.title.en).split(',')[0]}</span>
+                      <span className="hot-card-meta">
+                        {hot?.rating && (
+                          <span className="hot-stars" style={{ color: cfg.color, background: cfg.bg }}
+                            title={hot.provGood ? `${hot.provGood}/${hot.provTotal} provinces` : ''}>
+                            <Stars count={cfg.stars} /> {OUTLOOK_LABELS[lang][cfg.key]}
+                          </span>
+                        )}
+                        {jobs != null && (
+                          <span className="hot-jobs">💼 {jobs.toLocaleString()} {t.todayJobs}</span>
+                        )}
+                        {hot?.wage?.median && (
+                          <span className="hot-wage">
+                            {formatWage(hot.wage.median, hot.wage.annual)}{hot.wage.annual ? '/yr' : '/hr'}
+                          </span>
+                        )}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </section>
+
             <div className="trends-head">
               <h2 className="trends-title">{t.exploreTitle}</h2>
               <p className="trends-hint">{t.exploreHint}</p>
