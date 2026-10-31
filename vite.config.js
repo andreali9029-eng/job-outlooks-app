@@ -20,6 +20,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // No auto-injected registration: main.jsx registers the service worker
+      // only on the deployed origin, so local previews are never held back by
+      // a stale precache (the old SW is what made phone/desktop previews look
+      // "unchanged" after every build).
+      injectRegister: false,
       includeAssets: ['icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'Canada Job Outlooks',
