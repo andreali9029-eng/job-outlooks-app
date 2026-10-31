@@ -2534,6 +2534,12 @@ body {
   transition: transform .5s cubic-bezier(.22, 1, .36, 1), filter .5s ease, opacity .5s ease, box-shadow .5s ease;
 }
 
+/* spring settle: overshoot curve so the fan elastically snaps to the nearest
+   card on release (and after arrow steps / taps) */
+.home-hero .deck.settling .icard {
+  transition: transform .62s cubic-bezier(.34, 1.56, .64, 1), filter .5s ease, opacity .5s ease, box-shadow .5s ease;
+}
+
 .home-hero .icard .edge {
   position: absolute;
   left: 0;
