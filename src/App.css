@@ -2415,3 +2415,654 @@ body {
     justify-content: space-between;
   }
 }
+
+/* ==========================================================================
+   Redesigned Home hero (mockup D) — dark premium: NOC coverflow fan +
+   relief map + real-photo backdrops + province detail card.
+   Scoped to .home-hero so the rest of the light theme is untouched.
+   ========================================================================== */
+.home-hero {
+  --hero-bg: #0B0F1A;
+  --hero-bg2: #101827;
+  --hero-surface: #131C2C;
+  --hero-surface2: #19263A;
+  --hero-line: #223049;
+  --hero-text: #E8ECF4;
+  --hero-dim: #93A0B5;
+  --hero-faint: #5D6B82;
+  --hero-gold: #E8B34B;
+  --hero-blue: #57C7FF;
+  --hero-good: #3ECF8E;
+  --hero-fair: #F5B34C;
+  --hero-limited: #F97316;
+  --hero-vlimited: #EF4444;
+  --hero-undet: #64748B;
+
+  position: relative;
+  margin: 14px 14px 4px;
+  border-radius: 26px;
+  overflow: hidden;
+  color: var(--hero-text);
+  background:
+    radial-gradient(560px 340px at 14% -8%, rgba(72, 118, 190, .22), transparent 62%),
+    radial-gradient(480px 300px at 88% 0%, rgba(62, 207, 142, .10), transparent 62%),
+    radial-gradient(520px 320px at 50% 108%, rgba(232, 179, 75, .10), transparent 62%),
+    linear-gradient(165deg, #151D30 0%, #0A0E18 70%);
+  border: 1px solid #223049;
+  box-shadow: 0 24px 50px rgba(15, 23, 42, .35), inset 0 1px 0 rgba(255, 255, 255, .06);
+  font-feature-settings: "tnum" 1;
+}
+
+/* grain overlay inside the hero only */
+.home-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+}
+
+.home-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- coverflow fan of NOC poker cards ---------- */
+.home-hero .deck-zone {
+  position: relative;
+  height: 340px;
+  margin-top: 6px;
+  padding-top: 6px;
+}
+
+.home-hero .deck {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  perspective: 1200px;
+  perspective-origin: 50% 44%;
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+}
+
+.home-hero .deck.dragging {
+  cursor: grabbing;
+}
+
+.home-hero .deck.dragging .icard {
+  transition: none !important;
+}
+
+.home-hero .icard {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  width: 200px;
+  height: 268px;
+  margin-left: -100px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, .10);
+  overflow: hidden;
+  will-change: transform, filter, opacity;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, .5);
+  cursor: pointer;
+}
+
+/* photo backdrop + dark gradient scrim so text stays readable */
+.home-hero .icard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(6, 9, 17, .40) 0%, rgba(6, 9, 17, .12) 34%, rgba(6, 9, 17, .58) 66%, rgba(6, 9, 17, .90) 100%);
+}
+
+.home-hero .icard {
+  background-size: cover;
+  background-position: center;
+}
+
+.home-hero .deck.animated .icard {
+  transition: transform .5s cubic-bezier(.22, 1, .36, 1), filter .5s ease, opacity .5s ease, box-shadow .5s ease;
+}
+
+.home-hero .icard .edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 5px;
+  z-index: 3;
+}
+
+.home-hero .icard .edge.top {
+  top: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .10), transparent);
+}
+
+.home-hero .icard .edge.bot {
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(0, 0, 0, .4), transparent);
+}
+
+.home-hero .ic-body {
+  padding: 14px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+.home-hero .ic-top {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.home-hero .ic-ico {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 15, 26, .55);
+  border: 1px solid rgba(255, 255, 255, .18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .10);
+}
+
+.home-hero .ic-name {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -.2px;
+  line-height: 1.14;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .45);
+}
+
+.home-hero .ic-code {
+  font-size: 10px;
+  color: rgba(255, 255, 255, .62);
+  margin-top: 3px;
+  letter-spacing: .5px;
+}
+
+.home-hero .ic-rating {
+  margin-left: 0;
+  text-align: left;
+  margin-top: 14px;
+}
+
+.home-hero .ic-grade {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 800;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .5);
+}
+
+.home-hero .ic-grade .gdot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 9px rgba(255, 255, 255, .25);
+}
+
+.home-hero .stars {
+  display: flex;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.home-hero .stars svg.f {
+  color: var(--hero-gold);
+}
+
+.home-hero .ic-meta {
+  margin-top: auto;
+  padding-top: 11px;
+  border-top: 1px solid rgba(255, 255, 255, .16);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.home-hero .ic-m {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.home-hero .ic-m .v {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -.2px;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .5);
+}
+
+.home-hero .ic-m .l {
+  font-size: 10px;
+  color: rgba(255, 255, 255, .55);
+  letter-spacing: .5px;
+  text-align: right;
+}
+
+.home-hero .ic-num {
+  position: absolute;
+  left: 14px;
+  top: 12px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, .9);
+  letter-spacing: 1.5px;
+  font-weight: 800;
+  background: rgba(8, 12, 22, .62);
+  border: 1px solid rgba(255, 255, 255, .2);
+  padding: 2px 8px;
+  border-radius: 999px;
+  z-index: 3;
+}
+
+/* settle pulse — haptic fallback for iOS / desktop */
+@keyframes homeCardPulse {
+  0%, 100% { box-shadow: 0 18px 34px rgba(0, 0, 0, .5); }
+  50% { box-shadow: 0 18px 34px rgba(0, 0, 0, .5), 0 0 0 2px rgba(232, 179, 75, .4); }
+}
+
+.home-hero .icard.pulse {
+  animation: homeCardPulse .35s ease;
+}
+
+.home-hero .deck-ctrl {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  z-index: 4;
+}
+
+.home-hero .arrow {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--hero-line);
+  background: var(--hero-surface);
+  color: var(--hero-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .4);
+  cursor: pointer;
+}
+
+.home-hero button.arrow {
+  padding: 0;
+  font: inherit;
+}
+
+.home-hero button.arrow:hover {
+  color: var(--hero-gold);
+  border-color: rgba(232, 179, 75, .5);
+}
+
+.home-hero .dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.home-hero .dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #33405A;
+}
+
+.home-hero .dots i.on {
+  width: 20px;
+  background: var(--hero-gold);
+  box-shadow: 0 0 8px rgba(232, 179, 75, .6);
+}
+
+.home-hero .swipe-tip {
+  position: absolute;
+  right: 24px;
+  top: 8px;
+  font-size: 10px;
+  color: var(--hero-faint);
+  letter-spacing: 1px;
+  font-weight: 700;
+  z-index: 4;
+}
+
+/* ---------- relief map ---------- */
+.home-hero .map-panel {
+  margin: 6px 14px 0;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #0B1220;
+  border: 1px solid var(--hero-line);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 18px 40px rgba(0, 0, 0, .45);
+  position: relative;
+}
+
+/* real-photo backdrop (Canada default, or the selected province) — no scrim */
+.home-hero .map-photo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 1;
+  will-change: transform, background-image;
+}
+
+.home-hero .map-head {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 13px 16px 2px;
+}
+
+.home-hero .map-head h3 {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -.2px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, .85), 0 0 18px rgba(0, 0, 0, .55);
+}
+
+.home-hero .map-head .sub {
+  font-size: 11px;
+  color: var(--hero-dim);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .85);
+}
+
+.home-hero .map-head .industry-tag {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--hero-blue);
+  background: rgba(8, 16, 30, .62);
+  border: 1px solid rgba(87, 199, 255, .4);
+  padding: 3px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(3px);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .6);
+}
+
+.home-hero .map-svg {
+  padding: 6px 10px 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.home-hero .map-svg svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 3D tilt of the whole map canvas — near provinces enlarge, far recede */
+.home-hero .map-tilt {
+  transform: perspective(1100px) rotateX(13deg);
+  transform-origin: 50% -8%;
+  will-change: transform;
+}
+
+.home-hero .prov {
+  cursor: pointer;
+  transition: filter .25s ease, transform .25s ease;
+}
+
+.home-hero .prov:hover {
+  filter: brightness(1.18) drop-shadow(0 0 6px rgba(255, 255, 255, .25));
+}
+
+.home-hero .prov.sel {
+  animation: homePulseGlow 2.6s ease-in-out infinite, homeRise 3.2s ease-in-out infinite;
+}
+
+@keyframes homePulseGlow {
+  0%, 100% { filter: brightness(1.22) drop-shadow(0 0 5px rgba(232, 179, 75, .9)); }
+  50% { filter: brightness(1.32) drop-shadow(0 0 13px rgba(232, 179, 75, 1)); }
+}
+
+@keyframes homeRise {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.home-hero .legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 4px 16px 12px;
+  font-size: 10.5px;
+  color: #C7D2E2;
+  font-weight: 600;
+  letter-spacing: .3px;
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .9);
+}
+
+.home-hero .legend i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 3px;
+  margin-right: 5px;
+  vertical-align: -1px;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .3), inset 0 -1px 2px rgba(0, 0, 0, .4);
+}
+
+/* ---------- province detail card ---------- */
+.home-hero .prov-card {
+  margin: 10px 14px 0;
+  border-radius: 18px;
+  padding: 15px 16px 14px;
+  background:
+    radial-gradient(230px 96px at 86% -12%, rgba(232, 179, 75, .13), transparent 72%),
+    radial-gradient(200px 90px at 6% 112%, rgba(87, 199, 255, .08), transparent 70%),
+    linear-gradient(158deg, #1B2740 0%, #121B2E 58%, #0E1626 100%);
+  border: 1px solid #2B3B5A;
+  border-top: 1px solid rgba(255, 255, 255, .10);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .05);
+  position: relative;
+  overflow: hidden;
+}
+
+.home-hero .prov-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .05), transparent 26%);
+}
+
+.home-hero .prov-card::after {
+  content: "";
+  position: absolute;
+  right: -36px;
+  top: -36px;
+  width: 124px;
+  height: 124px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(87, 199, 255, .10), transparent 70%);
+}
+
+.home-hero .prov-card .p-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.home-hero .prov-card .pin {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(62, 207, 142, .12);
+  border: 1px solid rgba(62, 207, 142, .35);
+  box-shadow: 0 0 12px rgba(62, 207, 142, .15);
+}
+
+.home-hero .prov-card .p-name {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -.3px;
+}
+
+.home-hero .prov-card .p-badge {
+  margin-left: auto;
+  font-size: 11.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.home-hero .prov-card .p-badge svg {
+  flex: none;
+}
+
+.home-hero .prov-card .p-desc {
+  font-size: 12px;
+  color: var(--hero-dim);
+  margin-top: 10px;
+  line-height: 1.55;
+  position: relative;
+}
+
+.home-hero .prov-card .p-stats {
+  display: flex;
+  gap: 0;
+  margin-top: 13px;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(5, 9, 17, .35);
+  position: relative;
+}
+
+.home-hero .prov-card .p-stats > span {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 4px 9px;
+}
+
+.home-hero .prov-card .p-stats > span + span {
+  border-left: 1px solid rgba(255, 255, 255, .08);
+}
+
+.home-hero .prov-card .p-stats .v {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -.2px;
+  color: #fff;
+}
+
+.home-hero .prov-card .p-stats .u {
+  font-size: 9.5px;
+  color: var(--hero-faint);
+  font-weight: 600;
+  letter-spacing: .4px;
+}
+
+/* reveal: on province change the card content slides in left→right, staggered */
+@keyframes homeRevealIn {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: none; }
+}
+
+.home-hero .prov-card.reveal .p-top {
+  animation: homeRevealIn .38s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+.home-hero .prov-card.reveal .p-desc {
+  animation: homeRevealIn .42s cubic-bezier(.22, 1, .36, 1) .07s both;
+}
+
+.home-hero .prov-card.reveal .p-stats {
+  animation: homeRevealIn .48s cubic-bezier(.22, 1, .36, 1) .15s both;
+}
+
+/* screen-reader only helper (used by hero components) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* narrow viewports: keep the fan and map proportional */
+@media (max-width: 480px) {
+  .home-hero {
+    margin-left: 8px;
+    margin-right: 8px;
+    border-radius: 22px;
+  }
+
+  .home-hero .deck-zone {
+    height: 330px;
+  }
+
+  .home-hero .icard {
+    width: 188px;
+    height: 252px;
+    margin-left: -94px;
+  }
+
+  .home-hero .map-panel,
+  .home-hero .prov-card {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .home-hero .ic-name {
+    font-size: 15px;
+  }
+}
+
+/* respect reduced-motion: skip the settle/reveal animation churn */
+@media (prefers-reduced-motion: reduce) {
+  .home-hero .deck.animated .icard,
+  .home-hero .icard.pulse,
+  .home-hero .prov-card.reveal .p-top,
+  .home-hero .prov-card.reveal .p-desc,
+  .home-hero .prov-card.reveal .p-stats,
+  .home-hero .prov.sel {
+    animation: none !important;
+    transition: none !important;
+  }
+}

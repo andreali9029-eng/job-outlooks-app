@@ -15,6 +15,8 @@ import TrendChart from './TrendChart'
 import { badgeFor, PROVINCE_BADGES } from './provinceBadges'
 import { calcNetPay } from './netPay'
 import { fetchPostings, fetchPostingDetail, scorePosting, keywordsOf } from './jobMatch'
+import HomeDeck from './HomeDeck'
+import ProvinceMapSection from './ProvinceMapSection'
 
 /* ---------- i18n ----------
  * All user-facing strings, EN (index 0) and FR (index 1).
@@ -583,6 +585,7 @@ function CanadaMap({ provinceRatings, provinceWages, onProvinceClick, selectedPr
 export default function App() {
   const [lang, setLang] = React.useState('en')
   const [tab, setTab] = React.useState('home')
+  const [homeIndKey, setHomeIndKey] = React.useState('management')
   const [occupations, setOccupations] = React.useState([])
   const [query, setQuery] = React.useState('')
   const [selected, setSelected] = React.useState(null)
@@ -1358,6 +1361,14 @@ export default function App() {
             )}
           </div>
         ) : null}
+
+        {/* Redesigned home hero (mockup D): NOC coverflow deck + relief map + province detail */}
+        {!selected && tab === 'home' && (
+          <section className="home-hero" aria-label={lang === 'fr' ? 'Aperçu des secteurs par province' : 'Industry outlook by province'}>
+            <HomeDeck lang={lang} onChange={setHomeIndKey} />
+            <ProvinceMapSection lang={lang} activeIndKey={homeIndKey} />
+          </section>
+        )}
 
         {/* Quick searches -> In-demand occupation cards */}
         {!selected && tab === 'home' && (

@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230B0F1A'/%3E%3Cpath d='M12 4c3.2 0 5.8 2.6 5.8 5.8 0 4.3-5.8 9.2-5.8 9.2S6.2 14.1 6.2 9.8C6.2 6.6 8.8 4 12 4z' fill='%23E8B34B'/%3E%3Ccircle cx='12' cy='9.8' r='2.2' fill='%230B0F1A'/%3E%3C/svg%3E">
+<title>Mockup D — Canada Job Outlooks (coverflow fan + relief map)</title>
+<style>
+  :root {
+    --bg: #0B0F1A;
+    --bg2: #101827;
+    --surface: #131C2C;
+    --surface2: #19263A;
+    --line: #223049;
+    --text: #E8ECF4;
+    --dim: #93A0B5;
+    --faint: #5D6B82;
+    --gold: #E8B34B;
+    --blue: #57C7FF;
+    --good: #3ECF8E;
+    --fair: #F5B34C;
+    --limited: #F97316;
+    --vlimited: #EF4444;
+    --undet: #64748B;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background:
+      radial-gradient(900px 520px at 16% -6%, rgba(72,118,190,.20), transparent 62%),
+      radial-gradient(760px 460px at 86% 0%, rgba(62,207,142,.10), transparent 62%),
+      radial-gradient(820px 480px at 50% 108%, rgba(232,179,75,.09), transparent 62%),
+      radial-gradient(1200px 820px at 50% -10%, #151D30 0%, #0A0E18 60%);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text);
+    display: flex; justify-content: center; align-items: flex-start;
+    padding: 34px 20px 60px;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "tnum" 1;
+  }
+  /* grain overlay */
+  .grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 9;
+    opacity: .05; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  }
+  .mock-wrap { text-align: center; }
+  .mock-label {
+    display: inline-block; margin-bottom: 16px; padding: 8px 20px;
+    background: #1B2436; color: var(--gold); border: 1px solid #2E3B52;
+    border-radius: 999px; font-size: 14px; font-weight: 700; letter-spacing: .5px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  }
+  .phone {
+    width: 546px; background: var(--bg);
+    border-radius: 50px; border: 12px solid #0A0D14;
+    box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 0 1px #232C3B inset;
+    overflow: hidden; position: relative; display: flex; flex-direction: column;
+  }
+  .status {
+    height: 40px; padding: 0 28px; display: flex; justify-content: space-between;
+    align-items: center; font-size: 15px; font-weight: 600; color: var(--dim);
+  }
+  .status .notch { width: 120px; height: 26px; background: #0A0D14; border-radius: 0 0 16px 16px; position: absolute; left: 50%; transform: translateX(-50%); top: 0; }
+  .status .icons { display: flex; gap: 6px; align-items: center; font-size: 12px; letter-spacing: 1px; }
+
+  .head { padding: 14px 24px 12px; display: flex; align-items: center; gap: 12px; }
+  .brand { flex: 1; min-width: 0; }
+  .brand .t1 { font-size: 21px; font-weight: 800; letter-spacing: -.3px; display: flex; align-items: center; gap: 9px; }
+  .brand .t1 svg { flex: none; }
+  .brand .t2 { font-size: 12px; color: var(--dim); margin-top: 3px; letter-spacing: .2px; }
+  .lang {
+    font-size: 12px; font-weight: 700; color: var(--gold); background: rgba(232,179,75,.10);
+    border: 1px solid rgba(232,179,75,.35); padding: 4px 11px; border-radius: 999px; flex: none;
+  }
+  .live { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--faint); margin: 0 24px 2px; }
+  .live .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); box-shadow: 0 0 8px var(--good); animation: blink 2.2s ease-in-out infinite; }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+  /* ============ coverflow fan of industry cards (poker-card style) ============ */
+  .deck-zone { position: relative; height: 340px; margin-top: 4px; padding-top: 6px; }
+  .deck {
+    position: absolute; top: 6px; left: 0; right: 0; bottom: 0;
+    perspective: 1200px; perspective-origin: 50% 44%;
+    touch-action: pan-y; user-select: none; cursor: grab;
+  }
+  .deck.dragging { cursor: grabbing; }
+  .deck.dragging .icard { transition: none !important; }
+  .icard {
+    position: absolute; left: 50%; top: 6px; width: 200px; height: 268px;
+    margin-left: -100px;
+    border-radius: 20px; border: 1px solid rgba(255,255,255,.10);
+    overflow: hidden;
+    will-change: transform, filter, opacity;
+    box-shadow: 0 18px 34px rgba(0,0,0,.5);
+  }
+  /* photo backdrop + dark gradient scrim so text stays readable */
+  .icard::before {
+    content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(6,9,17,.40) 0%, rgba(6,9,17,.12) 34%, rgba(6,9,17,.58) 66%, rgba(6,9,17,.90) 100%);
+  }
+  /* static photo classes — paths live in CSS url() so published builds never break */
+  .icard { background-size: cover; background-position: center; }
+  .icard.bg-management { background-image: url('assets/ind-management.jpg'); }
+  .icard.bg-business { background-image: url('assets/ind-business.jpg'); }
+  .icard.bg-science { background-image: url('assets/ind-science.jpg'); }
+  .icard.bg-health { background-image: url('assets/ind-health.jpg'); }
+  .icard.bg-education { background-image: url('assets/ind-education.jpg'); }
+  .icard.bg-art { background-image: url('assets/ind-art.jpg'); }
+  .icard.bg-sales { background-image: url('assets/ind-sales.jpg'); }
+  .icard.bg-trades { background-image: url('assets/ind-trades.jpg'); }
+  .icard.bg-resources { background-image: url('assets/ind-resources.jpg'); }
+  .icard.bg-factory { background-image: url('assets/ind-factory.jpg'); }
+  .deck.animated .icard {
+    transition: transform .5s cubic-bezier(.22,1,.36,1), filter .5s ease, opacity .5s ease, box-shadow .5s ease;
+  }
+  .icard .edge { position: absolute; left: 0; right: 0; height: 5px; z-index: 3; }
+  .icard .edge.top { top: 0; background: linear-gradient(180deg, rgba(255,255,255,.10), transparent); }
+  .icard .edge.bot { bottom: 0; background: linear-gradient(0deg, rgba(0,0,0,.4), transparent); }
+
+  .ic-body { padding: 14px 16px 12px; display: flex; flex-direction: column; height: 100%; position: relative; z-index: 2; }
+  .ic-top { display: flex; align-items: center; gap: 11px; }
+  .ic-ico {
+    width: 46px; height: 46px; border-radius: 14px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(10,15,26,.55);
+    border: 1px solid rgba(255,255,255,.18);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
+  }
+  .ic-name { font-size: 16px; font-weight: 800; letter-spacing: -.2px; line-height: 1.14; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.45); }
+  .ic-code { font-size: 10px; color: rgba(255,255,255,.62); margin-top: 3px; letter-spacing: .5px; }
+  .ic-rating { margin-left: 0; text-align: left; margin-top: 14px; }
+  .ic-grade { display: flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
+  .ic-grade .gdot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 9px rgba(255,255,255,.25); }
+  .stars { display: flex; gap: 2px; margin-top: 6px; }
+  .stars svg.f { color: var(--gold); }
+  .stars svg { color: rgba(255,255,255,.28); }
+  .ic-meta { margin-top: auto; padding-top: 11px; border-top: 1px solid rgba(255,255,255,.16); display: flex; flex-direction: column; gap: 8px; }
+  .ic-m { display: flex; align-items: baseline; justify-content: space-between; }
+  .ic-m .v { font-size: 17px; font-weight: 800; letter-spacing: -.2px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
+  .ic-m .l { font-size: 10px; color: rgba(255,255,255,.55); letter-spacing: .5px; text-align: right; }
+  .ic-num { position: absolute; left: 14px; top: 12px; font-size: 11px; color: rgba(255,255,255,.9); letter-spacing: 1.5px; font-weight: 800; background: rgba(8,12,22,.62); border: 1px solid rgba(255,255,255,.2); padding: 2px 8px; border-radius: 999px; z-index: 3; }
+  /* settle pulse — haptic fallback for iOS / desktop */
+  @keyframes cardPulse { 0%,100% { box-shadow: 0 18px 34px rgba(0,0,0,.5); } 50% { box-shadow: 0 18px 34px rgba(0,0,0,.5), 0 0 0 2px rgba(232,179,75,.4); } }
+  .icard.pulse { animation: cardPulse .35s ease; }
+
+  .deck-ctrl { position: absolute; left: 0; right: 0; bottom: 4px; display: flex; justify-content: center; align-items: center; gap: 14px; z-index: 4; }
+  .arrow {
+    width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line);
+    background: var(--surface); color: var(--dim); display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,.4);
+  }
+  button.arrow { padding: 0; cursor: pointer; font: inherit; }
+  button.arrow:hover { color: var(--gold); border-color: rgba(232,179,75,.5); }
+  .dots { display: flex; gap: 6px; align-items: center; }
+  .dots i { width: 6px; height: 6px; border-radius: 50%; background: #33405A; }
+  .dots i.on { width: 20px; background: var(--gold); box-shadow: 0 0 8px rgba(232,179,75,.6); }
+  .swipe-tip { position: absolute; right: 24px; top: 8px; font-size: 10px; color: var(--faint); letter-spacing: 1px; font-weight: 700; z-index: 4; }
+
+  /* ============ relief map ============ */
+  .map-panel {
+    margin: 6px 22px 0; border-radius: 20px; overflow: hidden;
+    background: #0B1220;
+    border: 1px solid var(--line);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 18px 40px rgba(0,0,0,.45);
+    position: relative;
+  }
+  /* real-photo backdrop (Canada default, or the selected province) — fully visible, no scrim */
+  .map-photo {
+    position: absolute; inset: 0; z-index: 0;
+    background-size: cover; background-position: center;
+    opacity: 1;
+  }
+  /* static photo classes for the map backdrop — default Canada + each province */
+  .map-photo.ph-CA { background-image: url('assets/ca-maple.jpg'); }
+  .map-photo.ph-YT { background-image: url('assets/yt-aurora.jpg'); }
+  .map-photo.ph-NT { background-image: url('assets/nt-aurora.jpg'); }
+  .map-photo.ph-NU { background-image: url('assets/nu-tundra.jpg'); }
+  .map-photo.ph-BC { background-image: url('assets/bc-vancouver.jpg'); }
+  .map-photo.ph-AB { background-image: url('assets/ab-banff.jpg'); }
+  .map-photo.ph-SK { background-image: url('assets/sk-wheat.jpg'); }
+  .map-photo.ph-MB { background-image: url('assets/mb-polarbear.jpg'); }
+  .map-photo.ph-ON { background-image: url('assets/on-toronto.jpg'); }
+  .map-photo.ph-QC { background-image: url('assets/qc-quebec.jpg'); }
+  .map-photo.ph-NB { background-image: url('assets/nb-fundy.jpg'); }
+  .map-photo.ph-NS { background-image: url('assets/ns-lighthouse.jpg'); }
+  .map-photo.ph-PE { background-image: url('assets/pe-coast.jpg'); }
+  .map-photo.ph-NL { background-image: url('assets/nl-iceberg.jpg'); }
+  .map-head { position: relative; z-index: 2; display: flex; align-items: baseline; gap: 10px; padding: 13px 16px 2px; }
+  .map-head h3 { font-size: 15px; font-weight: 800; letter-spacing: -.2px; text-shadow: 0 1px 4px rgba(0,0,0,.85), 0 0 18px rgba(0,0,0,.55); }
+  .map-head .sub { font-size: 11px; color: var(--dim); text-shadow: 0 1px 3px rgba(0,0,0,.85); }
+  .map-head .industry-tag { margin-left: auto; font-size: 11px; font-weight: 800; color: var(--blue); background: rgba(8,16,30,.62); border: 1px solid rgba(87,199,255,.4); padding: 3px 10px; border-radius: 999px; backdrop-filter: blur(3px); }
+  .map-svg { padding: 6px 10px 16px; position: relative; z-index: 1; }
+  .map-svg svg { width: 100%; height: auto; display: block; }
+  /* 3D tilt of the whole map canvas — near provinces enlarge, far provinces recede */
+  .map-tilt { transform: perspective(1100px) rotateX(13deg); transform-origin: 50% -8%; will-change: transform; }
+  .prov {
+    cursor: pointer;
+    transition: filter .25s ease, transform .25s ease;
+  }
+  .prov:hover { filter: brightness(1.18) drop-shadow(0 0 6px rgba(255,255,255,.25)); }
+  .prov.sel {
+    animation: pulseGlow 2.6s ease-in-out infinite, rise 3.2s ease-in-out infinite;
+  }
+  @keyframes pulseGlow {
+    0%,100% { filter: brightness(1.22) drop-shadow(0 0 5px rgba(232,179,75,.9)); }
+    50% { filter: brightness(1.32) drop-shadow(0 0 13px rgba(232,179,75,1)); }
+  }
+  @keyframes rise {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 4px 16px 12px; font-size: 10.5px; color: #C7D2E2; font-weight: 600; letter-spacing: .3px; position: relative; z-index: 2; text-shadow: 0 1px 3px rgba(0,0,0,.9); }
+  .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; box-shadow: inset 0 1px 1px rgba(255,255,255,.3), inset 0 -1px 2px rgba(0,0,0,.4); }
+
+  /* ============ province detail ============ */
+  .prov-card {
+    margin: 10px 22px 0; border-radius: 18px; padding: 15px 16px 14px;
+    background:
+      radial-gradient(230px 96px at 86% -12%, rgba(232,179,75,.13), transparent 72%),
+      radial-gradient(200px 90px at 6% 112%, rgba(87,199,255,.08), transparent 70%),
+      linear-gradient(158deg, #1B2740 0%, #121B2E 58%, #0E1626 100%);
+    border: 1px solid #2B3B5A; border-top: 1px solid rgba(255,255,255,.10);
+    box-shadow: 0 16px 34px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);
+    position: relative; overflow: hidden;
+  }
+  .prov-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(255,255,255,.05), transparent 26%); }
+  .prov-card::after { content: ""; position: absolute; right: -36px; top: -36px; width: 124px; height: 124px; border-radius: 50%; background: radial-gradient(circle, rgba(87,199,255,.10), transparent 70%); }
+  .prov-card .p-top { display: flex; align-items: center; gap: 8px; position: relative; }
+  .prov-card .pin { width: 30px; height: 30px; border-radius: 10px; flex: none; display: flex; align-items: center; justify-content: center; background: rgba(62,207,142,.12); border: 1px solid rgba(62,207,142,.35); box-shadow: 0 0 12px rgba(62,207,142,.15); }
+  .prov-card .p-name { font-size: 17px; font-weight: 800; letter-spacing: -.3px; }
+  .prov-card .p-badge { margin-left: auto; font-size: 11.5px; font-weight: 800; color: var(--good); display: flex; align-items: center; gap: 5px; background: rgba(62,207,142,.10); border: 1px solid rgba(62,207,142,.3); padding: 4px 10px; border-radius: 999px; }
+  .prov-card .p-badge svg { flex: none; }
+  .prov-card .p-desc { font-size: 12px; color: var(--dim); margin-top: 10px; line-height: 1.55; }
+  .prov-card .p-stats { display: flex; gap: 0; margin-top: 13px; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; overflow: hidden; background: rgba(5,9,17,.35); }
+  .prov-card .p-stats > span { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px 9px; }
+  .prov-card .p-stats > span + span { border-left: 1px solid rgba(255,255,255,.08); }
+  .prov-card .p-stats .v { font-size: 16px; font-weight: 800; letter-spacing: -.2px; color: #fff; }
+  .prov-card .p-stats .u { font-size: 9.5px; color: var(--faint); font-weight: 600; letter-spacing: .4px; }
+  /* reveal: on province change the card content slides in left→right, staggered */
+  @keyframes revealIn { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: none; } }
+  .prov-card.reveal .p-top { animation: revealIn .38s cubic-bezier(.22,1,.36,1) both; }
+  .prov-card.reveal .p-desc { animation: revealIn .42s cubic-bezier(.22,1,.36,1) .07s both; }
+  .prov-card.reveal .p-stats { animation: revealIn .48s cubic-bezier(.22,1,.36,1) .15s both; }
+
+  .tabbar {
+    height: 66px; background: rgba(10,14,22,.92); border-top: 1px solid var(--line);
+    margin-top: 12px; display: flex; padding: 7px 12px 9px; gap: 6px; flex: none;
+    backdrop-filter: blur(6px);
+  }
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10.5px; color: var(--faint); font-weight: 700; letter-spacing: .3px; }
+  .tab svg { color: currentColor; }
+  .tab.active { color: var(--gold); }
+  .tab.active .t-ic { position: relative; }
+  .tab.active .t-ic::after { content: ""; position: absolute; left: 50%; transform: translateX(-50%); bottom: -5px; width: 18px; height: 3px; border-radius: 3px; background: var(--gold); box-shadow: 0 0 8px rgba(232,179,75,.7); }
+
+  /* narrow viewports: shrink the phone shell instead of overflowing */
+  @media (max-width: 600px) {
+    body { padding: 12px 6px 30px; }
+    .mock-wrap { width: 100%; }
+    .phone { width: 100%; border-width: 8px; border-radius: 34px; }
+  }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<div class="mock-wrap">
+  <div class="mock-label">方案 C · 高级版 — LUMO 扇形封面流 + 立体地图</div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><div class="notch"></div><span class="icons">LTE · 5G · 100%</span></div>
+
+    <div class="head">
+      <div class="brand">
+        <div class="t1">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2c1.9 1.9 3.6 3.4 5.1 5.2 1.5 1.9 2.4 3.6 2.4 5.5A7.5 7.5 0 0 1 12 20.2 7.5 7.5 0 0 1 4.5 12.7c0-1.9.9-3.6 2.4-5.5C8.4 5.4 10.1 3.9 12 2z" stroke="#E8B34B" stroke-width="1.6"/><path d="M8.2 12.9c1.2.6 2.3.6 3.2 0 1-.6 1.9-.6 2.9 0" stroke="#E8B34B" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Canada Job Outlooks
+        </div>
+        <div class="t2">2025–2027 · 3-year employment outlooks</div>
+      </div>
+      <div class="lang">EN</div>
+    </div>
+    <div class="live"><span class="dot"></span>Live data · Oct 28, 2026</div>
+
+    <div class="deck-zone">
+      <div class="swipe-tip">SWIPE</div>
+      <div class="deck"><!-- industry cards rendered by JS (coverflow fan) --></div>
+      <div class="deck-ctrl">
+        <button class="arrow ctrl-left" aria-label="Previous industry"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="dots"><i class="on"></i></div>
+        <button class="arrow ctrl-right" aria-label="Next industry"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+      </div>
+    </div>
+
+    <!-- relief map -->
+    <div class="map-panel">
+      <div class="map-head">
+        <h3>Outlook by Province</h3><span class="sub">2025–2027</span>
+        <span class="industry-tag">HEALTH · NOC 3</span>
+      </div>
+      <div class="map-svg"><div class="map-photo" id="mapPhoto"></div><div class="map-tilt" id="mapSvg"></div></div>
+      <div class="legend">
+        <span><i style="background:#3ECF8E"></i>Very Good</span>
+        <span><i style="background:#7BE0A8"></i>Good</span>
+        <span><i style="background:#F5B34C"></i>Moderate</span>
+        <span><i style="background:#F97316"></i>Limited</span>
+        <span><i style="background:#EF4444"></i>Very Limited</span>
+        <span><i style="background:#64748B"></i>Undetermined</span>
+      </div>
+    </div>
+
+    <!-- province detail -->
+    <div class="prov-card">
+      <div class="p-top">
+        <span class="pin"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3ECF8E" stroke-width="1.8"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+        <span class="p-name">Ontario</span>
+        <span class="p-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="#3ECF8E"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.2 1.3-6.6L2.5 9l6.6-.8z"/></svg><svg width="13" height="13" viewBox="0 0 24 24" fill="#3ECF8E"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.2 1.3-6.6L2.5 9l6.6-.8z"/></svg><svg width="13" height="13" viewBox="0 0 24 24" fill="#3ECF8E"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.2 1.3-6.6L2.5 9l6.6-.8z"/></svg><svg width="13" height="13" viewBox="0 0 24 24" fill="#3ECF8E"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.2 1.3-6.6L2.5 9l6.6-.8z"/></svg><svg width="13" height="13" viewBox="0 0 24 24" fill="#3ECF8E"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.2 1.3-6.6L2.5 9l6.6-.8z"/></svg>
+        Very Good</span>
+      </div>
+      <div class="p-desc">Broad-based demand across tech, finance, health and trades.</div>
+      <div class="p-stats">
+        <span><b class="v">$34.80</b><span class="u">/hr median</span></span>
+        <span><b class="v">48,920</b><span class="u">jobs today</span></span>
+        <span><b class="v">+9%</b><span class="u">3-yr outlook</span></span>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <div class="tab active">
+        <span class="t-ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg></span>
+        Home
+      </div>
+      <div class="tab">
+        <span class="t-ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></span>
+        Explore
+      </div>
+      <div class="tab">
+        <span class="t-ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17l5-6 4 3 6-8 3 4"/><path d="M3 21h18"/></svg></span>
+        Trends
+      </div>
+      <div class="tab">
+        <span class="t-ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.7 5.6 6.3.8-4.6 4.3 1.2 6.2L12 17l-5.6 2.9 1.2-6.2L3 9.4l6.3-.8z"/></svg></span>
+        Saved
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Real Canada SVG paths (from src/canadaPaths.js, @svg-maps/canada.lambert-projection) */
+const VIEWBOX = '4 4 1075 920';
+const PATHS = [
+  { code: 'YT', d: 'M171.5,445l1,17.5l-44-22.5l-34-20.5l-36.3-25.3L33.5,374v-4.5l3.3-0.6l1-1.4l-4.8-4h-4.5l-2-5l-2,0.5l-3.5-4l130.6-149l4.3-6l6.8,11.8l2.3,3.2l-0.5,6l1.5,1v6l1.5,4l5.3,4.8l-16.3,21.7l-0.5,3l-5,8l-2,0.5l6.5,4.5l8.5,8.5l-3,9l-7,10l1,1.5h2l2,3.5l4.5,0.5l-3.5,11l-2-0.5l-5,2.5l-1.5,1.5l0.5,2.5l-4,5l2.5,4l-2,3l2,2.5l-1.5,1l5,5l-0.5,2l-2,7.5l5,3.5l-3,3l1.5,7l-5.5,1.5l1.5,6.5l-3.5,3v10l-1.5,3.5l-2,2.5l2,3.5h4.5l2,17l3.5,4.5l-4.5,6l-0.5,7l4,2l5.5,0.5l3,4l9.5,2l1.5,2.5L171.5,445z' },
+  { code: 'NT', d: 'M410.2,436.2l-65.5-23.5l-9-17l-15.5-4.8L271,319l14.8-32.2l-10.6-11.5l-4.5-1l-2,2.5l-4,3l-4-0.5l-2-2l3-6l-0.5-4l5-6l-1.5-1.5l-7,6l-3.5,2.5l-3.5,4.5l-3-2l-0.5-8.5l1-14.5l-1.5-5.5l-3.5,1l1,6l-7,0.5l1,3.5l-4.5,1.5l0.5-3l-12-2.5l-4.5,2.5h-2.5v-2l-6.5-0.5l-10,2.5l-3,3.5l-3-3l1-3l18-2.5l2,1l19.5-1.5l-3-3.5l-3.5-0.5l-3-2.5l-7.5,2.5l-12.5-3.5l-3,4.5l-5.5-2.5l-4,2.5l-8.5,1l-2.5-2l-3.5,2.5l-0.5-3.5l-1.5-3l-2-1.5l-16,21.5l-0.5,3l-5,8l-2,0.5l6.5,4.5l8.5,8.5l-3,9l-7,10l1,1.5h2l2,3.5l4.5,0.5l-3.5,11l-2-0.5l-5,2.5l-1.5,1.5l0.5,2.5l-4,5l2.5,4l-2,3l2,2.5l-1.5,1l5,5l-0.5,2l-2,7.5l5,3.5l-3,3l1.5,7l-5.5,1.5l1.5,6.5l-3.5,3v10l-1.5,3.5l-2,2.5l2,3.5h4.5l2,17l3.5,4.5l-4.5,6l-0.5,7l4,2l5.5,0.5l3,4l9,1.9v3.3l-1,0.3l1,18l23.7,10.4c4.2,2,8.5,4,13.1,5.8l36.7,14.3l37,11.5L314,514l39.5,8l33.5,5l12.5,1L410.2,436.2z' },
+  { code: 'NU', d: 'M762.5,397.5l-3.5-3l-4-5.5l6,3v-4.5l-7-4.5v-3l-10-3l3-1.5l-2.5-4.5l-3.5,2.5l-5.5-7l-2,2L727,367l-11-9.5l-4.5,2l-1-2l-4.5-4l1-3.5l3,3.5l4.5-3l-1.5-2l-4-1l-3-4l4.5,0.5l-3-4.5l5-2.5l5.5,5l8.5,3l4-4.5l-2,6l5.5,2l3.5,4.5l5,4.5l5-4l5,2.5v-5.5l-4.5-11l3,0.5l3.5-6l-1.5-8h-4.5v-4.5l4-0.5l0.5-1.5l-2.5-3.5l3-3l-11.5-3l-6.5,6.5l-1-9l-6,6.5l-2.5-1.5l-3.5-7L716,304l-3,3l1.5-5.5l-1.5-2l-7.5,8l-8-1l-4.5-7l-3,1l-15,1V299l5-0.5l2.5-2l-2.5-7l-3-1l7-1.5l3-3.5l-1-2.5l-10,1.5l-4.5,0.5l0.5-3l6.5-5.5l-8-7.5l-2.5,0.5l0.5,5l-3,1.5l-2.5-2l-5,4.5l-1.5-1.5l9.5-9.5l-1-2l-10-2l-3,4.5l-2,1l2-4.5l-6,5l-0.5-8l-3-1l-1.5,6l-1.5-2.5l-4,3l2,2.5l3.5-2.5l-2,4l-3.5-1l-1-5.5l4.5-4l-0.5-2.5l-7.5-5.5l-3,3l-1.5,7.5l-8.5-10l-6,7.5l-1-1l4.5-6.5l-2.5-6l-5,1l-0.5-3.5l-6-3l-2.5,2l-6-3.5l-9.5,5v14.5H582l-1-8.5l-5,2l0.5-3.5l-3,2L572,260h-2.5l1.5-10l-1-6.5l-2.5-7.5l-2.5-1.5l-2.5-0.5l-0.5-4l-4-6l-12,3l-3,5l-3,4l-1.5,7.5L537,248l0.5,9l4.5,2l-4.5,8.5l4.5,5.5l5.5,1v10l-4-1l2-2.5l-11-12.5l-4-20l1-8.5l6-10l-4-3l-9,1l-11,13.5l-1.5,7.5l-2.5,14L512,284l3.5,1.5l10,0.5l4.5,4l-5,1.5l-5.5-3.5l-3.5,2.5l0.5,6.5l1.5-0.5l7,6.5v2.5l8.5,0.5l1-5l11,12l6.5-7l2.5,2.5l11.5-2l5.5,3.5l4.5-3.5l3,3l3-2.5l-3.5-4.5l8.5-1l2.5,3l7-3l-5-8H588v-3l12.5,4l4.5,7.5l6-2.5l1.5,3.5l-2,2l5,0.5l9,5.5l-1.5,4.5l-4,2l0.5,6.5l7-5l1-5l10,5h4.5v4l10,5l11,15l-1.5,1.5l-0.5,14l-8,11.5l2.5,3l8.5,4l0.5,5.5l-4-0.5l-1,5H655l-3,4.5l-8,1.5l-1-1.5l-8.5,0.5l-1.5,2.5l0.5,2.5l2.5,3l-6.5,4l2,6l2.5,3.5l6,4l4.5,1l2-3l7.5-5.5l-2-3.5l2.5-2l8.5,2.5l0.5-2l4-6.5l2,7.5l1.5-3.5l19,11l4.5-1l3.5,0.5l0.5,8l5.5,3.5l2-1.5l12.5,1.5l2-2h3l2,3.5l8.5,3l10-2.5h13.5l3.5,1l2.5-5.5l-4.5-3.5l-7.5-4.5l-13.5-4.5l-5-1l-12-8.5l4-4l8,6.5l4.5-1l9,4.5l9-2.5l5.5,1.5l3,2l0.5-2.5l-1.5-3L762.5,397.5zM666,622l2.5,1.5l6-4L673,617L666,622zM604.5,454.5L598,456l-4,3.5l-3.5-2.5l-1,5.5l-4.5,7l4,4.5l2,0.5h4l5-2l-1-2l6.5-9.5L604.5,454.5zM636.5,434.5l-2.5,3l1,2.5l2,1l3.5,3l3.5-3.5l0.5-4L636.5,434.5z' },
+  { code: 'BC', d: 'M195.6,720.9l3-11.7l1.1-9.6l-4.5-5.1l-4.4-7.6l1-4.1l-2.5-4.2l-3.5-6.8l0.3-8.7l-4.6-1.3l-0.1-5.7l-3.6-5.3l-2.6-1.3l-0.2-5.3l-3.6-2.5l0.5-8.5l-5.6-7l1.9-4.1l-5.1-2.5l1-1.5L159,612l4.4-2.4L161,608l-2.9-2.9l-0.6,0.4l51.8-126.3L172.5,463h-0.1l-0.9-1h0.1l-43.1-22l-34-20.5l-36.3-25.3L33.5,374l1.5,22l-3,6.5l8,0.5l2,1l3,0.5l2.5-4L51,399l9,2.5l0.5,8h-2l1,4.5l2,5.5l-2,2.5l2.5,16l-1,1.5L59.5,467l-3.5,2.5l2,2.5l-3,3l1,3.5l-1,3.5l2.5,1.5l6,11l1,5L68,502l-1,4.5l-4,2l-4,9.5l-3,2.5v3l-14.5,10l2.5,6l-1.5,2.5l1.5,15.5l1.5,0.5l3-4.5L58,555l-9.5,7.5l1,7.5l-0.5,6.5l1.5,2l-3,3.5l-2.5,1.5l2.5,7l11.5-1v5L44,598l-2,7l3.5,1l-8,7.5L42,624l3-2l8,8.5l-4.5,5L57,641h2l6,7.5v4l-2.5,1L65,662l5,1l0.5,4l-2,0.5l1,6l3.5,2l0.5,5.5l-2,3.5l8.1,2.7L102,698l37,15l29.5,11l31.5,10.5l-0.5-6L195.6,720.9z' },
+  { code: 'AB', d: 'M209.1,479.2l-51.8,126.3l0.6-0.4l2.9,2.9l2.4,1.6l-4.4,2.5l5.1,6l-0.9,1.5l5.1,2.5l-1.9,4l5.6,7l-0.4,8.5l3.6,2.5l0.1,5.3l2.6,1.2l3.6,5.3l0.1,5.8l4.6,1.3l-0.4,8.8l3.6,6.8l2.5,4.1l-1.1,4.1l4.5,7.6l4.4,5.1l-1.1,9.6l-3,11.6l3.9,7.6l0.5,6l21,6l36,9.5l57-236l-31-9l-37-11.5L209.1,479.2z' },
+  { code: 'SK', d: 'M256.7,749.9l22,5l28.5,5.5l27,4.5l21.5,3l26.4,2.1l7.1-155.1l3.7-32.1l1.6-13.5l0.1-0.7l4.7-40.2l-12.5-1l-33.5-5l-39.5-8l0,0L256.7,749.9z' },
+  { code: 'MB', d: 'M546,597l-9.8-0.5l-7-5l-9-1.5l-10,6.5l-7-2.5l1.5-3l-4.5-20.5l-4-5l1.5-6l-4.5-1.5l-2.5,2l-11-0.5v-3l-3.5-4l1-5.5l-0.5-16l-24.1,1l-31.5-1.5l-21.5-2.5l-10.4,86l-7,156l36,3l42.5,1.5H473l0.1-86.5l22-23l51.1-67.4l0.4-0.6H546' },
+  { code: 'ON', d: 'M661.5,826h8.5l2-2l5.5-0.5l2.5-1.5l2,2l2.5-1l0.5,6l-2.5,2.5l-12-3H662L661.5,826zM798,804l-1-4.5l-7.5-0.5l-14,10l-3.6,2l-2.8,0.8l-6.1-1.3l-3-5.5l-6.5,1l-7.5-5l-16.5,0.5L720,796l-8.5-8.5L708,779l-20.5-82.6l-0.1,0.3l-0.4-2.2l-0.5-2l0.5,7.5l-6,1l-8-5l-9-9l-2,0.5l-6-7l-10-10h-3l0.5-9.5l-3-9.5L636,640v-8l2-1l-3.5-8.5l-2,2H628l-6-1.5l-0.5,0.5l-24,2L586,619l-2.5,0.5l-8.5-4h-6l-5-1.5l-0.5-2l-6.5-8.5l-10-6.5l-51.5,68.5l-22,23L473,767l5-1l2,13.5l3,2l7.5,0.5l2.5,2l3,0.5l5-2.5l7.5,1l6.5,6.5l-0.5,1.5l5-3l7,5.5l5,0.5l6-5h1.5l2,3h9.5l2,1.5l2.5-0.8v0.3l3.5,0.4l-0.1-0.4h0.6l1.5-3l0.5-3.5l3.5-3.5l2,2.5l2-1.5l2.5-8.5l2,0.5l-2,6.5l5-7.5l-1.5-3l1-1.5l8,3.5l14-1l6,3l0.5,3l9,10h7.5l6.5-1.5v6l7,7.5l-2,6l5.5,2l-0.5,5l-1,3l6.5-0.5l9,4.5l4.5-1.5h11.5l15.5-1l2,2h7l4-3.5l10.5,11l4.5,2.5l0.5,2l7.5,8.5l-2.5,7.5l-5,0.5l-5.5-3.5h-4.5l-3-4.5l-5.5-5l-5.5,1.5l7.5,8.5l1,6.5l-4.5,5.5l3,23l-8,7.5l-0.5,8l0.5,7.5l-9,4.5l2.5,5.5h9l0.5-3.5l7-5.5l2-0.5l3.5-7l3.5-4.5l16.5-1l3.5-2l-4-1v-2l4.5-1.5l13-5.5h4l1-3l-2-2l-2-4l-4,2l-7,1.5l-3-2l5-8l5-6l17.5-9l4.5-1l0.5,1l7-1.5l3.5-2.5l-4.5-2l1-1.5h2.5l3.5-3.5l2.1-1.7l2.2-0.2l0.7-0.3h-0.2h0.2l4-1.8l3-5.5l0.5-3l2.5-3l5.5-8.5l4.1-1.7l3.9-0.8L798,804z' },
+  { code: 'QC', d: 'M968.5,569l-0.2-0.3L961,559l-77,47l-2-3.5l-6.5-4.5l-0.5-3l4.5-4.5l-3.5-2l-2.5,5v3.5l2.5,4l1.5,7l3.5,9l-3.5,4l-4.5-4l-4.5,2l-7-5.5L861,616l-6.5,1.5L851,615l-1.5,2.5l-2-2.5l1.5-2.5l-2.5-3l0.5-2l-5.5-6L839,605l2.5,4l-1,2l-8-3l-2.5-3l4-2.5l-5.5-8l-2,1l-10-7.5l0.5-4.5l-4.5-3l5-3.5l2-4l-6-4l-3-4l12,4.5l-0.5-5l-6-6.5l8.5,3.5l10,1l7-7l3,2.5l4-3l3.5,1.5l5-2l-4.5-4.5l3-1.5l-3-6.5l-1-5l-4.5,1l2-2l-6.5-8l1.5-2.5l-5,1.5l-4-6.5h2.5l-6.5-5l2.5-4.5l-3.5-3.5l1.5-3.5l-3-1.5l1-3.5l-3-4.5l-4.5-1l-8-3.5l-1-3l3-4l-4-5l4.5-4.5L815,472l-4.5,3l-3-0.5l-7.5,2l5-4l-3.5-4l-2-5L798,466l-3.5-2l-1-4v-3.5l-3-0.5l1-2l2-2.5l-6-2l0.5,15l1.5,4l2,17.5h-4l1,7.5l-8,11L775,500l-3-0.5l-7-4l-8.5,6.5l-2.5,4l-1.5-0.5L750,501l3,1l1-1.5l-1-2l3-3l-4-5l-2,1.5l-1.5-2.5v-2l-4-8.5h-1l-0.5-2l1-0.5l-4.5-6L737,465l1-1.5l1.5-3l-3.5-3l-1.5,1.5l2.5,3h-4.5l-1-2.5l-4.5,1v2.5l-13-0.5l-2.5-5l0.5-2.5l-1-1.5l-1.5,1l-9.5-4l-3-3.5l-12-3.5l-9.5,11l-3-2l-3,1.5l-20.5-0.5l-5,6.5l1.5,6l7,9l1.5,9l-2,6l1.5,3l2-1.5l5,11l5.5,7.5l-2.5,3l-0.5,9.5l-2,7l-4,2.5l3,5.5l4,4l5.5,1.5l10.5,6.5l10.5,11L695,572l1.5,15.5l-2.5,9L683.5,615l-5,3.5L674,624l-8,1.5l1,2.5l3.5,1l3.5,5l3.5,2.5l2.5,2.5l-0.5,3l3,9l4.5,6l2.5,5l2.5,8l2.5,0.5l2,5.5l-3,6l-0.5,4.5l4,4v3.5l-2.5,1.5l-1.5-4l-4.5-2.5l-2.5,3l1.6,7.5l0.7,0.3L708,779l3.5,8.5l8.5,8.5l9.5,5.5L746,801l7.5,5l6.5-1l3,5.5l6.1,1.3l2.8-0.8l3.6-2l14-10l7.5,0.5l1,4.5l2,8l45-17l-0.5-7h3.5l2-3l2,2l0.5-4.5l3-0.5l-3-2.5l3.5-6.5l-1-2l1-1.5l-0.5-3.5l-3-4.5l1.5-4.5l-1.5-6l4-21h3l0.5,3l1.1-1.8l0.3,0.6l3.6-3.3l2-5l-3-5.5l3-4.5l7-3l2,1.5l2-0.5l7-6.5l5.5-3.5l-0.5-0.3l1.5-2.2l6-5l2,1h5.5l5-8l3.5-6l-0.5-8l-4-4.5l-11.5-1l-8.5,2L870.5,688L854,711l-4,8.5l-5.5,24l-2.5,5l-6,5.5l-4,7l-3,1l-8.5,8l-8.5,15l-2,11l-4,5l-3.5,2.5l5-5.5l1.5-8l0.5-5.5l5-8.5l12-14.5l10-11l3-5.5l-0.5-6.5l3-3l4-24.5l5.5-15l5-10.5l7-3.5v-13l3-9l9-7.5L906,637h1.5l19-9.5h3.5l8-6.5l11.5-7l0.5-1.5V607l2-7l2-6.5l-1.5-2v-2l2-2l-0.5-4l7-5l-0.5-2.5l2-5L968.5,569z' },
+  { code: 'NB', d: 'M936.5,722l-3,1l-6.5-6.5l-2.5,0.5l-2.5-5.5l-3.5-0.5l-1,1.5l-2-0.5l2-4v-2.5l-1-7L915,695l-5.5,3l-2.5,5l-3,0.5l-2.5-3.5l-10,0.5h-0.1l-0.6,1.2l-0.3-0.2L885,705l-7,6.5l-2,0.5l-2-1.5l-7,3l-3,4.5l3,5.5l-2,5l-1.2,1.3l5.1-3.5l-7.5,6.8l2.6,0.4l7-5l4-0.5l6,4l1.5,2l8.5,18.5l3,5.5l6,0.5l1.5,4.5l3,3l4.5,0.5l2.5-2.5h2.5l7.5-4l1-4l3.5-0.5l3-4.5l4-6.5l2-2l2-2.5l1.5-6l2.7-1.6l0,0l0.8-0.4l0.2-0.7l0.8-3.8l4-2l0.5-3.5H936.5z' },
+  { code: 'NS', d: 'M951.5,725l3-0.5l4.5,1l0.5-2.5l3-1.5l6,0.5l6-8h2l2,2l3.5-3l4.5,3l0.5,1.5l7-1v1l-4,3l-4.5,4.5L975,740.5l-4.5,5L966,749l1,3l-4,3.5l-3.5-1.5l-3,3.5l2,3l1,1.5l-6,17.5l-3,3v3L945,789l-0.5-3l-4-2l-2.5,1.5l-7-7l1.5-6l-3.5-1l9.5-16l1-3.5l7-9.5h1l1,3.5h1.5l1.5-3l4-4.5l3-1.5v-1l-3.5-0.5l-7,4l-7,5l-1.5,0.5l4-12.5l-0.5-0.3l-1,0.3l-0.8-0.1l0.8-0.4l1-4.5l3.7-1.9L951.5,725zM978,705.5l1-21l1.5-2l-1-3l1.5-2l5.5,5l1.5,2.5l-0.5,8.5l4.5-3l1.5,1l7-2.5l-1,1l3.5,4.5l-4,2l1,7l-14,8.5L978,705.5z' },
+  { code: 'PE', d: 'M932.5,705.5l-1,6.5l-1,2l9,4.5h4l11-0.5l1.5,3h1.5l0.5-3l8-1l1.5-2.5l-3-5v-2l2.5-3.5l-0.5-3l-5.5,4l-2.5,1.5l-1-2.5l-2.5,1l-1,3l-4,1l-0.5,1.5l-6,0.5l-1.5,2l-2-1.5l-2-0.5L932.5,705.5z' },
+  { code: 'NL', d: 'M971.2,537.5l-3.5,1l-8-11.5l-8-3l-6.5-0.5l-3.5,3.5v5.5l-2.5-1.5l-1-5l-6-5l-9,7l1.5,2l-6,8v6.5l-2,1l-6.5,13l-0.5-13l7.5-12v-4l9-12l-0.5-4.5l-6.5,0.5l-2.5-2.5l-2,1.5v4l-4,1.5l-9-3l-3,3l-4-2l-3.5,4.5l-5.5,1l1-4.5l-4-5l-7.5,2.5l-4.5-2l-2.5,2v-3l-3.5-1.5l-3,2l-5-4l-2-6.5l1-7.5l-1.5-1.5l-5,0.5l-1-2l-6.5-1.5l2.5-3.5l-2.7-3.9l0,0c-0.5,0.8-5.1,0.9-5.8,0.9l-0.5-3.5l-5.5-2l-1-2.5l-7.5,3l2-4l-2-5l-2.5,0.5l-6.5-5l-3-0.5l-2-1.5l-8-3.5l-4.5-6l-0.4-0.5l-0.9-1l-2,2.5l-1,2l3,0.5v3.5l1,4l3.5,2l1.5-2.5l2,5l3.5,4l-5,4l7.5-2l3,0.5l4.5-3l1.5,1.5L812,478l4,5l-3,4l1,3l8,3.5l4.5,1l3,4.5l-1,3.5l3,1.5l-1.5,3.5l3.5,3.5l-2.5,4.5l6.5,5H835l4,6.5l5-1.5l-1.5,2.5l6.5,8l-2,2l4.5-1l1,5l3,6.5l-3,1.5l4.5,4.5l-5,2l-3.5-1.5l-4,3l-3-2.5l-7,7l-10-1L816,558l6,6.5l0.5,5l-12-4.5l3,4l6,4l-2,4l-5,3.5l4.5,3l-0.5,4.5l10,7.5l2-1l5.5,8l-4,2.5l2.5,3l8,3l1-2l-2.5-4l2.5-3.5l5.5,6l-0.5,2l2.5,3l-1.5,2.5l2,2.5l1.5-2.5l3.5,2.5l6.5-1.5l0.5-2.5l7,5.5l4.5-2l4.5,4l3.5-4l-3.5-9l-1.5-7l-2.5-4v-3.5l2.5-5l3.5,2L875,595l0.5,3l6.5,4.5l2,3.5l77-47l7.5,9.8l3.2-2.8l3-11.5l1-9l-2.5-4L971.2,537.5zM1076,610l-1.5-10.5l-6-2l-1,6.5l-2,3l-2.5-2l0.5-6l-1-2.5l1-3l-2-1.5l-2.5,2.5v13l1.5,2l-1-0.5l-5-3l1-2.5l-1.5-2h-4.5l-0.5-0.5l4-5v-1.5l1.5-1.5l-1-8.5l-2-0.5v2.5l-2.5,3l0.5,3.5l-4.5,2l0.5-3.5l-2-2l-4,0.5l-1.5-1.5l1.5-8l-1.5-1.5l-4-0.5l-10.5,5v2.5l-4.5,6.5l-3.5-4l-1,2.5l-3.5,2.5l-8-2l2-3.5l1.5-3.5l-1-2.5l-2.5,2l-4,1.5l-1-0.5l-3,0.5l1.5,5l-2,3l1.5,6l-4.5-6.5l-1-15.5L986,572l2-1l1.5,1.5l-1-8.5l-1-2.5l-3,3.5l-1-2.5l4-4.5l-0.5-4.5h-4l-0.5,2h-2l-4,13L976,582l1,7l5,19l-1,7l4,4.5l2,1l-3,1.5v8.5l1,3.5h-4l-3,4l3,1.5l3.5-2.5l0.5-1l2.5-2l1.5,2l-1.5,1v8.5l-3,6l3.5,2.5l-0.5,2.5h3.5l3.5-1.5l6-6.5l4.5-3.5l2.5-0.5l5.5-4l3.5,0.5l4.5-2.5l2-4l5.5-5.5l1.5-2.5l1.5-1.5l2,1.5l0.5,4l5.5-2.5l-1-4l4-4l3.5,2l-2.5,3.5l-1,8l-3,6.5l2.5,2.5l7.5-6.5l0.5-2l-1-9l3.5-4l-2.5-10.5l1.5-1h2.5l4.5,5l3.5,6.5l-0.5,3l3,3l2-1l1-8.5l2-1v4l5.5,5l1-3.5l2.5-2.5V617L1076,610z' },
+];
+
+/* Per-industry province ratings — 10 NOC groups × 13 provinces (simulated demo data).
+   Colour encodes the rating level; RATE_MAP turns a colour back into label + stars. */
+const PROV_RATINGS = {
+  management: { YT:'#64748B', NT:'#64748B', NU:'#64748B', BC:'#7BE0A8', AB:'#7BE0A8', SK:'#F5B34C', MB:'#F5B34C', ON:'#3ECF8E', QC:'#7BE0A8', NB:'#F97316', NS:'#F97316', PE:'#F5B34C', NL:'#F97316' },
+  business:   { YT:'#64748B', NT:'#64748B', NU:'#64748B', BC:'#7BE0A8', AB:'#F5B34C', SK:'#F5B34C', MB:'#F5B34C', ON:'#3ECF8E', QC:'#7BE0A8', NB:'#F97316', NS:'#F97316', PE:'#F97316', NL:'#F97316' },
+  science:    { YT:'#64748B', NT:'#64748B', NU:'#64748B', BC:'#7BE0A8', AB:'#F5B34C', SK:'#F5B34C', MB:'#F5B34C', ON:'#3ECF8E', QC:'#7BE0A8', NB:'#F97316', NS:'#F97316', PE:'#F97316', NL:'#F97316' },
+  health:     { YT:'#F5B34C', NT:'#F5B34C', NU:'#F5B34C', BC:'#7BE0A8', AB:'#7BE0A8', SK:'#F5B34C', MB:'#7BE0A8', ON:'#3ECF8E', QC:'#7BE0A8', NB:'#7BE0A8', NS:'#7BE0A8', PE:'#F5B34C', NL:'#F5B34C' },
+  education:  { YT:'#F5B34C', NT:'#F5B34C', NU:'#F5B34C', BC:'#7BE0A8', AB:'#7BE0A8', SK:'#F5B34C', MB:'#F5B34C', ON:'#3ECF8E', QC:'#7BE0A8', NB:'#7BE0A8', NS:'#7BE0A8', PE:'#F5B34C', NL:'#F5B34C' },
+  art:        { YT:'#64748B', NT:'#64748B', NU:'#64748B', BC:'#F5B34C', AB:'#F97316', SK:'#F97316', MB:'#F97316', ON:'#F5B34C', QC:'#F5B34C', NB:'#F97316', NS:'#F97316', PE:'#F97316', NL:'#EF4444' },
+  sales:      { YT:'#F5B34C', NT:'#F5B34C', NU:'#F5B34C', BC:'#F5B34C', AB:'#F5B34C', SK:'#F5B34C', MB:'#F5B34C', ON:'#F5B34C', QC:'#F5B34C', NB:'#F97316', NS:'#F97316', PE:'#F97316', NL:'#F97316' },
+  trades:     { YT:'#64748B', NT:'#64748B', NU:'#64748B', BC:'#7BE0A8', AB:'#7BE0A8', SK:'#F5B34C', MB:'#F5B34C', ON:'#3ECF8E', QC:'#7BE0A8', NB:'#F97316', NS:'#F97316', PE:'#F97316', NL:'#F97316' },
+  resources:  { YT:'#F5B34C', NT:'#F5B34C', NU:'#F5B34C', BC:'#F5B34C', AB:'#3ECF8E', SK:'#7BE0A8', MB:'#7BE0A8', ON:'#F5B34C', QC:'#F5B34C', NB:'#F97316', NS:'#F97316', PE:'#F97316', NL:'#7BE0A8' },
+  factory:    { YT:'#64748B', NT:'#64748B', NU:'#64748B', BC:'#F5B34C', AB:'#7BE0A8', SK:'#F5B34C', MB:'#F5B34C', ON:'#3ECF8E', QC:'#7BE0A8', NB:'#F97316', NS:'#F97316', PE:'#F97316', NL:'#F97316' }
+};
+/* colour → rating label / stars / rank (rank decides "best province") */
+const RATE_MAP = {
+  '#3ECF8E': { text:'Very Good', stars:5, order:5 },
+  '#7BE0A8': { text:'Good', stars:4, order:4 },
+  '#F5B34C': { text:'Moderate', stars:3, order:3 },
+  '#F97316': { text:'Limited', stars:2, order:2 },
+  '#EF4444': { text:'Very Limited', stars:1, order:1 },
+  '#64748B': { text:'Undetermined', stars:0, order:0 }
+};
+function ratingOf(hex) { return RATE_MAP[hex] || RATE_MAP['#64748B']; }
+/* the centred NOC drives the map colouring + the detail card numbers */
+let ACTIVE_RATINGS = PROV_RATINGS.management;
+let ACTIVE_IND_KEY = 'management';
+/* per-industry multipliers — detail-card numbers track the centred NOC (simulated) */
+const IND_SHAPE = {
+  management: { jobs:.90, med:1.35, out:.9 }, business: { jobs:1.10, med:1.00, out:1.0 },
+  science:    { jobs:.95, med:1.25, out:1.5 }, health:   { jobs:1.20, med:1.10, out:1.3 },
+  education:  { jobs:1.05, med:.95, out:.95 }, art:      { jobs:.60, med:.75, out:.6 },
+  sales:      { jobs:1.35, med:.65, out:.8 },  trades:   { jobs:1.10, med:.90, out:.9 },
+  resources:  { jobs:.55, med:1.15, out:.5 },  factory:  { jobs:.70, med:.90, out:.7 }
+};
+/* big provinces first, so ties in ratings resolve to the most meaningful one */
+const PROV_PRIORITY = ['ON','QC','BC','AB','SK','MB','NS','NB','NL','PE','YT','NT','NU'];
+/* industry-scaled stats for one province, derived from the base table (simulated) */
+function provStats(indKey, code) {
+  const base = PROV_DETAILS[code] || PROV_DETAILS.ON;
+  const f = IND_SHAPE[indKey] || IND_SHAPE.management;
+  const jobs = Math.round(parseFloat(base.jobs.replace(/,/g, '')) * f.jobs).toLocaleString('en-US');
+  const med = '$' + (parseFloat(base.med.slice(1)) * f.med).toFixed(2);
+  const o = parseFloat(base.outlook) * f.out;
+  const out = (o >= 0 ? '+' : '') + Math.round(o) + '%';
+  return { jobs: jobs, med: med, outlook: out };
+}
+/* highest-rated province under the current NOC's ratings */
+function topProvince() {
+  let best = null, bestOrder = -1;
+  for (const code of PROV_PRIORITY) {
+    const r = ratingOf(ACTIVE_RATINGS[code] || '#64748B');
+    if (r.order > bestOrder) { bestOrder = r.order; best = code; }
+  }
+  return best;
+}
+
+/* real-photo backdrops behind the map — Canada default, or the selected province */
+const PROV_PHOTOS = {
+  CA: 'assets/ca-maple.jpg',
+  YT: 'assets/yt-aurora.jpg', NT: 'assets/nt-aurora.jpg', NU: 'assets/nu-tundra.jpg',
+  BC: 'assets/bc-vancouver.jpg', AB: 'assets/ab-banff.jpg', SK: 'assets/sk-wheat.jpg',
+  MB: 'assets/mb-polarbear.jpg', ON: 'assets/on-toronto.jpg', QC: 'assets/qc-quebec.jpg',
+  NB: 'assets/nb-fundy.jpg', NS: 'assets/ns-lighthouse.jpg', PE: 'assets/pe-coast.jpg',
+  NL: 'assets/nl-iceberg.jpg'
+};
+
+/* per-province example labour-market detail (shown in the detail card on click) */
+const PROV_DETAILS = {
+  YT: { name:'Yukon', jobs:'1,020', med:'$36.40', outlook:'+4%', rate:'Fair', stars:3, desc:'A small, stable labour market anchored by public services and tourism.' },
+  NT: { name:'Northwest Territories', jobs:'1,150', med:'$39.80', outlook:'+3%', rate:'Fair', stars:3, desc:'Government, mining and northern services drive steady hiring.' },
+  NU: { name:'Nunavut', jobs:'880', med:'$37.20', outlook:'+3%', rate:'Fair', stars:3, desc:'Growth is concentrated in public administration and community services.' },
+  BC: { name:'British Columbia', jobs:'19,340', med:'$34.60', outlook:'+8%', rate:'Good', stars:4, desc:'Tech, health and construction keep demand healthy across the province.' },
+  AB: { name:'Alberta', jobs:'15,870', med:'$36.10', outlook:'+6%', rate:'Good', stars:4, desc:'Energy, engineering and services rebound as commodity prices firm.' },
+  SK: { name:'Saskatchewan', jobs:'5,640', med:'$30.20', outlook:'+3%', rate:'Moderate', stars:3, desc:'Agriculture and mining anchor a modest but steady outlook.' },
+  MB: { name:'Manitoba', jobs:'6,180', med:'$29.90', outlook:'+4%', rate:'Moderate', stars:3, desc:'Manufacturing and health lead a balanced labour market.' },
+  ON: { name:'Ontario', jobs:'48,920', med:'$34.80', outlook:'+9%', rate:'Very Good', stars:5, desc:'Broad-based demand across tech, finance, health and trades.' },
+  QC: { name:'Quebec', jobs:'26,430', med:'$33.40', outlook:'+7%', rate:'Good', stars:4, desc:'Aerospace, AI and health support a resilient outlook.' },
+  NB: { name:'New Brunswick', jobs:'3,520', med:'$28.10', outlook:'+2%', rate:'Limited', stars:2, desc:'Growth is slower; health and IT remain the bright spots.' },
+  NS: { name:'Nova Scotia', jobs:'3,880', med:'$28.60', outlook:'+2%', rate:'Limited', stars:2, desc:'Defence, health and ocean tech offer pockets of demand.' },
+  PE: { name:'Prince Edward Island', jobs:'760', med:'$27.40', outlook:'+3%', rate:'Moderate', stars:3, desc:'A small market; tourism and agriculture hold steady.' },
+  NL: { name:'Newfoundland & Labrador', jobs:'2,140', med:'$30.80', outlook:'+1%', rate:'Limited', stars:2, desc:'Energy projects and health care temper a soft outlook.' }
+};
+
+/* ============ coverflow industry deck ============ */
+const ICONS = {
+  management: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3.5"/><path d="M2.5 20c.8-4 3.4-6 6.5-6s5.7 2 6.5 6"/><path d="M15.5 4.5a3.5 3.5 0 0 1 0 5"/><path d="M17.5 14.5c2.4.8 3.7 2.6 4 5.5"/></svg>',
+  business: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 12h18"/></svg>',
+  science: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4.5 4.5 0 0 0-6.2 6.2l8.1 8.1a2.2 2.2 0 0 0 3.1-3.1l-5-5"/><circle cx="10.5" cy="10.5" r="1.2" fill="currentColor" stroke="none"/></svg>',
+  health: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>',
+  education: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 9L12 4l9.5 5L12 14z"/><path d="M6.5 11.5V17c0 1.4 2.5 2.6 5.5 2.6s5.5-1.2 5.5-2.6v-5.5"/></svg>',
+  art: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="8" cy="10" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="7.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="16" cy="10" r="1.1" fill="currentColor" stroke="none"/><path d="M12 21c0-2 1.2-3 2.8-3H16a2.4 2.4 0 0 0 0-4.8H12"/></svg>',
+  sales: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 8h13l-1.2 12a2 2 0 0 1-2 1.8H8.7a2 2 0 0 1-2-1.8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
+  trades: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>',
+  resources: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l7.5 9h-4.5l4 5.5h-5v4.5h-4V17H5l4-5.5H4.5z"/></svg>',
+  factory: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V9l5 3V9l5 3V9l5 3V21z"/><path d="M3 21h18"/></svg>'
+};
+const INDUSTRIES = [
+  { key:'management', name:'Management', code:'NOC 0 · Gestion', prov:'7/14', jobs:'28,140', med:'$58.20', rate:'Good', color:'#57C7FF', stars:4, tag:'MANAGEMENT · NOC 0', photo:'assets/ind-management.jpg',
+    on:{ jobs:'6,880', med:'$59.40', outlook:'+7%', rate:'Good', stars:4, desc:'Leadership demand tracks the broader economy, with steady openings across public and private administration.' } },
+  { key:'business', name:'Business & Finance', code:'NOC 1 · Affaires et finance', prov:'9/14', jobs:'52,180', med:'$34.10', rate:'Fair', color:'#F5B34C', stars:3, tag:'BUSINESS · NOC 1', photo:'assets/ind-business.jpg',
+    on:{ jobs:'11,940', med:'$35.20', outlook:'+9%', rate:'Fair', stars:3, desc:'Steady demand across professional services and finance, with growth in data and analyst roles.' } },
+  { key:'science', name:'Natural & Applied Sciences', code:'NOC 2 · Sciences naturelles', prov:'7/14', jobs:'38,104', med:'$42.80', rate:'Good', color:'#3ECF8E', stars:4, tag:'SCIENCES · NOC 2', photo:'assets/ind-science.jpg',
+    on:{ jobs:'9,410', med:'$43.10', outlook:'+14%', rate:'Good', stars:4, desc:'Engineering and tech roles keep expanding as Ontario invests in clean energy and R&D.' } },
+  { key:'health', name:'Health', code:'NOC 3 · Santé', prov:'8/14', jobs:'45,230', med:'$38.60', rate:'Good', color:'#3ECF8E', stars:5, tag:'HEALTH · NOC 3', photo:'assets/ind-health.jpg',
+    on:{ jobs:'12,480', med:'$39.20', outlook:'+11%', rate:'Very Good', stars:5, desc:'Strong demand expected over the next 3 years, driven by an aging population and steady sector growth.' } },
+  { key:'education', name:'Education, Law & Social', code:'NOC 4 · Éducation, droit et services sociaux', prov:'8/14', jobs:'34,520', med:'$33.70', rate:'Good', color:'#57C7FF', stars:4, tag:'EDUCATION · NOC 4', photo:'assets/ind-education.jpg',
+    on:{ jobs:'8,640', med:'$34.30', outlook:'+8%', rate:'Good', stars:4, desc:'Schools and social services keep hiring; demand for early-childhood educators stays strong.' } },
+  { key:'art', name:'Art, Culture & Sport', code:'NOC 5 · Arts, culture et sports', prov:'3/14', jobs:'12,760', med:'$25.10', rate:'Limited', color:'#C084FC', stars:2, tag:'ART & CULTURE · NOC 5', photo:'assets/ind-art.jpg',
+    on:{ jobs:'2,910', med:'$25.80', outlook:'+2%', rate:'Limited', stars:2, desc:'Recovery is gradual; competition remains high for creative and performance roles.' } },
+  { key:'sales', name:'Sales & Service', code:'NOC 6 · Vente et services', prov:'5/14', jobs:'61,430', med:'$21.80', rate:'Fair', color:'#F5B34C', stars:3, tag:'SALES & SERVICE · NOC 6', photo:'assets/ind-sales.jpg',
+    on:{ jobs:'13,720', med:'$22.40', outlook:'+5%', rate:'Fair', stars:3, desc:'Large volume of openings, mostly in retail and hospitality, with steady turnover.' } },
+  { key:'trades', name:'Trades & Transport', code:'NOC 7 · Métiers', prov:'6/14', jobs:'41,270', med:'$31.40', rate:'Fair', color:'#F97316', stars:3, tag:'TRADES · NOC 7', photo:'assets/ind-trades.jpg',
+    on:{ jobs:'10,870', med:'$32.10', outlook:'+6%', rate:'Fair', stars:3, desc:'Construction and logistics hiring stays solid, buoyed by housing and infrastructure pipelines.' } },
+  { key:'resources', name:'Natural Resources & Agriculture', code:'NOC 8 · Ressources naturelles et agriculture', prov:'4/14', jobs:'18,240', med:'$30.60', rate:'Limited', color:'#A3E635', stars:2, tag:'RESOURCES · NOC 8', photo:'assets/ind-resources.jpg',
+    on:{ jobs:'3,860', med:'$31.20', outlook:'+1%', rate:'Limited', stars:2, desc:'Commodity prices weigh on hiring; agriculture shows pockets of steady demand.' } },
+  { key:'factory', name:'Manufacturing & Utilities', code:'NOC 9 · Fabrication', prov:'4/14', jobs:'19,860', med:'$29.70', rate:'Limited', color:'#FB923C', stars:2, tag:'MANUFACTURING · NOC 9', photo:'assets/ind-factory.jpg',
+    on:{ jobs:'5,240', med:'$30.40', outlook:'+3%', rate:'Limited', stars:2, desc:'Mixed outlook as auto electrification offsets softer consumer demand.' } }
+];
+function starRow(n) {
+  let s = '';
+  for (let i = 1; i <= 5; i++) {
+    s += '<svg' + (i <= n ? ' class="f"' : '') + ' width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="' + (i > n ? 'color:rgba(255,255,255,.28)' : '') + '"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.2 1.3-6.6L2.5 9l6.6-.8z"/></svg>';
+  }
+  return s;
+}
+/* vertical poker-card face: photo backdrop (JS) + number + top / rating / stacked meta */
+function cardBody(ind, idx) {
+  return '<div class="edge top"></div><div class="edge bot"></div>' +
+    '<div class="ic-num">' + ('0' + idx).slice(-2) + '</div>' +
+    '<div class="ic-body">' +
+      '<div class="ic-top">' +
+        '<div class="ic-ico" style="color:' + ind.color + '">' + ICONS[ind.key] + '</div>' +
+        '<div><div class="ic-name">' + ind.name + '</div><div class="ic-code">' + ind.code + '</div></div>' +
+      '</div>' +
+      '<div class="ic-rating">' +
+        '<div class="ic-grade" style="color:' + ind.color + '"><span class="gdot" style="background:' + ind.color + ';box-shadow:0 0 9px ' + ind.color + 'aa"></span>' + ind.rate + '</div>' +
+        '<div class="stars">' + starRow(ind.stars) + '</div>' +
+      '</div>' +
+      '<div class="ic-meta">' +
+        '<div class="ic-m"><div class="v">' + ind.prov + '</div><div class="l">PROVINCES POSITIVE</div></div>' +
+        '<div class="ic-m"><div class="v">' + ind.jobs + '</div><div class="l">JOBS TODAY</div></div>' +
+        '<div class="ic-m"><div class="v">' + ind.med + '</div><div class="l">MEDIAN / HR</div></div>' +
+      '</div>' +
+    '</div>';
+}
+/* per-card pose: distance from centre drives rotation, scale, brightness, z.
+   All cards share --drag (px) so the whole fan follows the finger.
+   Cards beyond ±2 are hidden but stay in the loop — they slide in from the edge. */
+function cardStyle(off) {
+  const drag = 'var(--drag, 0px)';
+  if (off === 0) {
+    return 'transform:translateX(' + drag + ') rotateY(0deg) scale(1);z-index:50;filter:brightness(1);opacity:1;box-shadow:0 22px 40px rgba(0,0,0,.55),0 0 0 1px rgba(232,179,75,.18)';
+  }
+  const abs = Math.abs(off);
+  if (abs > 2) {
+    return 'transform:translateX(' + drag + 'px) scale(.4);z-index:1;filter:brightness(.7);opacity:0;pointer-events:none;box-shadow:none';
+  }
+  const dir = off > 0 ? 1 : -1;
+  const x = 118 + (abs - 1) * 78;                 /* ±1:118px  ±2:196px */
+  const rot = -dir * (24 + (abs - 1) * 20);       /* ±1:24°   ±2:44°  */
+  const sc = Math.max(.58, 1 - abs * .19);        /* ±1:.81   ±2:.62  */
+  const b = Math.max(.55, 1 - abs * .2);          /* ±1:.80   ±2:.60  */
+  return 'transform:translateX(calc(' + drag + ' + ' + (x * dir) + 'px)) rotateY(' + rot + 'deg) scale(' + sc + ');z-index:' + (50 - abs * 10) +
+    ';filter:brightness(' + b + ');opacity:' + (1 - abs * .13) + ';box-shadow:0 14px 26px rgba(0,0,0,.42)';
+}
+(function () {
+  const N = INDUSTRIES.length;            /* 10 NOC categories, NOC 0–9 */
+  let center = 0;                         /* Management (NOC 0) first, per NOC order */
+  let mounted = false;
+  const deck = document.querySelector('.deck');
+  const dotsBox = document.querySelector('.dots');
+  const ctrlL = document.querySelector('.ctrl-left');
+  const ctrlR = document.querySelector('.ctrl-right');
+  /* circular offset: -5..+4 around the centre, cards beyond ±2 are hidden */
+  function loopOff(i) {
+    const o = (i - center + N) % N;
+    return o > N / 2 ? o - N : o;
+  }
+  function render() {
+    deck.innerHTML = INDUSTRIES.map((ind, i) =>
+      '<div class="icard bg-' + ind.key + '" style="' + cardStyle(loopOff(i)) + '">' + cardBody(ind, i) + '</div>'
+    ).join('');
+    dotsBox.innerHTML = INDUSTRIES.map((_, i) => '<i class="' + (i === center ? 'on' : '') + '"></i>').join('');
+    const ind = INDUSTRIES[center];
+    ACTIVE_IND_KEY = ind.key;
+    const tag = document.querySelector('.industry-tag');
+    if (tag) tag.textContent = ind.tag;
+    if (!mounted) {
+      requestAnimationFrame(function () { deck.classList.add('animated'); mounted = true; });
+    }
+  }
+  /* --- haptics: vibrate where available, visual pulse as fallback --- */
+  function haptic(ms) { if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} } }
+  function settlePulse() {
+    /* pulse the centre (visible) card, not the first hidden card in the loop */
+    let c = null;
+    const cards = deck.querySelectorAll('.icard');
+    for (const card of cards) { if (card.style.zIndex === '50') { c = card; break; } }
+    if (c) { c.classList.remove('pulse'); void c.offsetWidth; c.classList.add('pulse'); }
+  }
+  function go(dir) {
+    center = (center + dir + INDUSTRIES.length) % INDUSTRIES.length;
+    deck.style.setProperty('--drag', '0px');
+    render(); haptic(10); settlePulse();
+    /* tell the map: re-colour provinces for this NOC and focus its top-rated province */
+    document.dispatchEvent(new CustomEvent('nocchange', { detail: { ind: INDUSTRIES[center] } }));
+  }
+  /* --- drag-to-swipe: the whole fan follows the pointer, then settles or steps --- */
+  const SWIPE = 62, VEL = .45;                    /* px threshold, px/ms velocity */
+  let px0 = 0, dx = 0, t0 = 0, dragging = false, moved = false;
+  deck.addEventListener('pointerdown', e => {
+    dragging = true; moved = false; dx = 0; px0 = e.clientX; t0 = performance.now();
+    deck.classList.add('dragging');
+    deck.setPointerCapture(e.pointerId);
+  });
+  deck.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    dx = e.clientX - px0;
+    if (Math.abs(dx) > 6) moved = true;
+    deck.style.setProperty('--drag', dx + 'px');
+  });
+  deck.addEventListener('pointerup', () => {
+    if (!dragging) return;
+    dragging = false;
+    deck.classList.remove('dragging');
+    const v = dx / Math.max(1, performance.now() - t0);   /* px/ms */
+    if (moved && (dx < -SWIPE || v < -VEL)) go(1);
+    else if (moved && (dx > SWIPE || v > VEL)) go(-1);
+    else deck.style.setProperty('--drag', '0px');          /* snap back */
+  });
+  deck.addEventListener('pointercancel', () => {
+    dragging = false; deck.classList.remove('dragging');
+    deck.style.setProperty('--drag', '0px');
+  });
+  ctrlL.addEventListener('click', () => go(-1));
+  ctrlR.addEventListener('click', () => go(1));
+  render();
+})();
+
+(function () {
+  const el = document.getElementById('mapSvg');
+
+  /* --- colour helpers: lighten / darken a hex colour (unified light source) --- */
+  function shade(hex, amt) {
+    const n = parseInt(hex.slice(1), 16);
+    let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    if (amt < 0) {
+      r = Math.max(0, Math.round(r * (1 + amt)));
+      g = Math.max(0, Math.round(g * (1 + amt)));
+      b = Math.max(0, Math.round(b * (1 + amt)));
+    } else {
+      r = Math.min(255, Math.round(r + (255 - r) * amt));
+      g = Math.min(255, Math.round(g + (255 - g) * amt));
+      b = Math.min(255, Math.round(b + (255 - b) * amt));
+    }
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+  const fallback = '#64748B';
+  const colourOf = p => ACTIVE_RATINGS[p.code] || fallback;
+
+  /* (re)build the province faces with the current NOC's ratings.
+     Keeps the highlighted province, if any. */
+  function buildMap() {
+    const selCode = el.querySelector('.prov.sel') ? el.querySelector('.prov.sel').dataset.code : null;
+    const grads = PATHS.map(p => {
+      const c = colourOf(p);
+      return '<linearGradient id="pg-' + p.code + '" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="' + shade(c, .30) + '"/>' +
+        '<stop offset=".5" stop-color="' + c + '"/>' +
+        '<stop offset="1" stop-color="' + shade(c, -.32) + '"/>' +
+      '</linearGradient>';
+    }).join('');
+    /* defs: per-province gradients + contact shadow.
+       No ocean layer — the real-photo backdrop shows through everywhere. */
+    const defs = '<defs>' + grads +
+      '<filter id="relief" x="-14%" y="-14%" width="128%" height="128%">' +
+        '<feDropShadow dx="0" dy="5" stdDeviation="3.4" flood-color="#000000" flood-opacity=".55"/>' +
+      '</filter>' +
+    '</defs>';
+    /* continent plate: whole landmass pushed down in two lit steps — deep blue on photo */
+    const plateDeep = '<g transform="translate(0 9)">' + PATHS.map(p => '<path d="' + p.d + '" fill="#0C1B2E"/>').join('') + '</g>';
+    const plateMid = '<g transform="translate(0 4.5)">' + PATHS.map(p => '<path d="' + p.d + '" fill="#13283F"/>').join('') + '</g>';
+    /* lit faces with dark seams between provinces + per-province contact shadow */
+    const faces = PATHS.map(p =>
+      '<path class="prov" data-code="' + p.code + '" d="' + p.d + '" fill="url(#pg-' + p.code + ')" stroke="#05080D" stroke-width="3.4" stroke-linejoin="round" filter="url(#relief)"/>'
+    ).join('');
+    const svg =
+      '<svg viewBox="' + VIEWBOX + '" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' + defs +
+        plateDeep + plateMid + faces +
+      '</svg>';
+    el.innerHTML = svg;
+    if (selCode) {
+      const prev = el.querySelector('.prov[data-code="' + selCode + '"]');
+      if (prev) prev.classList.add('sel');
+    }
+  }
+
+  /* --- province selection: flip the photo backdrop, float the province, reveal the detail card --- */
+  function selectProv(code, animate) {
+    el.querySelectorAll('.prov').forEach(p => p.classList.toggle('sel', p.dataset.code === code));
+    const photo = document.getElementById('mapPhoto');
+    const nextCls = 'map-photo ph-' + (PROV_PHOTOS[code] ? code : 'CA');
+    if (photo) {
+      if (animate === false) {
+        photo.className = nextCls;
+        photo.style.transition = '';
+        photo.style.transform = '';
+      } else {
+        /* card-flip: swing the backdrop away, swap the photo, swing the new face in */
+        photo.style.transition = 'transform .34s cubic-bezier(.45,0,.2,1)';
+        photo.style.transform = 'perspective(1100px) rotateY(84deg)';
+        setTimeout(function () {
+          photo.className = nextCls;
+          photo.style.transform = 'perspective(1100px) rotateY(0deg)';
+        }, 300);
+      }
+    }
+    const d = PROV_DETAILS[code] || PROV_DETAILS.ON;   /* null → default card shows Ontario */
+    const cardCode = code || 'ON';
+    const r = ratingOf(ACTIVE_RATINGS[cardCode] || '#64748B');
+    const st = provStats(ACTIVE_IND_KEY, cardCode);
+    const pc = document.querySelector('.prov-card');
+    if (pc && d) {
+      pc.style.borderLeftColor = ACTIVE_RATINGS[cardCode] || '#3ECF8E';
+      const nm = pc.querySelector('.p-name'); if (nm) nm.textContent = d.name;
+      const ds = pc.querySelector('.p-desc'); if (ds) ds.textContent = d.desc;
+      const stats = pc.querySelectorAll('.p-stats > span');
+      if (stats[0]) stats[0].innerHTML = '<b class="v">' + st.med + '</b><span class="u">/hr median</span>';
+      if (stats[1]) stats[1].innerHTML = '<b class="v">' + st.jobs + '</b><span class="u">jobs today</span>';
+      if (stats[2]) stats[2].innerHTML = '<b class="v">' + st.outlook + '</b><span class="u">3-yr outlook</span>';
+      const badge = pc.querySelector('.p-badge');
+      if (badge) badge.innerHTML = starRow(r.stars) + ' ' + r.text;
+      /* left→right staggered reveal of the new card content */
+      pc.classList.remove('reveal'); void pc.offsetWidth; pc.classList.add('reveal');
+    }
+  }
+  el.addEventListener('click', e => {
+    const t = e.target.closest ? e.target.closest('.prov') : null;
+    if (t && t.dataset.code) selectProv(t.dataset.code, true);
+  });
+  /* NOC changed (swipe / arrows): re-colour the map, then focus this NOC's top-rated province */
+  document.addEventListener('nocchange', function (e) {
+    const ind = e.detail && e.detail.ind;
+    if (!ind) return;
+    ACTIVE_RATINGS = PROV_RATINGS[ind.key] || PROV_RATINGS.management;
+    buildMap();
+    const top = topProvince();
+    if (top) selectProv(top, true);
+  });
+  /* initial state: NOC 0 (Management) — maple-leaf backdrop, Ontario card, no province highlighted */
+  ACTIVE_RATINGS = PROV_RATINGS[INDUSTRIES[0].key] || PROV_RATINGS.management;
+  buildMap();
+  selectProv(null, false);
+})();
+</script>
+</body>
+</html>
