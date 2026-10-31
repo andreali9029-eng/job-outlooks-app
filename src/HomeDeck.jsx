@@ -8,12 +8,11 @@
  *     Dragging 200px = exactly one card step.
  *   - Elastic settle: on release the fan snaps to the nearest card through an
  *     overshoot spring curve; arrows / taps step with the same spring.
- *   - Ratchet feedback on every card crossed:
- *       · short mechanical click played through an inline WAV (<audio> element
- *         belongs to the PLAYBACK category, so the iPhone side-mute switch
- *         does NOT silence it — unlike Web-Audio oscillator ticks);
- *       · vibration where the platform exposes it;
- *       · a gold flash on the incoming card, which works on every device.
+ *   - Ratchet feedback on every card crossed (visual only — the user removed
+ *       the click sound because it could not keep up with fast swipes):
+ *       · a gold flash on the incoming card (works on every device);
+ *       · a 5px mechanical kick of the whole deck;
+ *       · vibration where the platform exposes it (not on iOS).
  *   - Circular loop NOC 0-9; cards beyond ±2 are hidden but stay in the loop.
  *   - On change, notifies the parent with the centred NOC key so the map and
  *     the province detail card stay in sync.
@@ -29,11 +28,6 @@ const CARD_W = 200    /* px per card step — the deck card width */
 const SWIPE = 62      /* px threshold for a velocity-less step */
 const VEL = .45        /* px/ms velocity threshold for a flick */
 const MAX_STEP = 2     /* max cards a single flick can advance */
-
-/* 45ms mechanical "click" baked as a data-URI WAV. Played through an <audio>
-   element it belongs to the playback category on iOS: the side mute switch
-   does NOT silence it, so iPhones hear the ratchet too. */
-const CLICK_URI = 'data:audio/wav;base64,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'
 
 /** Render 1-5 stars; empty stars stay dimmed. */
 function StarRow({ n, size = 13 }) {
@@ -126,8 +120,6 @@ export default function HomeDeck({ lang, onChange }) {
      tap handler jumps back to the card the finger LEFT — the deck looks like
      it "does nothing" on desktop/in-app browsers. */
   const suppressClick = React.useRef(false)
-  const actxRef = React.useRef(null)
-  const clickAudioRef = React.useRef(null)
 
   const N = INDUSTRIES.length
   const fr = lang === 'fr'
@@ -139,40 +131,9 @@ export default function HomeDeck({ lang, onChange }) {
     return () => cancelAnimationFrame(raf)
   }, [])
 
-  /* --- power feedback --- */
-
-  /** Mechanical click. An <audio> element is PLAYBACK category on iOS so the
-      side mute switch does not silence it; Web-Audio falls back when the
-      element is unavailable. */
-  const tick = React.useCallback(() => {
-    try {
-      if (!clickAudioRef.current) {
-        clickAudioRef.current = new Audio(CLICK_URI)
-        clickAudioRef.current.volume = .5
-      }
-      const p = clickAudioRef.current.play()
-      if (p && p.catch) p.catch(() => {})
-      return
-    } catch (e) { /* fall through to Web-Audio */ }
-    try {
-      const Ctx = window.AudioContext || window.webkitAudioContext
-      if (!actxRef.current) actxRef.current = new Ctx()
-      const actx = actxRef.current
-      if (actx.state === 'suspended') actx.resume()
-      const t = actx.currentTime
-      const osc = actx.createOscillator()
-      const g = actx.createGain()
-      osc.type = 'triangle'
-      osc.frequency.setValueAtTime(820, t)
-      osc.frequency.exponentialRampToValueAtTime(220, t + 0.03)
-      g.gain.setValueAtTime(0.09, t)
-      g.gain.exponentialRampToValueAtTime(0.0006, t + 0.04)
-      osc.connect(g)
-      g.connect(actx.destination)
-      osc.start(t)
-      osc.stop(t + 0.045)
-    } catch (e) { /* audio unavailable — visuals still carry the feedback */ }
-  }, [])
+  /* --- power feedback (visual only: the user dropped the click sound — it
+         could not keep up with fast swipes, and Web Audio is silenced by the
+         iPhone side switch anyway) --- */
 
   /** Vibration where the device supports it. */
   const haptic = (ms) => {
@@ -232,7 +193,6 @@ export default function HomeDeck({ lang, onChange }) {
     d.on = true; d.moved = false; d.x0 = e.clientX; d.t0 = performance.now()
     d.units = dragX / CARD_W
     d.lastWhole = Math.round(d.units)
-    tick()                                        /* prime audio on the gesture */
     setSettling(false)
     if (deckRef.current) deckRef.current.classList.add('dragging')
     deckRef.current?.setPointerCapture(e.pointerId)
@@ -251,7 +211,6 @@ export default function HomeDeck({ lang, onChange }) {
     if (d.moved && Math.abs(units) > .06 && whole !== d.lastWhole) {
       d.lastWhole = whole
       haptic(8)
-      tick()
       const incoming = whole > 0 ? (centerRef.current - 1 + N) % N : (centerRef.current + 1) % N
       popCard(incoming)
       /* mechanical kick: the whole deck jerks sideways like a ratchet pawl —
@@ -322,7 +281,7 @@ export default function HomeDeck({ lang, onChange }) {
     setSettling(false)
   }
 
-  /* Arrow steps / tap-to-jump — same spring settle, tick + pulse. */
+  /* Arrow steps / tap-to-jump — same spring settle, pulse. */
   const go = (dir) => {
     const next = (centerRef.current + dir + N) % N
     centerRef.current = next

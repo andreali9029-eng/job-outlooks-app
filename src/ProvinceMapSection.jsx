@@ -3,9 +3,11 @@
  * @description Relief map + real-photo backdrop + province detail card (mockup D).
  *   - 3D-tilted relief map (perspective rotateX, two lit "plate" steps, seams).
  *   - Real-photo backdrop, fully visible — no scrim / no ocean layer.
+ *   - Backdrop is DECOUPLED from the NOC deck: it shows the maple leaf by
+ *     default and only swaps to a province's scenery when the user clicks that
+ *     province. Switching NOC cards recolours the provinces and focuses the
+ *     top-rated province card, but leaves the backdrop untouched.
  *   - Province click: card-flip the photo, float the province, reveal the card.
- *   - NOC change: recolours every province for the active industry, then focuses
- *     that industry's highest-rated province (big-city tie-break priority).
  * @author Xiaopeng Li
  * @copyright © 2026 Xiaopeng Li
  * @version 1.0.0
@@ -33,6 +35,11 @@ function StarRow({ n, size = 13, color }) {
 export default function ProvinceMapSection({ lang, activeIndKey }) {
   const fr = lang === 'fr'
   const [selected, setSelected] = React.useState(null)   /* null → default CA backdrop + Ontario card */
+  /* Backdrop is deliberately decoupled from NOC changes: the map keeps the
+     maple-leaf photo by default and only swaps to a province's scenery when
+     the USER clicks that province. Switching NOC cards recolours the map and
+     focuses the top province card, but never yanks the backdrop around. */
+  const [backdrop, setBackdrop] = React.useState('CA')
   const photoRef = React.useRef(null)
   const cardRef = React.useRef(null)
   const svgRef = React.useRef(null)
@@ -70,9 +77,11 @@ export default function ProvinceMapSection({ lang, activeIndKey }) {
     pc.classList.remove('reveal'); void pc.offsetWidth; pc.classList.add('reveal')
   }
 
-  const selectProv = React.useCallback((code, animate = true) => {
+  /* User clicked a province: select it, swap the backdrop to its scenery. */
+  const clickProv = React.useCallback((code) => {
     setSelected(code)
-    flipPhoto(code, animate)
+    setBackdrop(code)
+    flipPhoto(code, true)
     revealCard()
     if (svgRef.current) {
       svgRef.current.querySelectorAll('.prov').forEach(p => p.classList.toggle('sel', p.dataset.code === code))
@@ -80,18 +89,28 @@ export default function ProvinceMapSection({ lang, activeIndKey }) {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [])
 
-  /* NOC changed: recolour (render) then focus this NOC's highest-rated province. */
+  /* NOC changed: recolour (render) then focus this NOC's highest-rated
+     province — WITHOUT touching the backdrop (map keeps its current scenery
+     until the user clicks a province). */
   React.useEffect(() => {
     if (prevKey.current === activeIndKey) return
     prevKey.current = activeIndKey
     const top = topProvince(ratings)
-    if (top) selectProv(top, true)
+    if (top) {
+      setSelected(top)
+      revealCard()
+      if (svgRef.current) {
+        svgRef.current.querySelectorAll('.prov').forEach(p => p.classList.toggle('sel', p.dataset.code === top))
+      }
+    }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [activeIndKey])
 
   /* Initial state: NOC 0 — maple-leaf backdrop, Ontario card, no province lit. */
   React.useEffect(() => {
-    selectProv(null, false)
+    setSelected(null)
+    setBackdrop('CA')
+    flipPhoto('CA', false)
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [])
 
@@ -111,7 +130,7 @@ export default function ProvinceMapSection({ lang, activeIndKey }) {
         <span className="industry-tag">{fr ? indLabel[1] : indLabel[0]}</span>
       </div>
       <div className="map-svg">
-        <div className="map-photo ph-CA" ref={photoRef} style={{ backgroundImage: `url(${img(PROV_PHOTOS[selected || 'CA'])})` }} />
+        <div className={`map-photo ph-${backdrop}`} ref={photoRef} style={{ backgroundImage: `url(${img(PROV_PHOTOS[backdrop] || PROV_PHOTOS.CA)})` }} />
         <div className="map-tilt">
           <svg viewBox={CANADA_VIEWBOX} xmlns="http://www.w3.org/2000/svg" aria-hidden="true" ref={svgRef}>
             <defs>
@@ -142,7 +161,7 @@ export default function ProvinceMapSection({ lang, activeIndKey }) {
                 strokeWidth="3.4"
                 strokeLinejoin="round"
                 filter="url(#relief)"
-                onClick={() => selectProv(p.code, true)}
+                onClick={() => clickProv(p.code)}
               />
             ))}
           </svg>
