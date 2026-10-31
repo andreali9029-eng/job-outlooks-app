@@ -131,18 +131,20 @@ export default function ProvinceMapSection({ lang, activeIndKey }) {
       </div>
       <div className="map-svg">
         <div className={`map-photo ph-${backdrop}`} ref={photoRef} style={{ backgroundImage: `url(${img(PROV_PHOTOS[backdrop] || PROV_PHOTOS.CA)})` }} />
-        {/* glass layer: frosts the backdrop photo behind the relief map */}
-        <div className="map-glass" aria-hidden="true" />
         <div className="map-tilt">
           <svg viewBox={CANADA_VIEWBOX} xmlns="http://www.w3.org/2000/svg" aria-hidden="true" ref={svgRef}>
             <defs>
               {CANADA_PATHS.map(p => {
                 const c = ratings[p.code] || '#64748B'
                 return (
+                  /* Frosted-glass province tile: rating colour at low opacity
+                     lets the sharp backdrop photo shine through; a white top
+                     highlight and a shaded foot mimic a pane of glass. */
                   <linearGradient key={'pg-' + p.code} id={'pg-' + p.code} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stopColor={shade(c, .30)} />
-                    <stop offset=".5" stopColor={c} />
-                    <stop offset="1" stopColor={shade(c, -.32)} />
+                    <stop offset="0" stopColor="#FFFFFF" stopOpacity=".36" />
+                    <stop offset=".38" stopColor={shade(c, .30)} stopOpacity=".30" />
+                    <stop offset=".62" stopColor={c} stopOpacity=".42" />
+                    <stop offset="1" stopColor={shade(c, -.34)} stopOpacity=".54" />
                   </linearGradient>
                 )
               })}
@@ -159,8 +161,7 @@ export default function ProvinceMapSection({ lang, activeIndKey }) {
                 data-code={p.code}
                 d={p.d}
                 fill={`url(#pg-${p.code})`}
-                stroke="#05080D"
-                strokeWidth="3.4"
+                strokeWidth="2.4"
                 strokeLinejoin="round"
                 filter="url(#relief)"
                 onClick={() => clickProv(p.code)}
