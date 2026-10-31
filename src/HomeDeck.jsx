@@ -86,9 +86,11 @@ function cardStyle(off, settling) {
 }
 
 /**
- * Drag-time pose applied DIRECTLY to the DOM inside the rAF loop. Only the GPU
- * transform changes per frame — no CSS filter animation, no React render —
- * which keeps mid-range phones at 60fps while the fan follows the finger.
+ * Drag-time pose applied DIRECTLY to the DOM inside the rAF loop. During the
+ * drag the fan is posed with 2D transforms only (translateX + scale) — no
+ * rotateY, no perspective compositing — which is the GPU-fast path iPhones
+ * need to keep 60fps while following the finger. The 3D rotateY returns on
+ * settle, when React renders the resting fan.
  */
 function applyDragPose(el, off) {
   const abs = Math.abs(off)
@@ -102,9 +104,8 @@ function applyDragPose(el, off) {
   }
   const dir = off > 0 ? 1 : -1
   const x = abs <= 1 ? abs * 118 : 40 + abs * 78
-  const rot = abs <= 1 ? abs * 24 : 4 + abs * 20
   const sc = Math.max(.58, 1 - abs * .19)
-  el.style.transform = `translateX(${x * dir}px) rotateY(${rot * -dir}deg) scale(${sc})`
+  el.style.transform = `translateX(${x * dir}px) scale(${sc})`
   el.style.zIndex = String(50 - Math.round(abs) * 10)
   el.style.filter = 'none'                     /* avoid per-frame pixel filters */
   el.style.opacity = String(Math.max(0, 1 - abs * .13))
@@ -246,6 +247,17 @@ export default function HomeDeck({ lang, onChange }) {
       tick()
       const incoming = whole > 0 ? (centerRef.current - 1 + N) % N : (centerRef.current + 1) % N
       popCard(incoming)
+      /* mechanical kick: the whole deck jerks sideways like a ratchet pawl —
+         a power feedback visible on every device (sound/vibration may be off) */
+      const deckEl = deckRef.current
+      if (deckEl && deckEl.animate) {
+        try {
+          deckEl.animate(
+            [{ transform: 'translateX(2.6px)' }, { transform: 'translateX(0)' }],
+            { duration: 90, easing: 'ease-out' }
+          )
+        } catch (e) { /* decorative only */ }
+      }
     }
     d.units = units
     if (!dragRaf.current) dragRaf.current = requestAnimationFrame(renderDrag)
