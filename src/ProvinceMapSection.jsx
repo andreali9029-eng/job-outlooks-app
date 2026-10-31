@@ -131,6 +131,8 @@ export default function ProvinceMapSection({ lang, activeIndKey }) {
       </div>
       <div className="map-svg">
         <div className={`map-photo ph-${backdrop}`} ref={photoRef} style={{ backgroundImage: `url(${img(PROV_PHOTOS[backdrop] || PROV_PHOTOS.CA)})` }} />
+        {/* glass layer: frosts the backdrop photo behind the relief map */}
+        <div className="map-glass" aria-hidden="true" />
         <div className="map-tilt">
           <svg viewBox={CANADA_VIEWBOX} xmlns="http://www.w3.org/2000/svg" aria-hidden="true" ref={svgRef}>
             <defs>
