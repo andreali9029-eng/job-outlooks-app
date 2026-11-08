@@ -7,30 +7,30 @@
 <title>Mockup D — Canada Job Outlooks (coverflow fan + relief map)</title>
 <style>
   :root {
-    --bg: #0B0F1A;
-    --bg2: #101827;
-    --surface: #131C2C;
-    --surface2: #19263A;
-    --line: #223049;
-    --text: #E8ECF4;
-    --dim: #93A0B5;
-    --faint: #5D6B82;
-    --gold: #E8B34B;
-    --blue: #57C7FF;
-    --good: #3ECF8E;
-    --fair: #F5B34C;
-    --limited: #F97316;
-    --vlimited: #EF4444;
-    --undet: #64748B;
+    --bg: #090D14;
+    --bg2: #0E141F;
+    --surface: #121A26;
+    --surface2: #18222F;
+    --line: #232F42;
+    --text: #E9EDF4;
+    --dim: #96A3B7;
+    --faint: #616E83;
+    --gold: #E0B266;
+    --blue: #6FB6D8;
+    --good: #3FB388;
+    --fair: #DFB25F;
+    --limited: #D97F4B;
+    --vlimited: #C9564F;
+    --undet: #566175;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
   body {
     background:
-      radial-gradient(900px 520px at 16% -6%, rgba(72,118,190,.20), transparent 62%),
-      radial-gradient(760px 460px at 86% 0%, rgba(62,207,142,.10), transparent 62%),
-      radial-gradient(820px 480px at 50% 108%, rgba(232,179,75,.09), transparent 62%),
-      radial-gradient(1200px 820px at 50% -10%, #151D30 0%, #0A0E18 60%);
+      radial-gradient(1150px 760px at 50% -16%, rgba(126,158,205,.12), transparent 68%),
+      radial-gradient(760px 460px at 90% 24%, rgba(214,156,92,.05), transparent 72%),
+      radial-gradient(900px 560px at 6% 98%, rgba(70,120,150,.045), transparent 72%),
+      #070A10;
     font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
     color: var(--text);
     display: flex; justify-content: center; align-items: flex-start;
@@ -41,7 +41,7 @@
   /* grain overlay */
   .grain {
     position: fixed; inset: 0; pointer-events: none; z-index: 9;
-    opacity: .05; mix-blend-mode: overlay;
+    opacity: .045; mix-blend-mode: overlay;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
   }
   .mock-wrap { text-align: center; }
@@ -56,7 +56,17 @@
     border-radius: 50px; border: 12px solid #0A0D14;
     box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 0 1px #232C3B inset;
     overflow: hidden; position: relative; display: flex; flex-direction: column;
+    text-align: left;
   }
+  /* restrained ambience inside the screen: one cool top light, one warm side bloom */
+  .phone-amb {
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(430px 250px at 26% 0%, rgba(124,156,206,.115), transparent 70%),
+      radial-gradient(380px 250px at 86% 18%, rgba(224,178,102,.075), transparent 72%),
+      radial-gradient(560px 400px at 50% 102%, rgba(74,112,146,.055), transparent 72%);
+  }
+  .phone > *:not(.phone-amb) { position: relative; z-index: 1; }
   .status {
     height: 40px; padding: 0 28px; display: flex; justify-content: space-between;
     align-items: center; font-size: 15px; font-weight: 600; color: var(--dim);
@@ -64,7 +74,7 @@
   .status .notch { width: 120px; height: 26px; background: #0A0D14; border-radius: 0 0 16px 16px; position: absolute; left: 50%; transform: translateX(-50%); top: 0; }
   .status .icons { display: flex; gap: 6px; align-items: center; font-size: 12px; letter-spacing: 1px; }
 
-  .head { padding: 14px 24px 12px; display: flex; align-items: center; gap: 12px; }
+  .head { padding: 14px 24px 12px; display: flex; align-items: center; gap: 12px; text-align: center; }
   .brand { flex: 1; min-width: 0; }
   .brand .t1 { font-size: 21px; font-weight: 800; letter-spacing: -.3px; display: flex; align-items: center; gap: 9px; }
   .brand .t1 svg { flex: none; }
@@ -78,30 +88,31 @@
   @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
 
   /* ============ coverflow fan of industry cards (poker-card style) ============ */
-  .deck-zone { position: relative; height: 340px; margin-top: 4px; padding-top: 6px; }
+  .deck-zone { position: relative; height: 362px; margin-top: 2px; padding-top: 6px; }
   .deck {
     position: absolute; top: 6px; left: 0; right: 0; bottom: 0;
-    perspective: 1200px; perspective-origin: 50% 44%;
+    perspective: 1200px; perspective-origin: 50% 42%;
     touch-action: pan-y; user-select: none; cursor: grab;
   }
   .deck.dragging { cursor: grabbing; }
   .deck.dragging .icard { transition: none !important; }
   .icard {
-    position: absolute; left: 50%; top: 6px; width: 200px; height: 268px;
-    margin-left: -100px;
-    border-radius: 20px; border: 1px solid rgba(255,255,255,.10);
-    overflow: hidden;
+    position: absolute; left: 50%; top: 6px; width: 200px; height: 300px;
+    margin-left: -100px; border-radius: 18px;
+    border: 1px solid rgba(255,255,255,.07);
+    overflow: hidden; background-color: #10161F;
+    background-size: cover; background-position: center;
     will-change: transform, filter, opacity;
-    box-shadow: 0 18px 34px rgba(0,0,0,.5);
+    box-shadow: 0 18px 34px rgba(0,0,0,.55);
   }
-  /* photo backdrop + dark gradient scrim so text stays readable */
+  /* photo scrim: the type zones stay dark, the frame opens up across the middle */
   .icard::before {
     content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
-    background:
-      linear-gradient(180deg, rgba(6,9,17,.40) 0%, rgba(6,9,17,.12) 34%, rgba(6,9,17,.58) 66%, rgba(6,9,17,.90) 100%);
+    background: linear-gradient(180deg,
+      rgba(4,7,13,.93) 0%, rgba(4,7,13,.78) 18%, rgba(4,7,13,.42) 31%,
+      rgba(4,7,13,.16) 40%, rgba(4,7,13,.16) 56%, rgba(4,7,13,.60) 65%, rgba(4,7,13,.88) 82%, rgba(4,7,13,.97) 100%);
   }
   /* static photo classes — paths live in CSS url() so published builds never break */
-  .icard { background-size: cover; background-position: center; }
   .icard.bg-management { background-image: url('assets/ind-management.jpg'); }
   .icard.bg-business { background-image: url('assets/ind-business.jpg'); }
   .icard.bg-science { background-image: url('assets/ind-science.jpg'); }
@@ -119,30 +130,37 @@
   .icard .edge.top { top: 0; background: linear-gradient(180deg, rgba(255,255,255,.10), transparent); }
   .icard .edge.bot { bottom: 0; background: linear-gradient(0deg, rgba(0,0,0,.4), transparent); }
 
-  .ic-body { padding: 14px 16px 12px; display: flex; flex-direction: column; height: 100%; position: relative; z-index: 2; }
-  .ic-top { display: flex; align-items: center; gap: 11px; }
-  .ic-ico {
-    width: 46px; height: 46px; border-radius: 14px; flex: none;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(10,15,26,.55);
-    border: 1px solid rgba(255,255,255,.18);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
-  }
-  .ic-name { font-size: 16px; font-weight: 800; letter-spacing: -.2px; line-height: 1.14; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.45); }
-  .ic-code { font-size: 10px; color: rgba(255,255,255,.62); margin-top: 3px; letter-spacing: .5px; }
-  .ic-rating { margin-left: 0; text-align: left; margin-top: 14px; }
-  .ic-grade { display: flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
-  .ic-grade .gdot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 9px rgba(255,255,255,.25); }
-  .stars { display: flex; gap: 2px; margin-top: 6px; }
+  .ic-body { padding: 16px 16px 13px; display: flex; flex-direction: column; height: 100%; position: relative; z-index: 2; transition: opacity .42s ease; }
+  .ic-name { font-size: 17px; font-weight: 800; letter-spacing: -.3px; line-height: 1.12; min-height: 38px; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.55); padding-right: 42px; }
+  .ic-code { font-size: 9.5px; color: rgba(255,255,255,.78); margin-top: 3px; letter-spacing: .45px; text-shadow: 0 1px 3px rgba(0,0,0,.55); padding-right: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ic-rating { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .ic-grade { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 800; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.85); white-space: nowrap; }
+  .ic-grade .gdot { width: 7px; height: 7px; border-radius: 50%; }
+  .stars { display: flex; gap: 2px; align-items: center; }
   .stars svg.f { color: var(--gold); }
-  .stars svg { color: rgba(255,255,255,.28); }
-  .ic-meta { margin-top: auto; padding-top: 11px; border-top: 1px solid rgba(255,255,255,.16); display: flex; flex-direction: column; gap: 8px; }
+  .stars svg { color: rgba(255,255,255,.26); }
+  .ic-meta { margin-top: 9px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.14); }
   .ic-m { display: flex; align-items: baseline; justify-content: space-between; }
-  .ic-m .v { font-size: 17px; font-weight: 800; letter-spacing: -.2px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
-  .ic-m .l { font-size: 10px; color: rgba(255,255,255,.55); letter-spacing: .5px; text-align: right; }
-  .ic-num { position: absolute; left: 14px; top: 12px; font-size: 11px; color: rgba(255,255,255,.9); letter-spacing: 1.5px; font-weight: 800; background: rgba(8,12,22,.62); border: 1px solid rgba(255,255,255,.2); padding: 2px 8px; border-radius: 999px; z-index: 3; }
+  .ic-m .v { font-size: 15px; font-weight: 800; letter-spacing: -.2px; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.75); }
+  .ic-m .l { font-size: 9px; color: rgba(255,255,255,.56); letter-spacing: .45px; }
+  .ic-duo { display: flex; margin-top: 11px; }
+  .ic-duo > span { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+  .ic-duo > span + span { border-left: 1px solid rgba(255,255,255,.12); padding-left: 12px; }
+  .ic-duo b { font-size: 14.5px; font-weight: 800; letter-spacing: -.2px; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.75); }
+  .ic-duo i { font-style: normal; font-size: 8.5px; color: rgba(255,255,255,.52); letter-spacing: .5px; }
+  .ic-num { position: absolute; right: 13px; top: 13px; font-size: 10.5px; color: rgba(255,255,255,.85); letter-spacing: 1.6px; font-weight: 800; background: rgba(8,12,20,.5); border: 1px solid rgba(255,255,255,.14); padding: 2px 7px; border-radius: 999px; z-index: 3; }
+  /* side cards carry the photo and one line of type, pinned to the edge that stays visible */
+  .ic-mini { position: absolute; bottom: 13px; z-index: 2; opacity: 0; transition: opacity .42s ease; max-width: 108px; }
+  .ic-mini .mn { font-size: 11.5px; font-weight: 800; color: #fff; line-height: 1.2; text-shadow: 0 1px 4px rgba(0,0,0,.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ic-mini .mr { display: flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 9px; font-weight: 700; color: rgba(255,255,255,.72); letter-spacing: .3px; text-shadow: 0 1px 3px rgba(0,0,0,.85); white-space: nowrap; }
+  .ic-mini .mr i { width: 5px; height: 5px; border-radius: 50%; flex: none; }
+  .icard[data-dir="1"] .ic-mini { right: 14px; left: auto; text-align: right; }
+  .icard[data-dir="1"] .ic-mini .mr { flex-direction: row-reverse; }
+  .icard[data-side="1"] .ic-body, .icard[data-side="2"] .ic-body { opacity: 0; }
+  .icard[data-side="1"] .ic-mini { opacity: .95; }
+  .icard[data-side="2"] .ic-mini { opacity: 0; }
   /* settle pulse — haptic fallback for iOS / desktop */
-  @keyframes cardPulse { 0%,100% { box-shadow: 0 18px 34px rgba(0,0,0,.5); } 50% { box-shadow: 0 18px 34px rgba(0,0,0,.5), 0 0 0 2px rgba(232,179,75,.4); } }
+  @keyframes cardPulse { 0%,100% { box-shadow: 0 18px 34px rgba(0,0,0,.55); } 50% { box-shadow: 0 18px 34px rgba(0,0,0,.55), 0 0 0 2px rgba(224,178,102,.45); } }
   .icard.pulse { animation: cardPulse .35s ease; }
 
   .deck-ctrl { position: absolute; left: 0; right: 0; bottom: 4px; display: flex; justify-content: center; align-items: center; gap: 14px; z-index: 4; }
@@ -154,26 +172,40 @@
   button.arrow { padding: 0; cursor: pointer; font: inherit; }
   button.arrow:hover { color: var(--gold); border-color: rgba(232,179,75,.5); }
   .dots { display: flex; gap: 6px; align-items: center; }
-  .dots i { width: 6px; height: 6px; border-radius: 50%; background: #33405A; }
-  .dots i.on { width: 20px; background: var(--gold); box-shadow: 0 0 8px rgba(232,179,75,.6); }
-  .swipe-tip { position: absolute; right: 24px; top: 8px; font-size: 10px; color: var(--faint); letter-spacing: 1px; font-weight: 700; z-index: 4; }
+  .dots i { width: 6px; height: 6px; border-radius: 50%; background: #2A3547; }
+  .dots i.on { width: 20px; background: var(--gold); box-shadow: 0 0 8px rgba(224,178,102,.5); }
 
   /* ============ relief map ============ */
   .map-panel {
-    margin: 6px 22px 0; border-radius: 20px; overflow: hidden;
-    background: #0B1220;
+    margin: 6px 22px 0; border-radius: 18px; overflow: hidden;
+    background: #0A0F18;
     border: 1px solid var(--line);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 18px 40px rgba(0,0,0,.45);
     position: relative;
   }
-  /* real-photo backdrop (Canada default, or the selected province) — fully visible, no scrim */
+  /* real-photo backdrop: Canada by default, the selected province once picked.
+     Kept sharp and only partly dimmed — the photo has to be recognisable, not a smear. */
   .map-photo {
-    position: absolute; inset: 0; z-index: 0;
+    position: absolute; inset: -8px; z-index: 0;
     background-size: cover; background-position: center;
-    opacity: 1;
+    opacity: 0; transition: opacity .48s ease;
+    filter: brightness(.70) saturate(.86);
+    transform: scale(1.04);
+  }
+  .map-photo.on { opacity: .94; }
+  /* province photos are night / landscape shots and need more light to stay identifiable */
+  .map-panel.has-prov .map-photo { filter: brightness(.88) saturate(.96); }
+  .map-panel.has-prov .map-photo.on { opacity: .96; }
+  /* scrim keeps the map and its labels readable over any photo */
+  .map-scrim {
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background:
+      radial-gradient(124% 92% at 50% 42%, rgba(6,10,16,.14) 36%, rgba(6,10,16,.56) 100%),
+      linear-gradient(90deg, rgba(6,10,16,.42) 0%, rgba(6,10,16,0) 22%, rgba(6,10,16,0) 78%, rgba(6,10,16,.42) 100%),
+      linear-gradient(180deg, rgba(6,10,16,.62) 0%, rgba(6,10,16,.26) 38%, rgba(6,10,16,.78) 100%);
   }
   /* static photo classes for the map backdrop — default Canada + each province */
-  .map-photo.ph-CA { background-image: url('assets/ca-maple.jpg'); }
+  .map-photo.ph-CA { background-image: url('assets/ca-maple.jpg'); background-size: cover; background-position: 50% 44%; }
   .map-photo.ph-YT { background-image: url('assets/yt-aurora.jpg'); }
   .map-photo.ph-NT { background-image: url('assets/nt-aurora.jpg'); }
   .map-photo.ph-NU { background-image: url('assets/nu-tundra.jpg'); }
@@ -187,50 +219,41 @@
   .map-photo.ph-NS { background-image: url('assets/ns-lighthouse.jpg'); }
   .map-photo.ph-PE { background-image: url('assets/pe-coast.jpg'); }
   .map-photo.ph-NL { background-image: url('assets/nl-iceberg.jpg'); }
-  .map-head { position: relative; z-index: 2; display: flex; align-items: baseline; gap: 10px; padding: 13px 16px 2px; }
+  .map-head { position: relative; z-index: 3; display: flex; align-items: baseline; gap: 10px; padding: 13px 16px 2px; }
   .map-head h3 { font-size: 15px; font-weight: 800; letter-spacing: -.2px; text-shadow: 0 1px 4px rgba(0,0,0,.85), 0 0 18px rgba(0,0,0,.55); }
   .map-head .sub { font-size: 11px; color: var(--dim); text-shadow: 0 1px 3px rgba(0,0,0,.85); }
-  .map-head .industry-tag { margin-left: auto; font-size: 11px; font-weight: 800; color: var(--blue); background: rgba(8,16,30,.62); border: 1px solid rgba(87,199,255,.4); padding: 3px 10px; border-radius: 999px; backdrop-filter: blur(3px); }
-  .map-svg { padding: 6px 10px 16px; position: relative; z-index: 1; }
+  .map-head .industry-tag { margin-left: auto; font-size: 11px; font-weight: 800; color: var(--blue); background: rgba(8,16,30,.55); border: 1px solid rgba(111,182,216,.32); padding: 3px 10px; border-radius: 999px; }
+  .map-svg { padding: 0 30px 2px; position: relative; z-index: 2; filter: brightness(.90) saturate(.82); }
   .map-svg svg { width: 100%; height: auto; display: block; }
-  /* 3D tilt of the whole map canvas — near provinces enlarge, far provinces recede */
-  .map-tilt { transform: perspective(1100px) rotateX(13deg); transform-origin: 50% -8%; will-change: transform; }
   .prov {
     cursor: pointer;
-    transition: filter .25s ease, transform .25s ease;
+    transition: filter .25s ease;
   }
-  .prov:hover { filter: brightness(1.18) drop-shadow(0 0 6px rgba(255,255,255,.25)); }
-  .prov.sel {
-    animation: pulseGlow 2.6s ease-in-out infinite, rise 3.2s ease-in-out infinite;
-  }
+  .prov:hover { filter: brightness(1.12) drop-shadow(0 0 5px rgba(255,255,255,.20)); }
+  .prov.sel { animation: pulseGlow 3.4s ease-in-out infinite; stroke: rgba(240,201,135,.72); stroke-width: 1.9; }
   @keyframes pulseGlow {
-    0%,100% { filter: brightness(1.22) drop-shadow(0 0 5px rgba(232,179,75,.9)); }
-    50% { filter: brightness(1.32) drop-shadow(0 0 13px rgba(232,179,75,1)); }
+    0%,100% { filter: brightness(1.10) drop-shadow(0 0 4px rgba(224,178,102,.78)); }
+    50% { filter: brightness(1.22) drop-shadow(0 0 11px rgba(224,178,102,1)); }
   }
-  @keyframes rise {
-    0%,100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
-  }
-  .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 4px 16px 12px; font-size: 10.5px; color: #C7D2E2; font-weight: 600; letter-spacing: .3px; position: relative; z-index: 2; text-shadow: 0 1px 3px rgba(0,0,0,.9); }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 6px 16px 12px; font-size: 10.5px; color: #C3CEDD; font-weight: 600; letter-spacing: .3px; position: relative; z-index: 3; text-shadow: 0 1px 3px rgba(0,0,0,.9); }
   .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; box-shadow: inset 0 1px 1px rgba(255,255,255,.3), inset 0 -1px 2px rgba(0,0,0,.4); }
 
   /* ============ province detail ============ */
   .prov-card {
-    margin: 10px 22px 0; border-radius: 18px; padding: 15px 16px 14px;
+    margin: 10px 22px 0; border-radius: 16px; padding: 15px 16px 14px;
     background:
-      radial-gradient(230px 96px at 86% -12%, rgba(232,179,75,.13), transparent 72%),
-      radial-gradient(200px 90px at 6% 112%, rgba(87,199,255,.08), transparent 70%),
-      linear-gradient(158deg, #1B2740 0%, #121B2E 58%, #0E1626 100%);
-    border: 1px solid #2B3B5A; border-top: 1px solid rgba(255,255,255,.10);
-    box-shadow: 0 16px 34px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);
+      radial-gradient(240px 100px at 88% -14%, rgba(224,178,102,.09), transparent 72%),
+      linear-gradient(160deg, #16202F 0%, #111A27 58%, #0D1520 100%);
+    border: 1px solid #26334A; border-top: 1px solid rgba(255,255,255,.09);
+    box-shadow: 0 16px 34px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);
     position: relative; overflow: hidden;
   }
-  .prov-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(255,255,255,.05), transparent 26%); }
-  .prov-card::after { content: ""; position: absolute; right: -36px; top: -36px; width: 124px; height: 124px; border-radius: 50%; background: radial-gradient(circle, rgba(87,199,255,.10), transparent 70%); }
+  .prov-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(255,255,255,.04), transparent 24%); }
   .prov-card .p-top { display: flex; align-items: center; gap: 8px; position: relative; }
-  .prov-card .pin { width: 30px; height: 30px; border-radius: 10px; flex: none; display: flex; align-items: center; justify-content: center; background: rgba(62,207,142,.12); border: 1px solid rgba(62,207,142,.35); box-shadow: 0 0 12px rgba(62,207,142,.15); }
+  .prov-card .pin { width: 30px; height: 30px; border-radius: 10px; flex: none; display: flex; align-items: center; justify-content: center; background: rgba(63,179,136,.10); border: 1px solid rgba(63,179,136,.28); }
   .prov-card .p-name { font-size: 17px; font-weight: 800; letter-spacing: -.3px; }
-  .prov-card .p-badge { margin-left: auto; font-size: 11.5px; font-weight: 800; color: var(--good); display: flex; align-items: center; gap: 5px; background: rgba(62,207,142,.10); border: 1px solid rgba(62,207,142,.3); padding: 4px 10px; border-radius: 999px; }
+  .prov-card .p-badge { margin-left: auto; font-size: 11.5px; font-weight: 800; color: var(--good); display: flex; align-items: center; gap: 5px; background: rgba(63,179,136,.10); border: 1px solid rgba(63,179,136,.3); padding: 4px 10px; border-radius: 999px; }
+  .prov-card .p-badge.neutral { color: var(--dim); background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.14); letter-spacing: .6px; }
   .prov-card .p-badge svg { flex: none; }
   .prov-card .p-desc { font-size: 12px; color: var(--dim); margin-top: 10px; line-height: 1.55; }
   .prov-card .p-stats { display: flex; gap: 0; margin-top: 13px; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; overflow: hidden; background: rgba(5,9,17,.35); }
@@ -247,7 +270,6 @@
   .tabbar {
     height: 66px; background: rgba(10,14,22,.92); border-top: 1px solid var(--line);
     margin-top: 12px; display: flex; padding: 7px 12px 9px; gap: 6px; flex: none;
-    backdrop-filter: blur(6px);
   }
   .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10.5px; color: var(--faint); font-weight: 700; letter-spacing: .3px; }
   .tab svg { color: currentColor; }
@@ -267,8 +289,9 @@
 <div class="grain"></div>
 
 <div class="mock-wrap">
-  <div class="mock-label">方案 C · 高级版 — LUMO 扇形封面流 + 立体地图</div>
+  <div class="mock-label">方案 D · 深色光晕版 — LUMO 扇形封面流 + 立体地图</div>
   <div class="phone">
+    <div class="phone-amb"></div>
     <div class="status"><span>9:41</span><div class="notch"></div><span class="icons">LTE · 5G · 100%</span></div>
 
     <div class="head">
@@ -281,10 +304,9 @@
       </div>
       <div class="lang">EN</div>
     </div>
-    <div class="live"><span class="dot"></span>Live data · Oct 28, 2026</div>
+    <div class="live"><span class="dot"></span>Live data · Nov 8, 2026</div>
 
     <div class="deck-zone">
-      <div class="swipe-tip">SWIPE</div>
       <div class="deck"><!-- industry cards rendered by JS (coverflow fan) --></div>
       <div class="deck-ctrl">
         <button class="arrow ctrl-left" aria-label="Previous industry"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -295,34 +317,36 @@
 
     <!-- relief map -->
     <div class="map-panel">
+      <div class="map-photo ph-CA on" id="mapPhotoA"></div>
+      <div class="map-photo ph-CA" id="mapPhotoB"></div>
+      <div class="map-scrim"></div>
       <div class="map-head">
         <h3>Outlook by Province</h3><span class="sub">2025–2027</span>
-        <span class="industry-tag">HEALTH · NOC 3</span>
+        <span class="industry-tag">MANAGEMENT · NOC 0</span>
       </div>
-      <div class="map-svg"><div class="map-photo" id="mapPhoto"></div><div class="map-tilt" id="mapSvg"></div></div>
+      <div class="map-svg"><div id="mapSvg"></div></div>
       <div class="legend">
-        <span><i style="background:#3ECF8E"></i>Very Good</span>
-        <span><i style="background:#7BE0A8"></i>Good</span>
-        <span><i style="background:#F5B34C"></i>Moderate</span>
-        <span><i style="background:#F97316"></i>Limited</span>
-        <span><i style="background:#EF4444"></i>Very Limited</span>
-        <span><i style="background:#64748B"></i>Undetermined</span>
+        <span><i style="background:#3FB388"></i>Very Good</span>
+        <span><i style="background:#79CBA6"></i>Good</span>
+        <span><i style="background:#DFB25F"></i>Moderate</span>
+        <span><i style="background:#D97F4B"></i>Limited</span>
+        <span><i style="background:#C9564F"></i>Very Limited</span>
+        <span><i style="background:#566175"></i>Undetermined</span>
       </div>
     </div>
 
-    <!-- province detail -->
+    <!-- province / national detail -->
     <div class="prov-card">
       <div class="p-top">
-        <span class="pin"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3ECF8E" stroke-width="1.8"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
-        <span class="p-name">Ontario</span>
-        <span class="p-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="#3ECF8E"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.2 1.3-6.6L2.5 9l6.6-.8z"/></svg><svg width="13" height="13" viewBox="0 0 24 24" fill="#3ECF8E"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.2 1.3-6.6L2.5 9l6.6-.8z"/></svg><svg width="13" height="13" viewBox="0 0 24 24" fill="#3ECF8E"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.2 1.3-6.6L2.5 9l6.6-.8z"/></svg><svg width="13" height="13" viewBox="0 0 24 24" fill="#3ECF8E"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.2 1.3-6.6L2.5 9l6.6-.8z"/></svg><svg width="13" height="13" viewBox="0 0 24 24" fill="#3ECF8E"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.2 1.3-6.6L2.5 9l6.6-.8z"/></svg>
-        Very Good</span>
+        <span class="pin"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3FB388" stroke-width="1.8"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+        <span class="p-name">Canada</span>
+        <span class="p-badge neutral">NATIONAL VIEW</span>
       </div>
-      <div class="p-desc">Broad-based demand across tech, finance, health and trades.</div>
+      <div class="p-desc">Management across all 13 provinces and territories. Tap one for its local outlook.</div>
       <div class="p-stats">
-        <span><b class="v">$34.80</b><span class="u">/hr median</span></span>
-        <span><b class="v">48,920</b><span class="u">jobs today</span></span>
-        <span><b class="v">+9%</b><span class="u">3-yr outlook</span></span>
+        <span><b class="v">$58.20</b><span class="u">/hr median</span></span>
+        <span><b class="v">28,140</b><span class="u">jobs today</span></span>
+        <span><b class="v">+5%</b><span class="u">3-yr outlook</span></span>
       </div>
     </div>
 
@@ -348,8 +372,8 @@
 </div>
 
 <script>
-/* Real Canada SVG paths (from src/canadaPaths.js, @svg-maps/canada.lambert-projection) */
-const VIEWBOX = '4 4 1075 920';
+/* Real Canada SVG paths (from src/canadaPaths.js, @svg-maps/canada.lambert-projection).
+   The map frame (viewBox) is set inside the map module against the measured content box. */
 const PATHS = [
   { code: 'YT', d: 'M171.5,445l1,17.5l-44-22.5l-34-20.5l-36.3-25.3L33.5,374v-4.5l3.3-0.6l1-1.4l-4.8-4h-4.5l-2-5l-2,0.5l-3.5-4l130.6-149l4.3-6l6.8,11.8l2.3,3.2l-0.5,6l1.5,1v6l1.5,4l5.3,4.8l-16.3,21.7l-0.5,3l-5,8l-2,0.5l6.5,4.5l8.5,8.5l-3,9l-7,10l1,1.5h2l2,3.5l4.5,0.5l-3.5,11l-2-0.5l-5,2.5l-1.5,1.5l0.5,2.5l-4,5l2.5,4l-2,3l2,2.5l-1.5,1l5,5l-0.5,2l-2,7.5l5,3.5l-3,3l1.5,7l-5.5,1.5l1.5,6.5l-3.5,3v10l-1.5,3.5l-2,2.5l2,3.5h4.5l2,17l3.5,4.5l-4.5,6l-0.5,7l4,2l5.5,0.5l3,4l9.5,2l1.5,2.5L171.5,445z' },
   { code: 'NT', d: 'M410.2,436.2l-65.5-23.5l-9-17l-15.5-4.8L271,319l14.8-32.2l-10.6-11.5l-4.5-1l-2,2.5l-4,3l-4-0.5l-2-2l3-6l-0.5-4l5-6l-1.5-1.5l-7,6l-3.5,2.5l-3.5,4.5l-3-2l-0.5-8.5l1-14.5l-1.5-5.5l-3.5,1l1,6l-7,0.5l1,3.5l-4.5,1.5l0.5-3l-12-2.5l-4.5,2.5h-2.5v-2l-6.5-0.5l-10,2.5l-3,3.5l-3-3l1-3l18-2.5l2,1l19.5-1.5l-3-3.5l-3.5-0.5l-3-2.5l-7.5,2.5l-12.5-3.5l-3,4.5l-5.5-2.5l-4,2.5l-8.5,1l-2.5-2l-3.5,2.5l-0.5-3.5l-1.5-3l-2-1.5l-16,21.5l-0.5,3l-5,8l-2,0.5l6.5,4.5l8.5,8.5l-3,9l-7,10l1,1.5h2l2,3.5l4.5,0.5l-3.5,11l-2-0.5l-5,2.5l-1.5,1.5l0.5,2.5l-4,5l2.5,4l-2,3l2,2.5l-1.5,1l5,5l-0.5,2l-2,7.5l5,3.5l-3,3l1.5,7l-5.5,1.5l1.5,6.5l-3.5,3v10l-1.5,3.5l-2,2.5l2,3.5h4.5l2,17l3.5,4.5l-4.5,6l-0.5,7l4,2l5.5,0.5l3,4l9,1.9v3.3l-1,0.3l1,18l23.7,10.4c4.2,2,8.5,4,13.1,5.8l36.7,14.3l37,11.5L314,514l39.5,8l33.5,5l12.5,1L410.2,436.2z' },
@@ -369,27 +393,27 @@ const PATHS = [
 /* Per-industry province ratings — 10 NOC groups × 13 provinces (simulated demo data).
    Colour encodes the rating level; RATE_MAP turns a colour back into label + stars. */
 const PROV_RATINGS = {
-  management: { YT:'#64748B', NT:'#64748B', NU:'#64748B', BC:'#7BE0A8', AB:'#7BE0A8', SK:'#F5B34C', MB:'#F5B34C', ON:'#3ECF8E', QC:'#7BE0A8', NB:'#F97316', NS:'#F97316', PE:'#F5B34C', NL:'#F97316' },
-  business:   { YT:'#64748B', NT:'#64748B', NU:'#64748B', BC:'#7BE0A8', AB:'#F5B34C', SK:'#F5B34C', MB:'#F5B34C', ON:'#3ECF8E', QC:'#7BE0A8', NB:'#F97316', NS:'#F97316', PE:'#F97316', NL:'#F97316' },
-  science:    { YT:'#64748B', NT:'#64748B', NU:'#64748B', BC:'#7BE0A8', AB:'#F5B34C', SK:'#F5B34C', MB:'#F5B34C', ON:'#3ECF8E', QC:'#7BE0A8', NB:'#F97316', NS:'#F97316', PE:'#F97316', NL:'#F97316' },
-  health:     { YT:'#F5B34C', NT:'#F5B34C', NU:'#F5B34C', BC:'#7BE0A8', AB:'#7BE0A8', SK:'#F5B34C', MB:'#7BE0A8', ON:'#3ECF8E', QC:'#7BE0A8', NB:'#7BE0A8', NS:'#7BE0A8', PE:'#F5B34C', NL:'#F5B34C' },
-  education:  { YT:'#F5B34C', NT:'#F5B34C', NU:'#F5B34C', BC:'#7BE0A8', AB:'#7BE0A8', SK:'#F5B34C', MB:'#F5B34C', ON:'#3ECF8E', QC:'#7BE0A8', NB:'#7BE0A8', NS:'#7BE0A8', PE:'#F5B34C', NL:'#F5B34C' },
-  art:        { YT:'#64748B', NT:'#64748B', NU:'#64748B', BC:'#F5B34C', AB:'#F97316', SK:'#F97316', MB:'#F97316', ON:'#F5B34C', QC:'#F5B34C', NB:'#F97316', NS:'#F97316', PE:'#F97316', NL:'#EF4444' },
-  sales:      { YT:'#F5B34C', NT:'#F5B34C', NU:'#F5B34C', BC:'#F5B34C', AB:'#F5B34C', SK:'#F5B34C', MB:'#F5B34C', ON:'#F5B34C', QC:'#F5B34C', NB:'#F97316', NS:'#F97316', PE:'#F97316', NL:'#F97316' },
-  trades:     { YT:'#64748B', NT:'#64748B', NU:'#64748B', BC:'#7BE0A8', AB:'#7BE0A8', SK:'#F5B34C', MB:'#F5B34C', ON:'#3ECF8E', QC:'#7BE0A8', NB:'#F97316', NS:'#F97316', PE:'#F97316', NL:'#F97316' },
-  resources:  { YT:'#F5B34C', NT:'#F5B34C', NU:'#F5B34C', BC:'#F5B34C', AB:'#3ECF8E', SK:'#7BE0A8', MB:'#7BE0A8', ON:'#F5B34C', QC:'#F5B34C', NB:'#F97316', NS:'#F97316', PE:'#F97316', NL:'#7BE0A8' },
-  factory:    { YT:'#64748B', NT:'#64748B', NU:'#64748B', BC:'#F5B34C', AB:'#7BE0A8', SK:'#F5B34C', MB:'#F5B34C', ON:'#3ECF8E', QC:'#7BE0A8', NB:'#F97316', NS:'#F97316', PE:'#F97316', NL:'#F97316' }
+  management: { YT:'#566175', NT:'#566175', NU:'#566175', BC:'#79CBA6', AB:'#79CBA6', SK:'#DFB25F', MB:'#DFB25F', ON:'#3FB388', QC:'#79CBA6', NB:'#D97F4B', NS:'#D97F4B', PE:'#DFB25F', NL:'#D97F4B' },
+  business:   { YT:'#566175', NT:'#566175', NU:'#566175', BC:'#79CBA6', AB:'#DFB25F', SK:'#DFB25F', MB:'#DFB25F', ON:'#3FB388', QC:'#79CBA6', NB:'#D97F4B', NS:'#D97F4B', PE:'#D97F4B', NL:'#D97F4B' },
+  science:    { YT:'#566175', NT:'#566175', NU:'#566175', BC:'#79CBA6', AB:'#DFB25F', SK:'#DFB25F', MB:'#DFB25F', ON:'#3FB388', QC:'#79CBA6', NB:'#D97F4B', NS:'#D97F4B', PE:'#D97F4B', NL:'#D97F4B' },
+  health:     { YT:'#DFB25F', NT:'#DFB25F', NU:'#DFB25F', BC:'#79CBA6', AB:'#79CBA6', SK:'#DFB25F', MB:'#79CBA6', ON:'#3FB388', QC:'#79CBA6', NB:'#79CBA6', NS:'#79CBA6', PE:'#DFB25F', NL:'#DFB25F' },
+  education:  { YT:'#DFB25F', NT:'#DFB25F', NU:'#DFB25F', BC:'#79CBA6', AB:'#79CBA6', SK:'#DFB25F', MB:'#DFB25F', ON:'#3FB388', QC:'#79CBA6', NB:'#79CBA6', NS:'#79CBA6', PE:'#DFB25F', NL:'#DFB25F' },
+  art:        { YT:'#566175', NT:'#566175', NU:'#566175', BC:'#DFB25F', AB:'#D97F4B', SK:'#D97F4B', MB:'#D97F4B', ON:'#DFB25F', QC:'#DFB25F', NB:'#D97F4B', NS:'#D97F4B', PE:'#D97F4B', NL:'#C9564F' },
+  sales:      { YT:'#DFB25F', NT:'#DFB25F', NU:'#DFB25F', BC:'#DFB25F', AB:'#DFB25F', SK:'#DFB25F', MB:'#DFB25F', ON:'#DFB25F', QC:'#DFB25F', NB:'#D97F4B', NS:'#D97F4B', PE:'#D97F4B', NL:'#D97F4B' },
+  trades:     { YT:'#566175', NT:'#566175', NU:'#566175', BC:'#79CBA6', AB:'#79CBA6', SK:'#DFB25F', MB:'#DFB25F', ON:'#3FB388', QC:'#79CBA6', NB:'#D97F4B', NS:'#D97F4B', PE:'#D97F4B', NL:'#D97F4B' },
+  resources:  { YT:'#DFB25F', NT:'#DFB25F', NU:'#DFB25F', BC:'#DFB25F', AB:'#3FB388', SK:'#79CBA6', MB:'#79CBA6', ON:'#DFB25F', QC:'#DFB25F', NB:'#D97F4B', NS:'#D97F4B', PE:'#D97F4B', NL:'#79CBA6' },
+  factory:    { YT:'#566175', NT:'#566175', NU:'#566175', BC:'#DFB25F', AB:'#79CBA6', SK:'#DFB25F', MB:'#DFB25F', ON:'#3FB388', QC:'#79CBA6', NB:'#D97F4B', NS:'#D97F4B', PE:'#D97F4B', NL:'#D97F4B' }
 };
 /* colour → rating label / stars / rank (rank decides "best province") */
 const RATE_MAP = {
-  '#3ECF8E': { text:'Very Good', stars:5, order:5 },
-  '#7BE0A8': { text:'Good', stars:4, order:4 },
-  '#F5B34C': { text:'Moderate', stars:3, order:3 },
-  '#F97316': { text:'Limited', stars:2, order:2 },
-  '#EF4444': { text:'Very Limited', stars:1, order:1 },
-  '#64748B': { text:'Undetermined', stars:0, order:0 }
+  '#3FB388': { text:'Very Good', stars:5, order:5 },
+  '#79CBA6': { text:'Good', stars:4, order:4 },
+  '#DFB25F': { text:'Moderate', stars:3, order:3 },
+  '#D97F4B': { text:'Limited', stars:2, order:2 },
+  '#C9564F': { text:'Very Limited', stars:1, order:1 },
+  '#566175': { text:'Undetermined', stars:0, order:0 }
 };
-function ratingOf(hex) { return RATE_MAP[hex] || RATE_MAP['#64748B']; }
+function ratingOf(hex) { return RATE_MAP[hex] || RATE_MAP['#566175']; }
 /* the centred NOC drives the map colouring + the detail card numbers */
 let ACTIVE_RATINGS = PROV_RATINGS.management;
 let ACTIVE_IND_KEY = 'management';
@@ -417,7 +441,7 @@ function provStats(indKey, code) {
 function topProvince() {
   let best = null, bestOrder = -1;
   for (const code of PROV_PRIORITY) {
-    const r = ratingOf(ACTIVE_RATINGS[code] || '#64748B');
+    const r = ratingOf(ACTIVE_RATINGS[code] || '#566175');
     if (r.order > bestOrder) { bestOrder = r.order; best = code; }
   }
   return best;
@@ -464,25 +488,25 @@ const ICONS = {
   factory: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V9l5 3V9l5 3V9l5 3V21z"/><path d="M3 21h18"/></svg>'
 };
 const INDUSTRIES = [
-  { key:'management', name:'Management', code:'NOC 0 · Gestion', prov:'7/14', jobs:'28,140', med:'$58.20', rate:'Good', color:'#57C7FF', stars:4, tag:'MANAGEMENT · NOC 0', photo:'assets/ind-management.jpg',
+  { key:'management', name:'Management', short:'Management', code:'NOC 0 · Gestion', prov:'7/14', jobs:'28,140', med:'$58.20', rate:'Good', color:'#6FB6D8', stars:4, tag:'MANAGEMENT · NOC 0', photo:'assets/ind-management.jpg',
     on:{ jobs:'6,880', med:'$59.40', outlook:'+7%', rate:'Good', stars:4, desc:'Leadership demand tracks the broader economy, with steady openings across public and private administration.' } },
-  { key:'business', name:'Business & Finance', code:'NOC 1 · Affaires et finance', prov:'9/14', jobs:'52,180', med:'$34.10', rate:'Fair', color:'#F5B34C', stars:3, tag:'BUSINESS · NOC 1', photo:'assets/ind-business.jpg',
+  { key:'business', name:'Business & Finance', short:'Business', code:'NOC 1 · Affaires et finance', prov:'9/14', jobs:'52,180', med:'$34.10', rate:'Fair', color:'#DFB25F', stars:3, tag:'BUSINESS · NOC 1', photo:'assets/ind-business.jpg',
     on:{ jobs:'11,940', med:'$35.20', outlook:'+9%', rate:'Fair', stars:3, desc:'Steady demand across professional services and finance, with growth in data and analyst roles.' } },
-  { key:'science', name:'Natural & Applied Sciences', code:'NOC 2 · Sciences naturelles', prov:'7/14', jobs:'38,104', med:'$42.80', rate:'Good', color:'#3ECF8E', stars:4, tag:'SCIENCES · NOC 2', photo:'assets/ind-science.jpg',
+  { key:'science', name:'Natural & Applied Sciences', short:'Sciences', code:'NOC 2 · Sciences naturelles', prov:'7/14', jobs:'38,104', med:'$42.80', rate:'Good', color:'#3FB388', stars:4, tag:'SCIENCES · NOC 2', photo:'assets/ind-science.jpg',
     on:{ jobs:'9,410', med:'$43.10', outlook:'+14%', rate:'Good', stars:4, desc:'Engineering and tech roles keep expanding as Ontario invests in clean energy and R&D.' } },
-  { key:'health', name:'Health', code:'NOC 3 · Santé', prov:'8/14', jobs:'45,230', med:'$38.60', rate:'Good', color:'#3ECF8E', stars:5, tag:'HEALTH · NOC 3', photo:'assets/ind-health.jpg',
+  { key:'health', name:'Health', short:'Health', code:'NOC 3 · Santé', prov:'8/14', jobs:'45,230', med:'$38.60', rate:'Good', color:'#3FB388', stars:5, tag:'HEALTH · NOC 3', photo:'assets/ind-health.jpg',
     on:{ jobs:'12,480', med:'$39.20', outlook:'+11%', rate:'Very Good', stars:5, desc:'Strong demand expected over the next 3 years, driven by an aging population and steady sector growth.' } },
-  { key:'education', name:'Education, Law & Social', code:'NOC 4 · Éducation, droit et services sociaux', prov:'8/14', jobs:'34,520', med:'$33.70', rate:'Good', color:'#57C7FF', stars:4, tag:'EDUCATION · NOC 4', photo:'assets/ind-education.jpg',
+  { key:'education', name:'Education, Law & Social', short:'Education', code:'NOC 4 · Éducation, droit et services sociaux', prov:'8/14', jobs:'34,520', med:'$33.70', rate:'Good', color:'#6FB6D8', stars:4, tag:'EDUCATION · NOC 4', photo:'assets/ind-education.jpg',
     on:{ jobs:'8,640', med:'$34.30', outlook:'+8%', rate:'Good', stars:4, desc:'Schools and social services keep hiring; demand for early-childhood educators stays strong.' } },
-  { key:'art', name:'Art, Culture & Sport', code:'NOC 5 · Arts, culture et sports', prov:'3/14', jobs:'12,760', med:'$25.10', rate:'Limited', color:'#C084FC', stars:2, tag:'ART & CULTURE · NOC 5', photo:'assets/ind-art.jpg',
+  { key:'art', name:'Art, Culture & Sport', short:'Arts', code:'NOC 5 · Arts, culture et sports', prov:'3/14', jobs:'12,760', med:'$25.10', rate:'Limited', color:'#A98BD8', stars:2, tag:'ART & CULTURE · NOC 5', photo:'assets/ind-art.jpg',
     on:{ jobs:'2,910', med:'$25.80', outlook:'+2%', rate:'Limited', stars:2, desc:'Recovery is gradual; competition remains high for creative and performance roles.' } },
-  { key:'sales', name:'Sales & Service', code:'NOC 6 · Vente et services', prov:'5/14', jobs:'61,430', med:'$21.80', rate:'Fair', color:'#F5B34C', stars:3, tag:'SALES & SERVICE · NOC 6', photo:'assets/ind-sales.jpg',
+  { key:'sales', name:'Sales & Service', short:'Sales', code:'NOC 6 · Vente et services', prov:'5/14', jobs:'61,430', med:'$21.80', rate:'Fair', color:'#DFB25F', stars:3, tag:'SALES & SERVICE · NOC 6', photo:'assets/ind-sales.jpg',
     on:{ jobs:'13,720', med:'$22.40', outlook:'+5%', rate:'Fair', stars:3, desc:'Large volume of openings, mostly in retail and hospitality, with steady turnover.' } },
-  { key:'trades', name:'Trades & Transport', code:'NOC 7 · Métiers', prov:'6/14', jobs:'41,270', med:'$31.40', rate:'Fair', color:'#F97316', stars:3, tag:'TRADES · NOC 7', photo:'assets/ind-trades.jpg',
+  { key:'trades', name:'Trades & Transport', short:'Trades', code:'NOC 7 · Métiers', prov:'6/14', jobs:'41,270', med:'$31.40', rate:'Fair', color:'#D97F4B', stars:3, tag:'TRADES · NOC 7', photo:'assets/ind-trades.jpg',
     on:{ jobs:'10,870', med:'$32.10', outlook:'+6%', rate:'Fair', stars:3, desc:'Construction and logistics hiring stays solid, buoyed by housing and infrastructure pipelines.' } },
-  { key:'resources', name:'Natural Resources & Agriculture', code:'NOC 8 · Ressources naturelles et agriculture', prov:'4/14', jobs:'18,240', med:'$30.60', rate:'Limited', color:'#A3E635', stars:2, tag:'RESOURCES · NOC 8', photo:'assets/ind-resources.jpg',
+  { key:'resources', name:'Natural Resources & Agriculture', short:'Resources', code:'NOC 8 · Ressources naturelles et agriculture', prov:'4/14', jobs:'18,240', med:'$30.60', rate:'Limited', color:'#9DBE68', stars:2, tag:'RESOURCES · NOC 8', photo:'assets/ind-resources.jpg',
     on:{ jobs:'3,860', med:'$31.20', outlook:'+1%', rate:'Limited', stars:2, desc:'Commodity prices weigh on hiring; agriculture shows pockets of steady demand.' } },
-  { key:'factory', name:'Manufacturing & Utilities', code:'NOC 9 · Fabrication', prov:'4/14', jobs:'19,860', med:'$29.70', rate:'Limited', color:'#FB923C', stars:2, tag:'MANUFACTURING · NOC 9', photo:'assets/ind-factory.jpg',
+  { key:'factory', name:'Manufacturing & Utilities', short:'Manufacturing', code:'NOC 9 · Fabrication', prov:'4/14', jobs:'19,860', med:'$29.70', rate:'Limited', color:'#D97F4B', stars:2, tag:'MANUFACTURING · NOC 9', photo:'assets/ind-factory.jpg',
     on:{ jobs:'5,240', med:'$30.40', outlook:'+3%', rate:'Limited', stars:2, desc:'Mixed outlook as auto electrification offsets softer consumer demand.' } }
 ];
 function starRow(n) {
@@ -492,24 +516,29 @@ function starRow(n) {
   }
   return s;
 }
-/* vertical poker-card face: photo backdrop (JS) + number + top / rating / stacked meta */
+/* vertical poker-card face: photo backdrop + number + name / rating / stacked meta.
+   Side cards show the photo plus one line of type only. */
 function cardBody(ind, idx) {
   return '<div class="edge top"></div><div class="edge bot"></div>' +
     '<div class="ic-num">' + ('0' + idx).slice(-2) + '</div>' +
     '<div class="ic-body">' +
-      '<div class="ic-top">' +
-        '<div class="ic-ico" style="color:' + ind.color + '">' + ICONS[ind.key] + '</div>' +
-        '<div><div class="ic-name">' + ind.name + '</div><div class="ic-code">' + ind.code + '</div></div>' +
-      '</div>' +
+      '<div class="ic-name">' + ind.name + '</div>' +
+      '<div class="ic-code">' + ind.code + '</div>' +
       '<div class="ic-rating">' +
-        '<div class="ic-grade" style="color:' + ind.color + '"><span class="gdot" style="background:' + ind.color + ';box-shadow:0 0 9px ' + ind.color + 'aa"></span>' + ind.rate + '</div>' +
+        '<div class="ic-grade"><span class="gdot" style="background:' + ind.color + ';box-shadow:0 0 9px ' + ind.color + 'aa"></span>' + ind.rate + '</div>' +
         '<div class="stars">' + starRow(ind.stars) + '</div>' +
       '</div>' +
       '<div class="ic-meta">' +
-        '<div class="ic-m"><div class="v">' + ind.prov + '</div><div class="l">PROVINCES POSITIVE</div></div>' +
-        '<div class="ic-m"><div class="v">' + ind.jobs + '</div><div class="l">JOBS TODAY</div></div>' +
-        '<div class="ic-m"><div class="v">' + ind.med + '</div><div class="l">MEDIAN / HR</div></div>' +
+        '<div class="ic-m"><span class="v">' + ind.prov + '</span><span class="l">PROVINCES POSITIVE</span></div>' +
+        '<div class="ic-duo">' +
+          '<span><b>' + ind.jobs + '</b><i>JOBS TODAY</i></span>' +
+          '<span><b>' + ind.med + '</b><i>MEDIAN / HR</i></span>' +
+        '</div>' +
       '</div>' +
+    '</div>' +
+    '<div class="ic-mini">' +
+      '<div class="mn">' + (ind.short || ind.name) + '</div>' +
+      '<div class="mr"><i style="background:' + ind.color + '"></i>' + ind.rate + ' · ' + ind.prov + '</div>' +
     '</div>';
 }
 /* per-card pose: distance from centre drives rotation, scale, brightness, z.
@@ -518,19 +547,19 @@ function cardBody(ind, idx) {
 function cardStyle(off) {
   const drag = 'var(--drag, 0px)';
   if (off === 0) {
-    return 'transform:translateX(' + drag + ') rotateY(0deg) scale(1);z-index:50;filter:brightness(1);opacity:1;box-shadow:0 22px 40px rgba(0,0,0,.55),0 0 0 1px rgba(232,179,75,.18)';
+    return 'transform:translateX(' + drag + ') rotateY(0deg) scale(1);z-index:50;filter:brightness(1);opacity:1;box-shadow:0 22px 44px rgba(0,0,0,.6),0 0 0 1px rgba(224,178,102,.22),inset 0 1px 0 rgba(255,255,255,.08)';
   }
   const abs = Math.abs(off);
   if (abs > 2) {
     return 'transform:translateX(' + drag + 'px) scale(.4);z-index:1;filter:brightness(.7);opacity:0;pointer-events:none;box-shadow:none';
   }
   const dir = off > 0 ? 1 : -1;
-  const x = 118 + (abs - 1) * 78;                 /* ±1:118px  ±2:196px */
-  const rot = -dir * (24 + (abs - 1) * 20);       /* ±1:24°   ±2:44°  */
-  const sc = Math.max(.58, 1 - abs * .19);        /* ±1:.81   ±2:.62  */
-  const b = Math.max(.55, 1 - abs * .2);          /* ±1:.80   ±2:.60  */
+  const x = 126 + (abs - 1) * 70;                 /* ±1:126px  ±2:196px */
+  const rot = -dir * (20 + (abs - 1) * 18);       /* ±1:20°   ±2:38°  */
+  const sc = Math.max(.56, 1 - abs * .26);        /* ±1:.74   ±2:.56  */
+  const b = Math.max(.64, 1 - abs * .14);         /* ±1:.86   ±2:.72  */
   return 'transform:translateX(calc(' + drag + ' + ' + (x * dir) + 'px)) rotateY(' + rot + 'deg) scale(' + sc + ');z-index:' + (50 - abs * 10) +
-    ';filter:brightness(' + b + ');opacity:' + (1 - abs * .13) + ';box-shadow:0 14px 26px rgba(0,0,0,.42)';
+    ';filter:brightness(' + b + ') saturate(.9);opacity:' + (1 - abs * .08) + ';box-shadow:0 14px 26px rgba(0,0,0,.45)';
 }
 (function () {
   const N = INDUSTRIES.length;            /* 10 NOC categories, NOC 0–9 */
@@ -546,9 +575,10 @@ function cardStyle(off) {
     return o > N / 2 ? o - N : o;
   }
   function render() {
-    deck.innerHTML = INDUSTRIES.map((ind, i) =>
-      '<div class="icard bg-' + ind.key + '" style="' + cardStyle(loopOff(i)) + '">' + cardBody(ind, i) + '</div>'
-    ).join('');
+    deck.innerHTML = INDUSTRIES.map((ind, i) => {
+      const off = loopOff(i);
+      return '<div class="icard bg-' + ind.key + '" data-side="' + Math.min(2, Math.abs(off)) + '" data-dir="' + (off === 0 ? 0 : (off > 0 ? 1 : -1)) + '" style="' + cardStyle(off) + '">' + cardBody(ind, i) + '</div>';
+    }).join('');
     dotsBox.innerHTML = INDUSTRIES.map((_, i) => '<i class="' + (i === center ? 'on' : '') + '"></i>').join('');
     const ind = INDUSTRIES[center];
     ACTIVE_IND_KEY = ind.key;
@@ -608,6 +638,16 @@ function cardStyle(off) {
 
 (function () {
   const el = document.getElementById('mapSvg');
+  const photoA = document.getElementById('mapPhotoA');
+  const photoB = document.getElementById('mapPhotoB');
+  let front = photoA, back = photoB;
+  let currentPhoto = 'CA';
+
+  /* tight crop of the real landmass. No perspective rotateX: the 3D comes from a real
+     extruded slab (offset slices + wall shading), so every province keeps its true shape. */
+  const VIEWBOX = '8 192 1086 742';
+  const DEPTH = 32;          /* slab thickness in SVG units — about 13px on screen */
+  const SLICES = 10;
 
   /* --- colour helpers: lighten / darken a hex colour (unified light source) --- */
   function shade(hex, amt) {
@@ -624,102 +664,154 @@ function cardStyle(off) {
     }
     return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
   }
-  const fallback = '#64748B';
+  const fallback = '#566175';
   const colourOf = p => ACTIVE_RATINGS[p.code] || fallback;
 
-  /* (re)build the province faces with the current NOC's ratings.
-     Keeps the highlighted province, if any. */
+  /* (re)build the extruded map with the current NOC's ratings. Keeps the highlight, if any. */
   function buildMap() {
     const selCode = el.querySelector('.prov.sel') ? el.querySelector('.prov.sel').dataset.code : null;
-    const grads = PATHS.map(p => {
-      const c = colourOf(p);
-      return '<linearGradient id="pg-' + p.code + '" x1="0" y1="0" x2="0" y2="1">' +
-        '<stop offset="0" stop-color="' + shade(c, .30) + '"/>' +
-        '<stop offset=".5" stop-color="' + c + '"/>' +
-        '<stop offset="1" stop-color="' + shade(c, -.32) + '"/>' +
+
+    /* flat province colour, lit once for the whole slab below — keeps the legend honest */
+    /* one neutral graphite wall, graded across the full slab depth in user space */
+    const wallGrad = '<linearGradient id="pw" gradientUnits="userSpaceOnUse" x1="0" y1="205" x2="0" y2="' + (914 + DEPTH) + '">' +
+      '<stop offset="0" stop-color="#3D5170"/><stop offset=".24" stop-color="#223044"/><stop offset=".68" stop-color="#131B27"/><stop offset="1" stop-color="#070B11"/>' +
       '</linearGradient>';
-    }).join('');
-    /* defs: per-province gradients + contact shadow.
-       No ocean layer — the real-photo backdrop shows through everywhere. */
-    const defs = '<defs>' + grads +
-      '<filter id="relief" x="-14%" y="-14%" width="128%" height="128%">' +
-        '<feDropShadow dx="0" dy="5" stdDeviation="3.4" flood-color="#000000" flood-opacity=".55"/>' +
-      '</filter>' +
-    '</defs>';
-    /* continent plate: whole landmass pushed down in two lit steps — deep blue on photo */
-    const plateDeep = '<g transform="translate(0 9)">' + PATHS.map(p => '<path d="' + p.d + '" fill="#0C1B2E"/>').join('') + '</g>';
-    const plateMid = '<g transform="translate(0 4.5)">' + PATHS.map(p => '<path d="' + p.d + '" fill="#13283F"/>').join('') + '</g>';
-    /* lit faces with dark seams between provinces + per-province contact shadow */
+    /* single vertical light falloff applied to every province at once */
+    const landShade = '<linearGradient id="sha" gradientUnits="userSpaceOnUse" x1="0" y1="196" x2="0" y2="916">' +
+      '<stop offset="0" stop-color="#FFFFFF"/><stop offset=".42" stop-color="#E4E4E4"/><stop offset=".78" stop-color="#ADADAD"/><stop offset="1" stop-color="#7A7A7A"/>' +
+      '</linearGradient>';
+    const blur = '<filter id="groundBlur" x="-18%" y="-18%" width="136%" height="152%"><feGaussianBlur stdDeviation="7"/></filter>';
+
+    const defs = '<defs>' + PATHS.map(p => '<path id="pp-' + p.code + '" d="' + p.d + '"/>').join('') +
+      '<clipPath id="landClip">' + PATHS.map(p => '<path d="' + p.d + '"/>').join('') + '</clipPath>' +
+      wallGrad + landShade + blur + '</defs>';
+
+    /* soft contact shadow cast by the slab onto the photo */
+    const ground = '<g filter="url(#groundBlur)" opacity=".52" transform="translate(0 ' + (DEPTH + 16) + ')">' +
+      PATHS.map(p => '<use href="#pp-' + p.code + '" xlink:href="#pp-' + p.code + '" fill="#02040A"/>').join('') + '</g>';
+
+    /* extrusion: stacked slices of the silhouette, each one step lower */
+    let walls = '';
+    /* deepest slice first; one flat slate so the wall reads as carved stone, not a colour ramp */
+    for (let s = SLICES; s >= 1; s--) {
+      const wallCol = '#2C3D53';
+      walls += '<g transform="translate(0 ' + (s * DEPTH / SLICES).toFixed(2) + ')">' +
+        PATHS.map(p => '<use href="#pp-' + p.code + '" xlink:href="#pp-' + p.code + '" fill="' + wallCol + '" stroke="' + wallCol + '" stroke-width="1.4"/>').join('') + '</g>';
+    }
+
+    /* lit top faces + dark seams between provinces */
     const faces = PATHS.map(p =>
-      '<path class="prov" data-code="' + p.code + '" d="' + p.d + '" fill="url(#pg-' + p.code + ')" stroke="#05080D" stroke-width="3.4" stroke-linejoin="round" filter="url(#relief)"/>'
+      '<path class="prov" data-code="' + p.code + '" d="' + p.d + '" fill="' + colourOf(p) + '" stroke="rgba(4,9,16,.80)" stroke-width="1.2" stroke-linejoin="round"/>'
     ).join('');
-    const svg =
-      '<svg viewBox="' + VIEWBOX + '" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' + defs +
-        plateDeep + plateMid + faces +
+
+    /* one light direction for the whole landmass, clipped to the land */
+    const shadeRect = '<rect x="8" y="192" width="1086" height="742" fill="url(#sha)" clip-path="url(#landClip)" style="mix-blend-mode:multiply" pointer-events="none"/>';
+
+    /* thin rim light along the top edge of the slab */
+    const rim = '<g fill="none" stroke="rgba(255,255,255,.10)" stroke-width="1" stroke-linejoin="round" pointer-events="none">' +
+      PATHS.map(p => '<path d="' + p.d + '"/>').join('') + '</g>';
+
+    el.innerHTML =
+      '<svg viewBox="' + VIEWBOX + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true">' +
+        defs + ground + walls + faces + shadeRect + rim +
       '</svg>';
-    el.innerHTML = svg;
     if (selCode) {
       const prev = el.querySelector('.prov[data-code="' + selCode + '"]');
       if (prev) prev.classList.add('sel');
     }
   }
 
-  /* --- province selection: flip the photo backdrop, float the province, reveal the detail card --- */
+  /* --- photo backdrop: cross-fade between the Canada shot and the province shot --- */
+  function setPhoto(code, immediate) {
+    const key = PROV_PHOTOS[code] ? code : 'CA';
+    if (key === currentPhoto && !immediate) return;
+    currentPhoto = key;
+    const panel = photoA.parentElement;
+    if (panel) panel.classList.toggle('has-prov', key !== 'CA');
+    if (immediate) {
+      photoA.className = 'map-photo ph-' + key + ' on';
+      photoB.className = 'map-photo ph-' + key;
+      front = photoA; back = photoB;
+      return;
+    }
+    const inc = back, outg = front;
+    inc.className = 'map-photo ph-' + key;
+    void inc.offsetWidth;                 /* commit the new image before fading it in */
+    inc.classList.add('on');
+    outg.classList.remove('on');
+    front = inc; back = outg;
+  }
+
+  /* national averages derived from the same demo table the province cards use */
+  function nationalView() {
+    const ind = INDUSTRIES.find(i => i.key === ACTIVE_IND_KEY) || INDUSTRIES[0];
+    let sum = 0, n = 0;
+    for (const k in PROV_DETAILS) { sum += parseFloat(PROV_DETAILS[k].outlook); n++; }
+    const factor = (IND_SHAPE[ACTIVE_IND_KEY] || {}).out || 1;
+    const avg = Math.round((sum / n) * factor);
+    return { ind: ind, outlook: (avg >= 0 ? '+' : '') + avg + '%' };
+  }
+
+  /* --- selection: swap the photo, lift the province, refresh the detail card --- */
   function selectProv(code, animate) {
     el.querySelectorAll('.prov').forEach(p => p.classList.toggle('sel', p.dataset.code === code));
-    const photo = document.getElementById('mapPhoto');
-    const nextCls = 'map-photo ph-' + (PROV_PHOTOS[code] ? code : 'CA');
-    if (photo) {
-      if (animate === false) {
-        photo.className = nextCls;
-        photo.style.transition = '';
-        photo.style.transform = '';
-      } else {
-        /* card-flip: swing the backdrop away, swap the photo, swing the new face in */
-        photo.style.transition = 'transform .34s cubic-bezier(.45,0,.2,1)';
-        photo.style.transform = 'perspective(1100px) rotateY(84deg)';
-        setTimeout(function () {
-          photo.className = nextCls;
-          photo.style.transform = 'perspective(1100px) rotateY(0deg)';
-        }, 300);
-      }
-    }
-    const d = PROV_DETAILS[code] || PROV_DETAILS.ON;   /* null → default card shows Ontario */
-    const cardCode = code || 'ON';
-    const r = ratingOf(ACTIVE_RATINGS[cardCode] || '#64748B');
-    const st = provStats(ACTIVE_IND_KEY, cardCode);
+    setPhoto(code, animate === false);
+
     const pc = document.querySelector('.prov-card');
-    if (pc && d) {
-      pc.style.borderLeftColor = ACTIVE_RATINGS[cardCode] || '#3ECF8E';
-      const nm = pc.querySelector('.p-name'); if (nm) nm.textContent = d.name;
-      const ds = pc.querySelector('.p-desc'); if (ds) ds.textContent = d.desc;
-      const stats = pc.querySelectorAll('.p-stats > span');
+    if (!pc) return;
+    const nm = pc.querySelector('.p-name');
+    const ds = pc.querySelector('.p-desc');
+    const badge = pc.querySelector('.p-badge');
+    const stats = pc.querySelectorAll('.p-stats > span');
+
+    if (!code) {
+      const n = nationalView();
+      nm.textContent = 'Canada';
+      ds.textContent = n.ind.name + ' across all 13 provinces and territories. Tap one for its local outlook.';
+      if (badge) { badge.classList.add('neutral'); badge.textContent = 'NATIONAL VIEW'; }
+      if (stats[0]) stats[0].innerHTML = '<b class="v">' + n.ind.med + '</b><span class="u">/hr median</span>';
+      if (stats[1]) stats[1].innerHTML = '<b class="v">' + n.ind.jobs + '</b><span class="u">jobs today</span>';
+      if (stats[2]) stats[2].innerHTML = '<b class="v">' + n.outlook + '</b><span class="u">3-yr outlook</span>';
+    } else {
+      const d = PROV_DETAILS[code] || PROV_DETAILS.ON;
+      const r = ratingOf(ACTIVE_RATINGS[code] || '#566175');
+      const st = provStats(ACTIVE_IND_KEY, code);
+      nm.textContent = d.name;
+      ds.textContent = d.desc;
+      if (badge) { badge.classList.remove('neutral'); badge.innerHTML = starRow(r.stars) + ' ' + r.text; }
       if (stats[0]) stats[0].innerHTML = '<b class="v">' + st.med + '</b><span class="u">/hr median</span>';
       if (stats[1]) stats[1].innerHTML = '<b class="v">' + st.jobs + '</b><span class="u">jobs today</span>';
       if (stats[2]) stats[2].innerHTML = '<b class="v">' + st.outlook + '</b><span class="u">3-yr outlook</span>';
-      const badge = pc.querySelector('.p-badge');
-      if (badge) badge.innerHTML = starRow(r.stars) + ' ' + r.text;
-      /* left→right staggered reveal of the new card content */
-      pc.classList.remove('reveal'); void pc.offsetWidth; pc.classList.add('reveal');
     }
+    pc.classList.remove('reveal'); void pc.offsetWidth; pc.classList.add('reveal');
   }
   el.addEventListener('click', e => {
     const t = e.target.closest ? e.target.closest('.prov') : null;
-    if (t && t.dataset.code) selectProv(t.dataset.code, true);
+    if (!t || !t.dataset.code) return;
+    /* tapping the selected province clears it and brings back the Canada photo */
+    selectProv(t.classList.contains('sel') ? null : t.dataset.code, true);
   });
   /* NOC changed (swipe / arrows): re-colour the map, then focus this NOC's top-rated province */
   document.addEventListener('nocchange', function (e) {
     const ind = e.detail && e.detail.ind;
     if (!ind) return;
     ACTIVE_RATINGS = PROV_RATINGS[ind.key] || PROV_RATINGS.management;
+    const keep = el.querySelector('.prov.sel');
+    const keepCode = keep ? keep.dataset.code : null;
     buildMap();
-    const top = topProvince();
-    if (top) selectProv(top, true);
+    if (keepCode) selectProv(keepCode, true);
+    else {
+      const top = topProvince();
+      if (top) selectProv(top, true);
+    }
   });
-  /* initial state: NOC 0 (Management) — maple-leaf backdrop, Ontario card, no province highlighted */
+  /* initial state: NOC 0, no province picked — maple backdrop + national summary */
   ACTIVE_RATINGS = PROV_RATINGS[INDUSTRIES[0].key] || PROV_RATINGS.management;
   buildMap();
-  selectProv(null, false);
+  /* deep link such as home-redesign-mockup-d.html#ON opens with that province already picked */
+  const deepCode = (location.hash || '').replace('#', '').toUpperCase();
+  if (deepCode && ACTIVE_RATINGS[deepCode]) selectProv(deepCode, false);
+  else selectProv(null, false);
 })();
 </script>
 </body>
