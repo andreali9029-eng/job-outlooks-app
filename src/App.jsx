@@ -1056,6 +1056,17 @@ export default function App() {
     setFavorites(prev => prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code])
   }
 
+  /* Occupations per NOC group (NOC 0-9). The home cards print this count and
+     the paddle uses the same grouping when a sector is opened. */
+  const nocGroupCounts = React.useMemo(() => {
+    const out = Array(10).fill(0)
+    for (const o of occupations) {
+      const d = String(o.code || '').replace('NOC_', '')[0]
+      if (d >= '0' && d <= '9') out[Number(d)]++
+    }
+    return out
+  }, [occupations])
+
   /* Related occupations: same 4-digit NOC family first (e.g. 2123 = software &
      web developers), falling back to the 3-digit major-minor group when the
      family has no other members in our 516-occupation dataset. */
@@ -1365,7 +1376,17 @@ export default function App() {
         {/* Redesigned home hero (mockup D): NOC coverflow deck + relief map + province detail */}
         {!selected && tab === 'home' && (
           <section className="home-hero" aria-label={lang === 'fr' ? 'Aperçu des secteurs par province' : 'Industry outlook by province'}>
-            <HomeDeck lang={lang} onChange={setHomeIndKey} />
+            <HomeDeck
+              lang={lang}
+              onChange={setHomeIndKey}
+              counts={nocGroupCounts}
+              onOpen={(i) => {
+                /* centre card = this sector's occupation list, one tap from home */
+                setExploreGroup(String(i))
+                setTab('explore')
+                window.scrollTo({ top: 0 })
+              }}
+            />
             <ProvinceMapSection lang={lang} activeIndKey={homeIndKey} />
           </section>
         )}

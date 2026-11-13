@@ -2693,55 +2693,95 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 4px;
+  bottom: 6px;
+  height: 44px;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 14px;
-  z-index: 4;
+  z-index: 6;
 }
 
-.home-hero .arrow {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 1px solid var(--hero-line);
-  background: var(--hero-surface);
-  color: var(--hero-dim);
+/* Paddle replaces the old arrows: ten fixed slots, tap a slot to jump,
+   drag along the rail to scrub (20px = 1 card). Fixed slot width means the
+   active pill never shifts its neighbours. */
+.home-hero .rail {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 4px;
+  border-radius: 999px;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.home-hero .rail .tick {
+  width: 20px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, .4);
   cursor: pointer;
 }
 
-.home-hero button.arrow {
-  padding: 0;
-  font: inherit;
-}
-
-.home-hero button.arrow:hover {
-  color: var(--hero-gold);
-  border-color: rgba(232, 179, 75, .5);
-}
-
-.home-hero .dots {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.home-hero .dots i {
+.home-hero .rail .tick i {
+  display: block;
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: 999px;
   background: #33405A;
+  transition: width .18s ease, background .18s ease, box-shadow .18s ease;
 }
 
-.home-hero .dots i.on {
-  width: 20px;
+.home-hero .rail .tick.on i {
+  width: 16px;
   background: var(--hero-gold);
-  box-shadow: 0 0 8px rgba(232, 179, 75, .6);
+  box-shadow: 0 0 10px rgba(232, 179, 75, .6);
+}
+
+.home-hero .rail:focus-visible {
+  outline: 2px solid rgba(232, 179, 75, .5);
+  outline-offset: 4px;
+}
+
+/* The centre card states what tapping it does — no more "is this clickable?" */
+.home-hero .ic-cta {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(232, 179, 75, .13);
+  border: 1px solid rgba(232, 179, 75, .32);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: .4px;
+  color: #F0C87E;
+}
+
+.home-hero .ic-cta span {
+  white-space: nowrap;
+}
+
+.home-hero .ic-cta b {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.home-hero .ic-cta svg {
+  flex: none;
+}
+
+/* only the card under the lens is the action — side cards drop the pill */
+.home-hero .icard[data-side="1"] .ic-cta,
+.home-hero .icard[data-side="2"] .ic-cta {
+  opacity: 0;
 }
 
 .home-hero .swipe-tip {

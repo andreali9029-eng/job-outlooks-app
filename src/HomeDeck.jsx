@@ -7,7 +7,16 @@
  *     so even mid-range phones stay at 60fps and the fan follows the finger.
  *     Dragging 200px = exactly one card step.
  *   - Elastic settle: on release the fan snaps to the nearest card through an
- *     overshoot spring curve; arrows / taps step with the same spring.
+ *     overshoot spring curve; the paddle and taps step with the same spring.
+ *   - Paddle rail (replaces the old arrows/dots): ten fixed slots under the
+ *     fan — tap a slot to jump, drag along it to scrub (20px = 1 card), and
+ *     arrow keys work once it has focus.
+ *   - Tap arbitration: a tap is decided on RELEASE (<8px drift, <300ms). The
+ *     previous rule flagged a drag after 6px mid-move, so a 7px finger roll
+ *     swallowed the click and the card "did nothing"; now 8-62px springs back
+ *     without navigating, and only a near-still release counts as a tap.
+ *   - Centre card opens the sector: tapping the card under the lens calls
+ *     onOpen(index); tapping a side card centres it instead.
  *   - Ratchet feedback on every card crossed (visual only — the user removed
  *       the click sound because it could not keep up with fast swipes):
  *       · a gold flash on the incoming card (works on every device);
@@ -19,7 +28,7 @@
  *
  * @author Xiaopeng Li
  * @copyright © 2026 Xiaopeng Li
- * @version 1.3.0
+ * @version 1.4.0
  */
 import React from 'react'
 import { INDUSTRIES, ICONS, img } from './homeData'
@@ -28,6 +37,9 @@ const CARD_W = 200    /* px per card step — the deck card width */
 const SWIPE = 62      /* px threshold for a velocity-less step */
 const VEL = .45        /* px/ms velocity threshold for a flick */
 const MAX_STEP = 2     /* max cards a single flick can advance */
+const TAP_MAX = 8      /* px a release may drift and still be a tap */
+const TAP_MS = 300     /* ms a tap may last before it becomes a press */
+const RAIL_STEP = 20   /* px of rail drag that equals one card */
 
 /** Render 1-5 stars; empty stars stay dimmed. */
 function StarRow({ n, size = 13 }) {
@@ -106,7 +118,7 @@ function applyDragPose(el, off) {
   el.style.pointerEvents = ''
 }
 
-export default function HomeDeck({ lang, onChange }) {
+export default function HomeDeck({ lang, onChange, onOpen, counts }) {
   const [center, setCenter] = React.useState(0)
   const [dragX, setDragX] = React.useState(0)
   const [mounted, setMounted] = React.useState(false)
@@ -114,12 +126,16 @@ export default function HomeDeck({ lang, onChange }) {
   const deckRef = React.useRef(null)
   const centerRef = React.useRef(0)
   const dragRaf = React.useRef(null)
-  const drag = React.useRef({ on: false, x0: 0, t0: 0, units: 0, lastWhole: 0, moved: false })
+  const drag = React.useRef({ on: false, x0: 0, t0: 0, units: 0, lastWhole: 0, moved: false, target: null })
   /* A drag that actually moved must swallow the synthetic click that follows
      pointerup (browsers still fire click after a mouse drag). Without this the
      tap handler jumps back to the card the finger LEFT — the deck looks like
      it "does nothing" on desktop/in-app browsers. */
   const suppressClick = React.useRef(false)
+  /* Rail: accumulated drag distance and the click guard (a scrub must not end
+     in a slot jump under the finger). */
+  const railDrag = React.useRef({ on: false, x: 0, acc: 0, moved: 0, tick: null })
+  const railTapBlock = React.useRef(false)
 
   const N = INDUSTRIES.length
   const fr = lang === 'fr'
@@ -191,6 +207,7 @@ export default function HomeDeck({ lang, onChange }) {
     const d = drag.current
     if (dragRaf.current) { cancelAnimationFrame(dragRaf.current); dragRaf.current = null }
     d.on = true; d.moved = false; d.x0 = e.clientX; d.t0 = performance.now()
+    d.target = e.target && e.target.closest ? e.target.closest('.icard') : null
     d.units = dragX / CARD_W
     d.lastWhole = Math.round(d.units)
     setSettling(false)
@@ -202,7 +219,7 @@ export default function HomeDeck({ lang, onChange }) {
     const d = drag.current
     if (!d.on) return
     const dx = e.clientX - d.x0
-    if (Math.abs(dx) > 6) d.moved = true
+    if (Math.abs(dx) > TAP_MAX) d.moved = true
     const units = dx / CARD_W
     /* ratchet: click + buzz + gold flash each time another card slides
        through centre — sound/vibration may be missing on some phones, so the
@@ -244,6 +261,26 @@ export default function HomeDeck({ lang, onChange }) {
     if (dragRaf.current) { cancelAnimationFrame(dragRaf.current); dragRaf.current = null }
     if (deckRef.current) deckRef.current.classList.remove('dragging')
     const v = (d.units * CARD_W) / Math.max(1, performance.now() - d.t0)
+    const elapsed = performance.now() - d.t0
+
+    /* --- tap arbitration: decided on RELEASE, not mid-move --------------- */
+    if (!d.moved && elapsed < TAP_MS) {
+      const target = d.target
+      d.target = null
+      if (target) {
+        suppressClick.current = true                /* kill the synthetic click */
+        setTimeout(() => { suppressClick.current = false }, 350)
+        const idx = Number(target.dataset ? target.dataset.i : NaN)
+        setDragX(0)
+        setSettling(false)
+        if (!Number.isNaN(idx)) {
+          if (idx === centerRef.current) openSector(idx)   /* centre card = open the sector */
+          else jumpTo(idx)                                 /* side card = bring it to the lens */
+        }
+        return
+      }
+    }
+    d.target = null
     /* left-drag advances (+1), right-drag goes back (-1), like flipping a book */
     let step = -Math.round(d.units)
     if (!d.moved) step = 0
@@ -306,6 +343,61 @@ export default function HomeDeck({ lang, onChange }) {
     onChange(INDUSTRIES[i].key)
   }
 
+  /* Centre card → hand its index to the parent, which opens the NOC group. */
+  const openSector = (i) => {
+    haptic(14)
+    setTimeout(() => { settlePulse() }, 40)
+    if (onOpen) onOpen(i)
+  }
+
+  /* --- paddle rail: tap a slot to jump, drag along it to scrub --------- */
+  const startRail = (e) => {
+    const r = railDrag.current
+    r.on = true; r.x = e.clientX; r.acc = 0; r.moved = 0
+    /* capture redirects the pointer AND the click that follows it, so the
+       slot has to be resolved here and acted on in endRail — the tick's own
+       onClick never fires once the rail captures the pointer */
+    const el = e.target && e.target.closest ? e.target.closest('.tick') : null
+    r.tick = el ? Number(el.dataset.i) : null
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  const moveRail = (e) => {
+    const r = railDrag.current
+    if (!r.on) return
+    const delta = e.clientX - r.x
+    r.x = e.clientX
+    r.moved += Math.abs(delta)
+    r.acc += delta
+    /* drag right = previous card, same convention as the fan */
+    while (r.acc >= RAIL_STEP) { r.acc -= RAIL_STEP; go(-1) }
+    while (r.acc <= -RAIL_STEP) { r.acc += RAIL_STEP; go(1) }
+  }
+
+  const endRail = () => {
+    const r = railDrag.current
+    if (!r.on) return
+    r.on = false; r.acc = 0
+    const tapped = r.tick
+    r.tick = null
+    if (r.moved > TAP_MAX) {          /* a scrub must not end in a slot jump */
+      railTapBlock.current = true
+      setTimeout(() => { railTapBlock.current = false }, 350)
+      return
+    }
+    if (tapped != null && !isNaN(tapped)) jumpTo(tapped)
+  }
+
+  const tapTick = (i) => {
+    if (railTapBlock.current) return
+    jumpTo(i)
+  }
+
+  const railKey = (e) => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1) }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); go(1) }
+  }
+
   const ind = INDUSTRIES[center]
   const metaL = fr
     ? ['PROVINCES POSITIVES', "OFFRES AUJOURD'HUI", 'MÉDIANE / H']
@@ -324,10 +416,13 @@ export default function HomeDeck({ lang, onChange }) {
       >
         {INDUSTRIES.map((it, i) => {
           const contOff = loopOff(i) + dragX / CARD_W
+          const occN = counts && counts[i] ? counts[i] : 0
           return (
             <div
               key={it.key}
               className={`icard bg-${it.key}`}
+              data-i={i}
+              data-side={Math.min(2, Math.abs(Math.round(contOff)))}
               style={{ ...cardStyle(contOff, settling), backgroundImage: `url(${img(it.photo)})` }}
               onClick={() => handleCardClick(i)}
               role="button"
@@ -352,6 +447,13 @@ export default function HomeDeck({ lang, onChange }) {
                   </div>
                   <div className="stars"><StarRow n={it.stars} /></div>
                 </div>
+                <div className="ic-cta">
+                  <span>{occN > 0 ? `${occN} ` : ''}{fr ? 'PROFESSIONS' : 'OCCUPATIONS'}</span>
+                  <b>
+                    {fr ? 'VOIR' : 'BROWSE'}
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6" /></svg>
+                  </b>
+                </div>
                 <div className="ic-meta">
                   <div className="ic-m"><span className="v">{it.prov}</span><span className="l">{metaL[0]}</span></div>
                   <div className="ic-m"><span className="v">{it.jobs}</span><span className="l">{metaL[1]}</span></div>
@@ -363,15 +465,28 @@ export default function HomeDeck({ lang, onChange }) {
         })}
       </div>
       <div className="deck-ctrl">
-        <button className="arrow ctrl-left" aria-label={fr ? 'Secteur précédent' : 'Previous industry'} onClick={() => go(-1)}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
-        </button>
-        <div className="dots">
-          {INDUSTRIES.map((it, i) => <i key={it.key} className={i === center ? 'on' : ''} />)}
+        <div
+          className="rail"
+          role="group"
+          tabIndex={0}
+          aria-label={fr ? 'Choisir un secteur : glisser ou toucher un repère' : 'Choose a sector: drag the rail or tap a tick'}
+          onPointerDown={startRail}
+          onPointerMove={moveRail}
+          onPointerUp={endRail}
+          onPointerCancel={endRail}
+          onKeyDown={railKey}
+        >
+          {INDUSTRIES.map((it, i) => (
+            <button
+              key={it.key}
+              type="button"
+              className={`tick${i === center ? ' on' : ''}`}
+              data-i={i}
+              onClick={() => tapTick(i)}
+              aria-label={`${i + 1} / ${N} · ${fr ? it.nameFr : it.nameEn}`}
+            ><i /></button>
+          ))}
         </div>
-        <button className="arrow ctrl-right" aria-label={fr ? 'Secteur suivant' : 'Next industry'} onClick={() => go(1)}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6" /></svg>
-        </button>
       </div>
       {/* Hidden live region announcing the active NOC for screen readers */}
       <span className="sr-only" aria-live="polite">
