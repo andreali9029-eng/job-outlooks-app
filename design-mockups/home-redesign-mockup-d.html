@@ -163,17 +163,42 @@
   @keyframes cardPulse { 0%,100% { box-shadow: 0 18px 34px rgba(0,0,0,.55); } 50% { box-shadow: 0 18px 34px rgba(0,0,0,.55), 0 0 0 2px rgba(224,178,102,.45); } }
   .icard.pulse { animation: cardPulse .35s ease; }
 
-  .deck-ctrl { position: absolute; left: 0; right: 0; bottom: 4px; display: flex; justify-content: center; align-items: center; gap: 14px; z-index: 4; }
-  .arrow {
-    width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line);
-    background: var(--surface); color: var(--dim); display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,.4);
+  /* control row: no arrows any more — one paddle replaces them */
+  .deck-ctrl { position: absolute; left: 0; right: 0; bottom: 6px; height: 44px; display: flex; justify-content: center; align-items: center; z-index: 4; }
+  /* paddle: ten fixed slots. Tap a slot to jump, drag along it to scrub.
+     Fixed slot width means the active pill never shifts its neighbours. */
+  .rail {
+    display: flex; align-items: center; height: 44px; padding: 0 4px;
+    border-radius: 999px; cursor: ew-resize; touch-action: none;
   }
-  button.arrow { padding: 0; cursor: pointer; font: inherit; }
-  button.arrow:hover { color: var(--gold); border-color: rgba(232,179,75,.5); }
-  .dots { display: flex; gap: 6px; align-items: center; }
-  .dots i { width: 6px; height: 6px; border-radius: 50%; background: #2A3547; }
-  .dots i.on { width: 20px; background: var(--gold); box-shadow: 0 0 8px rgba(224,178,102,.5); }
+  .rail .tick {
+    width: 20px; height: 44px; padding: 0; border: 0; background: none;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .rail .tick i {
+    display: block; width: 6px; height: 6px; border-radius: 999px; background: #2A3547;
+    transition: width .18s ease, background .18s ease, box-shadow .18s ease;
+  }
+  .rail .tick.on i { width: 16px; background: var(--gold); box-shadow: 0 0 10px rgba(224,178,102,.55); }
+  .rail:focus-visible { outline: 2px solid rgba(232,179,75,.5); outline-offset: 4px; }
+  /* the centre card states what tapping it does */
+  .ic-cta {
+    margin-top: 11px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 7px 11px; border-radius: 999px;
+    background: rgba(232,179,75,.13); border: 1px solid rgba(232,179,75,.32);
+    font-size: 10px; font-weight: 800; letter-spacing: .4px; color: #F0C87E;
+  }
+  .ic-cta span { white-space: nowrap; }
+  .ic-cta b { font-weight: 800; display: flex; align-items: center; gap: 2px; white-space: nowrap; }
+  .ic-cta svg { flex: none; }
+  .deck-toast {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, calc(-50% + 8px));
+    padding: 9px 15px; border-radius: 12px; white-space: nowrap;
+    background: rgba(9,14,24,.94); border: 1px solid rgba(232,179,75,.34);
+    font-size: 11.5px; font-weight: 700; color: #F3E3C4;
+    opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease; z-index: 6;
+  }
+  .deck-toast.on { opacity: 1; transform: translate(-50%, -50%); }
 
   /* ============ relief map ============ */
   .map-panel {
@@ -309,10 +334,9 @@
     <div class="deck-zone">
       <div class="deck"><!-- industry cards rendered by JS (coverflow fan) --></div>
       <div class="deck-ctrl">
-        <button class="arrow ctrl-left" aria-label="Previous industry"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-        <div class="dots"><i class="on"></i></div>
-        <button class="arrow ctrl-right" aria-label="Next industry"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+        <div class="rail" id="deckRail" role="group" tabindex="0" aria-label="Sector deck: drag to change sector, tap a dot to jump"></div>
       </div>
+      <div class="deck-toast" id="deckToast" aria-live="polite"></div>
     </div>
 
     <!-- relief map -->
@@ -516,6 +540,8 @@ function starRow(n) {
   }
   return s;
 }
+/* real occupation counts per NOC group, from public/data/occupations.json */
+const COUNTS = [6, 60, 66, 43, 52, 37, 61, 94, 29, 68];
 /* vertical poker-card face: photo backdrop + number + name / rating / stacked meta.
    Side cards show the photo plus one line of type only. */
 function cardBody(ind, idx) {
@@ -528,6 +554,8 @@ function cardBody(ind, idx) {
         '<div class="ic-grade"><span class="gdot" style="background:' + ind.color + ';box-shadow:0 0 9px ' + ind.color + 'aa"></span>' + ind.rate + '</div>' +
         '<div class="stars">' + starRow(ind.stars) + '</div>' +
       '</div>' +
+      '<div class="ic-cta"><span>' + COUNTS[idx] + ' OCCUPATIONS</span><b>BROWSE' +
+        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></b></div>' +
       '<div class="ic-meta">' +
         '<div class="ic-m"><span class="v">' + ind.prov + '</span><span class="l">PROVINCES POSITIVE</span></div>' +
         '<div class="ic-duo">' +
@@ -566,9 +594,7 @@ function cardStyle(off) {
   let center = 0;                         /* Management (NOC 0) first, per NOC order */
   let mounted = false;
   const deck = document.querySelector('.deck');
-  const dotsBox = document.querySelector('.dots');
-  const ctrlL = document.querySelector('.ctrl-left');
-  const ctrlR = document.querySelector('.ctrl-right');
+  const rail = document.getElementById('deckRail');
   /* circular offset: -5..+4 around the centre, cards beyond ±2 are hidden */
   function loopOff(i) {
     const o = (i - center + N) % N;
@@ -577,9 +603,11 @@ function cardStyle(off) {
   function render() {
     deck.innerHTML = INDUSTRIES.map((ind, i) => {
       const off = loopOff(i);
-      return '<div class="icard bg-' + ind.key + '" data-side="' + Math.min(2, Math.abs(off)) + '" data-dir="' + (off === 0 ? 0 : (off > 0 ? 1 : -1)) + '" style="' + cardStyle(off) + '">' + cardBody(ind, i) + '</div>';
+      return '<div class="icard bg-' + ind.key + '" data-i="' + i + '" data-side="' + Math.min(2, Math.abs(off)) + '" data-dir="' + (off === 0 ? 0 : (off > 0 ? 1 : -1)) + '" style="' + cardStyle(off) + '">' + cardBody(ind, i) + '</div>';
     }).join('');
-    dotsBox.innerHTML = INDUSTRIES.map((_, i) => '<i class="' + (i === center ? 'on' : '') + '"></i>').join('');
+    rail.innerHTML = INDUSTRIES.map(function (_, i) {
+      return '<button type="button" class="tick' + (i === center ? ' on' : '') + '" data-i="' + i + '" aria-label="Sector ' + (i + 1) + ' of ' + INDUSTRIES.length + '"><i></i></button>';
+    }).join('');
     const ind = INDUSTRIES[center];
     ACTIVE_IND_KEY = ind.key;
     const tag = document.querySelector('.industry-tag');
@@ -604,35 +632,105 @@ function cardStyle(off) {
     /* tell the map: re-colour provinces for this NOC and focus its top-rated province */
     document.dispatchEvent(new CustomEvent('nocchange', { detail: { ind: INDUSTRIES[center] } }));
   }
-  /* --- drag-to-swipe: the whole fan follows the pointer, then settles or steps --- */
-  const SWIPE = 62, VEL = .45;                    /* px threshold, px/ms velocity */
-  let px0 = 0, dx = 0, t0 = 0, dragging = false, moved = false;
+  /* jump straight to a slot (rail tap / side-card tap) */
+  function jumpTo(i) {
+    if (i === center) return;
+    center = i;
+    deck.style.setProperty('--drag', '0px');
+    render(); haptic(10); settlePulse();
+    document.dispatchEvent(new CustomEvent('nocchange', { detail: { ind: INDUSTRIES[center] } }));
+    rail.focus({ preventScroll: true });
+  }
+
+  /* The career-board screen arrives with P1. Until then the tap answers with a
+     toast, which is also the proof that the gesture does NOT fire by accident. */
+  let toastTimer = null;
+  function openBoard() {
+    const ind = INDUSTRIES[center];
+    const t = document.getElementById('deckToast');
+    if (!t) return;
+    t.textContent = 'NOC ' + center + ' · ' + ind.name + ' — ' + COUNTS[center] + ' occupations →';
+    t.classList.add('on');
+    haptic(14); settlePulse();
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('on'); }, 1900);
+  }
+
+  /* --- gesture arbitration: one pointer, three outcomes, decided on RELEASE ---
+       <8px and <300ms  → tap (centre card opens the board, side card centres)
+       8px … SWIPE      → elastic snap back, nothing else happens
+       > SWIPE or fast  → step exactly one card
+     The old rule flagged a drag after 6px mid-move, which made a 7px finger
+     roll swallow the tap forever. Nothing is decided until the finger lifts. */
+  const SWIPE = 62, VEL = .45, TAP_MAX = 8, TAP_MS = 300;
+  let px0 = 0, dx = 0, t0 = 0, dragging = false, downCard = null;
   deck.addEventListener('pointerdown', e => {
-    dragging = true; moved = false; dx = 0; px0 = e.clientX; t0 = performance.now();
+    dragging = true; dx = 0; px0 = e.clientX; t0 = performance.now();
+    downCard = e.target && e.target.closest ? e.target.closest('.icard') : null;
     deck.classList.add('dragging');
     deck.setPointerCapture(e.pointerId);
   });
   deck.addEventListener('pointermove', e => {
     if (!dragging) return;
     dx = e.clientX - px0;
-    if (Math.abs(dx) > 6) moved = true;
     deck.style.setProperty('--drag', dx + 'px');
   });
   deck.addEventListener('pointerup', () => {
     if (!dragging) return;
     dragging = false;
     deck.classList.remove('dragging');
-    const v = dx / Math.max(1, performance.now() - t0);   /* px/ms */
-    if (moved && (dx < -SWIPE || v < -VEL)) go(1);
-    else if (moved && (dx > SWIPE || v > VEL)) go(-1);
-    else deck.style.setProperty('--drag', '0px');          /* snap back */
+    const dt = performance.now() - t0;
+    const v = dx / Math.max(1, dt);                       /* px/ms */
+    if (Math.abs(dx) >= TAP_MAX) {
+      if (dx < -SWIPE || v < -VEL) go(1);
+      else if (dx > SWIPE || v > VEL) go(-1);
+      else deck.style.setProperty('--drag', '0px');
+      return;
+    }
+    deck.style.setProperty('--drag', '0px');
+    if (dt >= TAP_MS || !downCard) return;                /* long press is not a tap */
+    const idx = Number(downCard.dataset.i);
+    if (isNaN(idx)) return;
+    if (idx === center) openBoard();
+    else jumpTo(idx);
   });
   deck.addEventListener('pointercancel', () => {
     dragging = false; deck.classList.remove('dragging');
     deck.style.setProperty('--drag', '0px');
   });
-  ctrlL.addEventListener('click', () => go(-1));
-  ctrlR.addEventListener('click', () => go(1));
+
+  /* --- paddle: tap a slot to jump, drag along it to scrub (20px = 1 card) --- */
+  const RAIL_STEP = 20;
+  let railDown = false, railLastX = 0, railAcc = 0, railT0 = 0, railMove = 0, railTick = -1;
+  rail.addEventListener('pointerdown', e => {
+    railDown = true; railLastX = e.clientX; railAcc = 0; railMove = 0;
+    railT0 = performance.now();
+    const el = e.target && e.target.closest ? e.target.closest('.tick') : null;
+    railTick = el ? Number(el.dataset.i) : -1;
+    rail.setPointerCapture(e.pointerId);
+  });
+  rail.addEventListener('pointermove', e => {
+    if (!railDown) return;
+    const d = e.clientX - railLastX;
+    railLastX = e.clientX;
+    railMove += Math.abs(d);
+    railAcc += d;
+    /* drag right = previous card, same direction convention as the deck */
+    while (railAcc >= RAIL_STEP) { railAcc -= RAIL_STEP; go(-1); }
+    while (railAcc <= -RAIL_STEP) { railAcc += RAIL_STEP; go(1); }
+  });
+  rail.addEventListener('pointerup', () => {
+    if (!railDown) return;
+    railDown = false;
+    const dt = performance.now() - railT0;
+    if (railMove < 8 && dt < 320 && railTick >= 0) jumpTo(railTick);
+    railTick = -1;
+  });
+  rail.addEventListener('pointercancel', () => { railDown = false; railTick = -1; });
+  rail.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+  });
   render();
 })();
 
