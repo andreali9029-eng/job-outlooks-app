@@ -32,7 +32,7 @@ function StarRow({ n, size = 13, color }) {
   return <>{stars}</>
 }
 
-export default function ProvinceMapSection({ lang, activeIndKey }) {
+export default function ProvinceMapSection({ lang, activeIndKey, onOpenProvince }) {
   const fr = lang === 'fr'
   const [selected, setSelected] = React.useState(null)   /* null → default CA backdrop + Ontario card */
   /* Backdrop is deliberately decoupled from NOC changes: the map keeps the
@@ -77,7 +77,9 @@ export default function ProvinceMapSection({ lang, activeIndKey }) {
     pc.classList.remove('reveal'); void pc.offsetWidth; pc.classList.add('reveal')
   }
 
-  /* User clicked a province: select it, swap the backdrop to its scenery. */
+  /* User clicked a province: select it, swap the backdrop to its scenery,
+     then hand the province over to the occupation board (that province's
+     occupation list) — the map IS the "by region" entry now. */
   const clickProv = React.useCallback((code) => {
     setSelected(code)
     setBackdrop(code)
@@ -86,8 +88,9 @@ export default function ProvinceMapSection({ lang, activeIndKey }) {
     if (svgRef.current) {
       svgRef.current.querySelectorAll('.prov').forEach(p => p.classList.toggle('sel', p.dataset.code === code))
     }
+    if (onOpenProvince) onOpenProvince(code)
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [])
+  }, [onOpenProvince])
 
   /* NOC changed: recolour (render) then focus this NOC's highest-rated
      province — WITHOUT touching the backdrop (map keeps its current scenery

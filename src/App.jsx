@@ -10,13 +10,14 @@
  * @version 1.0.0
  */
 import React from 'react'
-import { CANADA_PATHS, CANADA_VIEWBOX } from './canadaPaths'
 import TrendChart from './TrendChart'
 import { badgeFor, PROVINCE_BADGES } from './provinceBadges'
 import { calcNetPay } from './netPay'
 import { fetchPostings, fetchPostingDetail, scorePosting, keywordsOf } from './jobMatch'
 import HomeDeck from './HomeDeck'
 import ProvinceMapSection from './ProvinceMapSection'
+import OccBoard from './OccBoard'
+import { PROV_PRIORITY } from './homeData'
 
 /* ---------- i18n ----------
  * All user-facing strings, EN (index 0) and FR (index 1).
@@ -497,84 +498,6 @@ function formatWage(val, isAnnual) {
   return `$${val.toFixed(2)}`
 }
 
-/**
- * Interactive SVG map of Canada.
- * Each province/territory is coloured by the selected occupation's outlook
- * rating (or wage level) and is clickable.
- * @param {Object} props
- * @param {Object} props.provinceRatings - province code → outlook rating.
- * @param {Object} props.provinceWages - province code → median wage.
- * @param {(code: string) => void} props.onProvinceClick - province selection handler.
- * @param {string|null} props.selectedProvince - currently highlighted province.
- * @param {'en'|'fr'} props.lang - UI language for tooltips.
- */
-function CanadaMap({ provinceRatings, provinceWages, onProvinceClick, selectedProvince, lang }) {
-  const [hover, setHover] = React.useState(null)
-  const getColor = (code) => {
-    const rating = provinceRatings[code]
-    if (!rating) return '#e5e7eb'
-    const cfg = OUTLOOK_CONFIG[rating] || OUTLOOK_CONFIG['undetermined']
-    return cfg.color
-  }
-  const hoverData = hover ? (() => {
-    const cfg = OUTLOOK_CONFIG[provinceRatings[hover]] || OUTLOOK_CONFIG['undetermined']
-    const wage = provinceWages?.[hover]
-    return {
-      name: PROVINCE_NAMES[lang][hover] || hover,
-      label: OUTLOOK_LABELS[lang][cfg.key],
-      stars: cfg.stars,
-      color: cfg.color,
-      wage: wage?.median ? formatWage(wage.median, wage.annual) + (wage.annual ? '/yr' : '/hr') : null,
-    }
-  })() : null
-  return (
-    <div className="map-container">
-      <svg viewBox={CANADA_VIEWBOX} className="canada-map" role="img" aria-label="Canada map">
-        {CANADA_PATHS.map(p => {
-          const isSel = selectedProvince === p.code
-          return (
-            <path
-              key={p.code}
-              d={p.d}
-              fill={getColor(p.code)}
-              stroke={isSel ? '#1e40af' : '#ffffff'}
-              strokeWidth={isSel ? 3 : 1.2}
-              strokeLinejoin="round"
-              className={`province-path${isSel ? ' selected' : ''}${hover === p.code ? ' hovered' : ''}`}
-              onClick={() => onProvinceClick(p.code)}
-              onMouseEnter={() => setHover(p.code)}
-              onMouseLeave={() => setHover(null)}
-            >
-              <title>{PROVINCE_NAMES[lang][p.code] || p.code}</title>
-            </path>
-          )
-        })}
-      </svg>
-      {hoverData && (
-        <div className="map-tooltip">
-          <div className="map-tooltip-title">{hoverData.name}</div>
-          <div className="map-tooltip-row" style={{ color: hoverData.color }}>
-            <Stars count={hoverData.stars} /> {hoverData.label}
-          </div>
-          {hoverData.wage && (
-            <div className="map-tooltip-wage">
-              {I18N[lang].median}: {hoverData.wage}
-            </div>
-          )}
-        </div>
-      )}
-      <div className="map-legend">
-        {Object.values(OUTLOOK_CONFIG).slice().reverse().map(cfg => (
-          <div key={cfg.key} className="legend-item">
-            <span className="legend-color" style={{ background: cfg.color }}></span>
-            <span>{OUTLOOK_LABELS[lang][cfg.key]}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 /* ---------- App ---------- */
 /**
  * Root application component.
@@ -592,11 +515,7 @@ export default function App() {
   const [occData, setOccData] = React.useState(null)
   const [loading, setLoading] = React.useState(false)
   const [showDropdown, setShowDropdown] = React.useState(false)
-  const [expandedProvinces, setExpandedProvinces] = React.useState(new Set())
-  const [expandedRegions, setExpandedRegions] = React.useState(new Set())
-  const [filters, setFilters] = React.useState(new Set())
   const [modal, setModal] = React.useState(null)
-  const [mapProvince, setMapProvince] = React.useState(null)
   const [compareList, setCompareList] = React.useState([])
   const [compareData, setCompareData] = React.useState({})
   const [trends, setTrends] = React.useState({ unemp: null, industry: null, occ: null })
@@ -611,7 +530,8 @@ export default function App() {
   const [regionFavs, setRegionFavs] = React.useState(() => {
     try { return JSON.parse(localStorage.getItem('job-outlooks-region-favs') || '[]') } catch { return [] }
   })
-  const [exploreGroup, setExploreGroup] = React.useState(null)
+  /* Home-first navigation: NOC scope or province scope for the occupation board */
+  const [board, setBoard] = React.useState(null)
   /* Career match calculator */
   const [matchIndex, setMatchIndex] = React.useState(null)
   const [matchForm, setMatchForm] = React.useState({ wage: '', prov: '', mode: 'balanced' })
@@ -803,10 +723,6 @@ export default function App() {
     setJobsProv(null)
     setQuery(occ.title[lang] || occ.title.en || '')
     setShowDropdown(false)
-    setExpandedProvinces(new Set())
-    setExpandedRegions(new Set())
-    setFilters(new Set())
-    setMapProvince(null)
     setLoading(true)
     if (updateHistory) {
       // Home -> result: push a history entry so the browser back / edge-swipe
@@ -833,10 +749,6 @@ export default function App() {
     setOccData(null)
     setQuery('')
     setShowDropdown(false)
-    setExpandedProvinces(new Set())
-    setExpandedRegions(new Set())
-    setFilters(new Set())
-    setMapProvince(null)
     window.scrollTo({ top: 0 })
   }
 
@@ -1010,46 +922,6 @@ export default function App() {
     return best
   }, [provinceWages])
 
-  /** Toggle a province filter on the home explorer (multi-select allowed). */
-  const toggleProvince = (provCode) => {
-    const next = new Set(expandedProvinces)
-    if (next.has(provCode)) next.delete(provCode)
-    else next.add(provCode)
-    setExpandedProvinces(next)
-  }
-
-  /** Toggle the economic-region selector for the net-pay calculator. */
-  const toggleRegion = (key) => {
-    const next = new Set(expandedRegions)
-    if (next.has(key)) next.delete(key)
-    else next.add(key)
-    setExpandedRegions(next)
-  }
-
-  /** Expand every province block on the home explorer. */
-  const expandAll = () => {
-    setExpandedProvinces(new Set(Object.keys(byProvince)))
-    const regs = new Set()
-    for (const [provCode, regions] of Object.entries(byProvince)) {
-      regions.forEach((r, i) => regs.add(`${provCode}-${i}`))
-    }
-    setExpandedRegions(regs)
-  }
-
-  /** Collapse every province block on the home explorer. */
-  const collapseAll = () => {
-    setExpandedProvinces(new Set())
-    setExpandedRegions(new Set())
-  }
-
-  /** Toggle an outlook-rating filter chip (e.g. show only "Good" + "Very Good"). */
-  const toggleFilter = (label) => {
-    const next = new Set(filters)
-    if (next.has(label)) next.delete(label)
-    else next.add(label)
-    setFilters(next)
-  }
-
   /* Favorites (saved occupations) */
   /** Toggle an occupation in the favourites list (persisted in localStorage). */
   const toggleFavorite = (code) => {
@@ -1109,25 +981,6 @@ export default function App() {
     const wage = nationalWage?.median ?? null
     return { cfg, jobs, wage, provGood: modeN, provTotal: ratings.length }
   }, [selected, occData, jobCounts, nationalWage, byProvince])
-
-  const handleMapClick = (provCode) => {
-    setMapProvince(prev => prev === provCode ? null : provCode)
-  }
-
-  /** Filter occupations by selected provinces and outlook ratings. */
-  const filteredProvinces = React.useMemo(() => {
-    let entries = Object.entries(byProvince)
-    if (filters.size > 0) {
-      entries = entries.filter(([provCode, regions]) => {
-        const cfg = OUTLOOK_CONFIG[regions[0]?.outlook] || OUTLOOK_CONFIG['undetermined']
-        return filters.has(cfg.key)
-      })
-    }
-    if (mapProvince) {
-      entries = entries.filter(([provCode]) => provCode === mapProvince)
-    }
-    return entries
-  }, [byProvince, filters, mapProvince])
 
   const quickTerms = lang === 'en' ? ['Welder', 'Nurse', 'Software', 'Truck', 'Electrician'] : ['soudeur', 'infirmier', 'logiciel', 'camion', 'électricien']
 
@@ -1381,13 +1234,15 @@ export default function App() {
               onChange={setHomeIndKey}
               counts={nocGroupCounts}
               onOpen={(i) => {
-                /* centre card = this sector's occupation list, one tap from home */
-                setExploreGroup(String(i))
-                setTab('explore')
-                window.scrollTo({ top: 0 })
+                /* centre card = this sector's occupation board, opened in place */
+                setBoard({ kind: 'noc', id: String(i) })
               }}
             />
-            <ProvinceMapSection lang={lang} activeIndKey={homeIndKey} />
+            <ProvinceMapSection
+              lang={lang}
+              activeIndKey={homeIndKey}
+              onOpenProvince={(code) => setBoard({ kind: 'prov', code })}
+            />
           </section>
         )}
 
@@ -1454,51 +1309,17 @@ export default function App() {
               </div>
             </section>
 
-            <div className="trends-head">
-              <h2 className="trends-title">{t.exploreTitle}</h2>
-              <p className="trends-hint">{t.exploreHint}</p>
-            </div>
-            {exploreGroup === null ? (
-                <div className="noc-groups">
-                  {NOC_GROUPS.map(g => {
-                    const n = occupations.filter(o => o.code.replace('NOC_', '')[0] === g.id).length
-                    return (
-                      <button
-                        key={g.id}
-                        className="noc-group-card"
-                        style={{ borderTopColor: g.color }}
-                        onClick={() => setExploreGroup(g.id)}
-                      >
-                        <span className="noc-group-num" style={{ background: g.color }}>{g.id}</span>
-                        <span className="noc-group-name">{lang === 'fr' ? g.fr : g.en}</span>
-                        <span className="noc-group-count">{n} {t.occupationsLabel}</span>
-                      </button>
-                    )
-                  })}
-                </div>
-              ) : (
-                <>
-                  <button className="back-groups-btn" onClick={() => setExploreGroup(null)}>
-                    ← {t.backToGroups}
-                  </button>
-                  {(() => {
-                    const g = NOC_GROUPS.find(x => x.id === exploreGroup)
-                    const list = occupations.filter(o => o.code.replace('NOC_', '')[0] === exploreGroup)
-                    return (
-                      <div className="explore-list">
-                        {list.length === 0 && <p className="no-results">{t.exploreEmpty}</p>}
-                        {list.map(o => (
-                          <button key={o.code} className="explore-occ" onClick={() => loadOccupation(o)}>
-                            <span className="explore-occ-name">{o.title[lang] || o.title.en}</span>
-                            <span className="noc">{o.code.replace('NOC_', '')}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )
-                  })()}
-                </>
-              )
-            }
+            {/* Sector and province browsing now lives on the Home tab:
+                the NOC deck opens a sector board, the home map opens a
+                province board. Explore keeps search + popular only. */}
+            <p className="explore-redirect">
+              {lang === 'fr'
+                ? 'Pour parcourir une profession par secteur (NOC) ou par province, revenez à l\'accueil — la carte des cartes de secteur et la carte du Canada y ouvrent directement la liste.'
+                : 'To browse occupations by sector (NOC) or by province, use the Home tab — the sector deck and the Canada map open the list directly.'}
+            </p>
+            <button className="explore-home-btn" onClick={() => setTab('home')}>
+              {lang === 'fr' ? 'Aller à l\'accueil' : 'Go to Home'}
+            </button>
           </section>
         )}
 
@@ -2241,122 +2062,65 @@ export default function App() {
               </div>
             )}
 
-            {/* Map */}
-            <div className="map-section">
+            {/* Province comparison — one occupation across the 13 jurisdictions.
+                The interactive map now lives on the Home tab, where a province
+                click opens that province's occupation list. */}
+            <div className="prov-compare">
               <h3 className="section-title">{t.outlookByProvince}</h3>
-              <CanadaMap
-                provinceRatings={provinceRatings}
-                provinceWages={provinceWages}
-                onProvinceClick={handleMapClick}
-                selectedProvince={mapProvince}
-                lang={lang}
-              />
-              {mapProvince && (
-                <button className="clear-map-filter" onClick={() => setMapProvince(null)}>
-                  {t.clearProvinceFilter}
-                </button>
-              )}
-            </div>
-
-            {/* Filters */}
-            <div className="filters">
-              <span className="filter-label">{t.filterByRating}:</span>
-              {Object.values(OUTLOOK_CONFIG).map(cfg => (
-                <label key={cfg.key} className={`filter-chip ${filters.has(cfg.key) ? 'active' : ''}`}
-                  style={{ background: filters.has(cfg.key) ? cfg.bg : '#f3f4f6' }}>
-                  <input type="checkbox" checked={filters.has(cfg.key)} onChange={() => toggleFilter(cfg.key)} style={{ display: 'none' }} />
-                  <Stars count={cfg.stars} /> {OUTLOOK_LABELS[lang][cfg.key]}
-                </label>
-              ))}
-            </div>
-
-            {/* Bulk actions */}
-            <div className="bulk-actions">
-              <button onClick={expandAll}>{t.expandAll}</button>
-              <button onClick={collapseAll}>{t.collapseAll}</button>
-              <span className="result-count">{filteredProvinces.length} {t.unitsLabel}</span>
-            </div>
-
-            {/* Province cards */}
-            <div className="provinces">
-              {filteredProvinces.length === 0 && <p className="no-results">{t.noResults}</p>}
-              {filteredProvinces.map(([provCode, regions]) => {
-                const cfg = OUTLOOK_CONFIG[regions[0]?.outlook] || OUTLOOK_CONFIG['undetermined']
-                const isExpanded = expandedProvinces.has(provCode)
-                const wage = provinceWages[provCode]
-                return (
-                  <div key={provCode} className="province-card" style={{ borderLeftColor: cfg.color }}>
-                    <div className="province-header" onClick={() => toggleProvince(provCode)}>
-                      <div>
-                        <h3>{PROVINCE_NAMES[lang][provCode] || provCode}</h3>
-                        {wage?.median && (
-                          <span className="wage-info">
-                            {t.median}: {formatWage(wage.median, wage.annual)}{wage.annual ? '/yr' : '/hr'}
-                            {wage.low && wage.high && (
-                              <span className="wage-range"> ({formatWage(wage.low, wage.annual)} – {formatWage(wage.high, wage.annual)})</span>
-                            )}
-                          </span>
-                        )}
-                      </div>
-                      <div className="province-rating" style={{ color: cfg.color, background: cfg.bg }}>
-                        <Stars count={cfg.stars} />
-                        <span>{OUTLOOK_LABELS[lang][cfg.key]}</span>
-                        <span className="expand-icon">{isExpanded ? '−' : '+'}</span>
-                      </div>
-                      <button
-                        className={`region-fav-btn ${isRegionFav(selected.code, provCode) ? 'active' : ''}`}
-                        title={t.saveRegion}
-                        onClick={(e) => { e.stopPropagation(); toggleRegionFav(selected.code, provCode) }}
-                      >
-                        ♥
-                      </button>
+              <p className="jobs-trend-hint">
+                {lang === 'fr'
+                  ? 'Cote 3 ans et salaire médian, province par province.'
+                  : '3-year rating and median wage, province by province.'}
+              </p>
+              <div className="prov-compare-grid">
+                {PROV_PRIORITY.map(code => {
+                  const rating = provinceRatings[code]
+                  /* "undetermined" is a real value in the source data but carries
+                     no signal — print it as an em dash like the other gaps. */
+                  const hasRating = Boolean(rating) && rating !== 'undetermined'
+                  const cfg = OUTLOOK_CONFIG[rating] || OUTLOOK_CONFIG['undetermined']
+                  const w = provinceWages[code]
+                  return (
+                    <div key={code} className="prov-compare-row">
+                      <span className="pc-code">{code}</span>
+                      <span className="pc-name">{PROVINCE_NAMES[lang][code] || code}</span>
+                      <span className={`pc-rate${hasRating ? '' : ' pc-none'}`} style={hasRating ? { color: cfg.color } : undefined}>
+                        {hasRating ? (
+                          <>
+                            <Stars count={cfg.stars} />
+                            <span className="pc-label">{OUTLOOK_LABELS[lang][cfg.key]}</span>
+                          </>
+                        ) : '—'}
+                      </span>
+                      <span className="pc-wage">
+                        {w?.median ? `${formatWage(w.median, w.annual)}${w.annual ? '/yr' : '/hr'}` : '—'}
+                      </span>
                     </div>
-
-                    {isExpanded && regions[0]?.trends && (
-                      <div className="trend-desc" dangerouslySetInnerHTML={{ __html: regions[0].trends }} />
-                    )}
-
-                    <button
-                      className="jobs-btn"
-                      title={t.jobsHint}
-                      onClick={(e) => { e.stopPropagation(); openJobs(provCode) }}
-                    >
-                      💼 {t.viewJobs}
-                    </button>
-
-                    {isExpanded && regions.length > 1 && (
-                      <ul className="regions">
-                        {regions.slice(1).map((r, i) => {
-                          const rc = OUTLOOK_CONFIG[r.outlook] || OUTLOOK_CONFIG['undetermined']
-                          const regKey = `${provCode}-${i}`
-                          const regExpanded = expandedRegions.has(regKey)
-                          return (
-                            <li key={i} className="region-item">
-                              <div className="region-row" onClick={() => toggleRegion(regKey)}>
-                                <span className="region-name">{r.regionName}</span>
-                                <span className="region-rating" style={{ color: rc.color }}>
-                                  <Stars count={rc.stars} /> {OUTLOOK_LABELS[lang][rc.key]}
-                                  {r.trends && <span className="expand-icon">{regExpanded ? '−' : '+'}</span>}
-                                </span>
-                              </div>
-                              {regExpanded && r.trends && (
-                                <div className="trend-desc small" dangerouslySetInnerHTML={{ __html: r.trends }} />
-                              )}
-                            </li>
-                          )
-                        })}
-                      </ul>
-                    )}
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
           </div>
         )}
       </main>
 
-      {/* Bottom tab bar (hidden while an occupation detail is open) */}
-      {!selected && (
+      {/* Layer 1 of the home-first navigation: the occupation board.
+          Opened by the centred NOC card (sector scope) or by a province on the
+          home map (province scope); a row opens the occupation detail. */}
+      {board && (
+        <OccBoard
+          scope={board}
+          lang={lang}
+          provinceNames={PROVINCE_NAMES[lang]}
+          groups={NOC_GROUPS}
+          getIndex={loadMatchIndex}
+          onClose={() => setBoard(null)}
+          onPick={(occ) => { setBoard(null); loadOccupation(occ) }}
+        />
+      )}
+
+      {/* Bottom tab bar (hidden while a detail or the board is open) */}
+      {!selected && !board && (
         <nav className="tabbar">
           <button
             className={`tabbar-btn ${tab === 'home' ? 'active' : ''}`}
