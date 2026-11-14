@@ -3,14 +3,14 @@
  * @description Relief map + real-photo backdrop + province detail card (mockup D).
  *   - 3D-tilted relief map (perspective rotateX, two lit "plate" steps, seams).
  *   - Real-photo backdrop, fully visible — no scrim / no ocean layer.
- *   - Backdrop is DECOUPLED from the NOC deck: it shows the maple leaf by
- *     default and only swaps to a province's scenery when the user clicks that
- *     province. Switching NOC cards recolours the provinces and focuses the
- *     top-rated province card, but leaves the backdrop untouched.
- *   - Province click: card-flip the photo, float the province, reveal the card.
+ *   - Backdrop FOLLOWS the deck: switching NOC cards swaps the backdrop to that
+ *     sector's top-rated province (maple leaf when it has no photo). Clicking a
+ *     province parks its scenery and plays it back once the occupation board
+ *     closes, so the swap is never hidden behind the full-screen sheet.
+ *   - Province click: floats the province and opens its occupation board.
  * @author Xiaopeng Li
  * @copyright © 2026 Xiaopeng Li
- * @version 1.0.0
+ * @version 1.1.0
  */
 import React from 'react'
 import { CANADA_PATHS, CANADA_VIEWBOX } from './canadaPaths'
@@ -32,14 +32,16 @@ function StarRow({ n, size = 13, color }) {
   return <>{stars}</>
 }
 
-export default function ProvinceMapSection({ lang, activeIndKey, onOpenProvince }) {
+export default function ProvinceMapSection({ lang, activeIndKey, onOpenProvince, boardOpen }) {
   const fr = lang === 'fr'
   const [selected, setSelected] = React.useState(null)   /* null → default CA backdrop + Ontario card */
-  /* Backdrop is deliberately decoupled from NOC changes: the map keeps the
-     maple-leaf photo by default and only swaps to a province's scenery when
-     the USER clicks that province. Switching NOC cards recolours the map and
-     focuses the top province card, but never yanks the backdrop around. */
+  /* Backdrop mirrors the active NOC's top province, and follows a province the
+     user picked once its occupation board has been dismissed. */
   const [backdrop, setBackdrop] = React.useState('CA')
+  /* The province photo swap is HELD while the occupation board is open: the
+     board covers the whole viewport, so flipping the photo underneath would be
+     invisible. The pick is parked here and played back when the board closes. */
+  const pendingPhoto = React.useRef(null)
   const photoRef = React.useRef(null)
   const cardRef = React.useRef(null)
   const svgRef = React.useRef(null)
@@ -77,30 +79,50 @@ export default function ProvinceMapSection({ lang, activeIndKey, onOpenProvince 
     pc.classList.remove('reveal'); void pc.offsetWidth; pc.classList.add('reveal')
   }
 
-  /* User clicked a province: select it, swap the backdrop to its scenery,
-     then hand the province over to the occupation board (that province's
-     occupation list) — the map IS the "by region" entry now. */
+  /* User clicked a province: select it and hand the province over to the
+     occupation board (that province's occupation list) — the map IS the
+     "by region" entry now. The backdrop flip + card reveal are DEferred until
+     the board closes, otherwise they happen behind a full-screen sheet and the
+     user never sees them. */
   const clickProv = React.useCallback((code) => {
     setSelected(code)
-    setBackdrop(code)
-    flipPhoto(code, true)
-    revealCard()
     if (svgRef.current) {
       svgRef.current.querySelectorAll('.prov').forEach(p => p.classList.toggle('sel', p.dataset.code === code))
     }
-    if (onOpenProvince) onOpenProvince(code)
+    if (onOpenProvince) {
+      pendingPhoto.current = code
+      onOpenProvince(code)
+      return
+    }
+    setBackdrop(code)
+    flipPhoto(code, true)
+    revealCard()
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [onOpenProvince])
 
-  /* NOC changed: recolour (render) then focus this NOC's highest-rated
-     province — WITHOUT touching the backdrop (map keeps its current scenery
-     until the user clicks a province). */
+  /* Board closed: play back the province photo the click parked. */
+  React.useEffect(() => {
+    if (boardOpen) return
+    const code = pendingPhoto.current
+    if (!code) return
+    pendingPhoto.current = null
+    setBackdrop(code)
+    flipPhoto(code, true)
+    revealCard()
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [boardOpen])
+
+  /* NOC changed: recolour (render), focus this NOC's highest-rated province
+     AND swap the backdrop to that province's scenery (falls back to the maple
+     leaf when the province has no photo) — the pre-redesign linkage. */
   React.useEffect(() => {
     if (prevKey.current === activeIndKey) return
     prevKey.current = activeIndKey
     const top = topProvince(ratings)
     if (top) {
       setSelected(top)
+      setBackdrop(top)
+      flipPhoto(top, true)
       revealCard()
       if (svgRef.current) {
         svgRef.current.querySelectorAll('.prov').forEach(p => p.classList.toggle('sel', p.dataset.code === top))

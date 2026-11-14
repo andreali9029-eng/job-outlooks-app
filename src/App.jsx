@@ -1241,6 +1241,7 @@ export default function App() {
             <ProvinceMapSection
               lang={lang}
               activeIndKey={homeIndKey}
+              boardOpen={!!board}
               onOpenProvince={(code) => setBoard({ kind: 'prov', code })}
             />
           </section>
