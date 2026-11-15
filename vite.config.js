@@ -51,6 +51,12 @@ export default defineConfig({
         ]
       },
       workbox: {
+        // Take over open tabs as soon as the new SW activates (clientsClaim)
+        // and activate without waiting for the old one (skipWaiting). Without
+        // clientsClaim the freshly deployed build kept serving the previous
+        // precached index.html, so the app looked "unchanged" after every push.
+        clientsClaim: true,
+        skipWaiting: true,
         // Only precache app shell (js/css/html/icons). Data files are fetched
         // on demand per occupation and handled by runtime caching below.
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
